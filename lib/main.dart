@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:lyft_mate/screens/onboarding/onboarding_screen.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:lyft_mate/constants/theme.dart';
 
 import 'firebase_options.dart';
 
@@ -20,8 +21,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: OnBoardingScreen(),
+    return MaterialApp(
+      theme: LyftMateAppTheme.lightTheme,
+      darkTheme: LyftMateAppTheme.darkTheme,
+      themeMode: ThemeMode.system,
+      home: AuthenticationScreen(),
+
     );
   }
 }
