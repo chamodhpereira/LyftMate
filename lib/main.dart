@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
+import 'constants/theme.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -18,8 +19,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: AuthenticationScreen(),
+    return MaterialApp(
+      theme: LyftMateAppTheme.lightTheme,
+      darkTheme: LyftMateAppTheme.darkTheme,
+      themeMode: ThemeMode.system,
+      home: const Scaffold(
+        body: SafeArea(
+          child: Center(
+            child: Text("Home Page"),
+          ),
+        ),
+      ),
     );
   }
 }
