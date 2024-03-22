@@ -10,6 +10,7 @@ import 'package:lyft_mate/widgets/custom_text_field.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/user.dart';
+import '../../services/authentication_service.dart';
 // import 'package:lyft_mate/src/screens/login_screen.dart';
 // import 'package:lyft_mate/src/screens/welcome_screen.dart';
 
@@ -41,6 +42,9 @@ class _SignUpFormState extends State<SignUpForm> {
     _progress = 1 / 5;
     super.initState();
   }
+
+  AuthenticationService authService = AuthenticationService();
+  // late DatabaseService _databaseService;
 
   @override
   void dispose() {
@@ -185,6 +189,9 @@ class _SignUpFormState extends State<SignUpForm> {
                         ),
                       );
                       return;
+                    } else {
+                      print("${emailController.text}, ${passwordController.text}");
+                      authService.signUpWithEmailAndPassword(emailController.text, passwordController.text);
                     }
 
                   },
