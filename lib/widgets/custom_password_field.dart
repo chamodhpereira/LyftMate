@@ -5,6 +5,7 @@ class PasswordField extends StatelessWidget {
   final TextEditingController controller;
   final bool obscureText;
   final VoidCallback onPressed;
+  final FormFieldValidator<String>? validator; // Added validator parameter
 
   const PasswordField({
     Key? key,
@@ -12,6 +13,7 @@ class PasswordField extends StatelessWidget {
     required this.controller,
     required this.obscureText,
     required this.onPressed,
+    this.validator, // Initialize the validator parameter
   }) : super(key: key);
 
   @override
@@ -26,13 +28,7 @@ class PasswordField extends StatelessWidget {
         ),
       ),
       controller: controller,
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter $label';
-        }
-        return null;
-      },
+      validator: validator, // Use the validator parameter
     );
   }
 }
-

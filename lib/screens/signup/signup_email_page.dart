@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:lyft_mate/widgets/custom_text_field.dart'; // Import the CustomTextField widget
+import 'package:provider/provider.dart';
 
-class SignupEmailPage extends StatefulWidget {
+import '../../models/user.dart';
+
+class SignupEmailPage extends StatelessWidget {
   final String label;
   final TextEditingController controller;
 
@@ -10,13 +13,6 @@ class SignupEmailPage extends StatefulWidget {
     required this.label,
     required this.controller,
   }) : super(key: key);
-
-  @override
-  _SignupEmailPageState createState() => _SignupEmailPageState();
-}
-
-class _SignupEmailPageState extends State<SignupEmailPage> {
-  bool sendDetails = false;
 
   @override
   Widget build(BuildContext context) {
@@ -29,27 +25,32 @@ class _SignupEmailPageState extends State<SignupEmailPage> {
             style: TextStyle(fontSize: 20.0),
           ),
           CustomTextField(
-            label: widget.label,
-            controller: widget.controller,
+            label: label,
+            controller: controller,
+            onChanged: (value) {
+              Provider.of<User>(context, listen: false).updateEmail(value);
+            },
           ),
           const SizedBox(height: 20.0),
-          Row(
-            children: [
-              Checkbox(
-                value: sendDetails,
-                onChanged: (value) {
-                  setState(() {
-                    sendDetails = value!;
-                  });
-                },
-              ),
-              const Expanded(
-                child: Text(
-                  "Send trip details, news, receipts, and promotions",
-                  style: TextStyle(fontSize: 13.0),
-                ),
-              ),
-            ],
+          Consumer<User>(
+            builder: (context, user, _) {
+              return Row(
+                children: [
+                  Checkbox(
+                    value: user.sendPromos,
+                    onChanged: (value) {
+                      user.updateSendPromos(value ?? false);
+                    },
+                  ),
+                  const Expanded(
+                    child: Text(
+                      "Send trip details, news, receipts, and promotions",
+                      style: TextStyle(fontSize: 13.0),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),

@@ -35,6 +35,13 @@ class _SignupPasswordPageState extends State<SignupPasswordPage> {
     });
   }
 
+  String? _validatePassword(String? value) {
+    if (value != widget.controllerOne.text) {
+      return 'Passwords do not match';
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -56,6 +63,7 @@ class _SignupPasswordPageState extends State<SignupPasswordPage> {
             controller: widget.controllerTwo,
             obscureText: obscureTextTwo,
             onPressed: togglePasswordVisibilityTwo,
+            validator: _validatePassword,
           ),
           const SizedBox(height: 35.0),
           const Column(

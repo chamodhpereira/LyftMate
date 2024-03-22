@@ -7,6 +7,9 @@ import 'package:lyft_mate/screens/signup/signup_password_page.dart';
 import 'package:lyft_mate/screens/signup/signup_title_page.dart';
 import 'package:lyft_mate/widgets/custom_bottom_buttom.dart';
 import 'package:lyft_mate/widgets/custom_text_field.dart';
+import 'package:provider/provider.dart';
+
+import '../../models/user.dart';
 // import 'package:lyft_mate/src/screens/login_screen.dart';
 // import 'package:lyft_mate/src/screens/welcome_screen.dart';
 
@@ -48,6 +51,13 @@ class _SignUpFormState extends State<SignUpForm> {
     passwordController.dispose();
     reEnterPasswordController.dispose();
     super.dispose();
+  }
+
+  String? validatePassword() {
+    if (passwordController.text != reEnterPasswordController.text) {
+      return 'Passwords do not match';
+    }
+    return null;
   }
 
   bool areFieldsFilledForPage(int page) {
@@ -153,12 +163,30 @@ class _SignUpFormState extends State<SignUpForm> {
               ? CustomBottomButton(
                   text: "Signup",
                   onPressed: () {
+                    print('FirstName: ${context.read<User>().firstName}');
+                    print('LastName: ${context.read<User>().lastName}');
+                    print('Date of Birth: ${context.read<User>().selectedDate}');
+                    print('Selected Title: ${context.read<User>().selectedTitle}');
+                    print('USER EMAIL: ${context.read<User>().email}');
+                    print('Send Promos: ${context.read<User>().sendPromos}');
+                    print("PASssSSword: ${passwordController.text}");
+                    print("userrrr: ${context.read<User>()}");
                     // Navigator.push(
                     //   context,
                     //   MaterialPageRoute(
                     //     builder: (context) => LoginScreen(),
                     //   ),
                     // );
+                    String? passwordError = validatePassword();
+                    if (passwordError != null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(passwordError),
+                        ),
+                      );
+                      return;
+                    }
+
                   },
                 )
               : CustomBottomButton(
@@ -168,11 +196,13 @@ class _SignUpFormState extends State<SignUpForm> {
                       duration: Duration(milliseconds: 300),
                       curve: Curves.easeInOut,
                     );
+
                     if (areFieldsFilledForPage(currentPage)) {
                       _progressController.nextPage(
                         duration: Duration(milliseconds: 300),
                         curve: Curves.easeInOut,
                       );
+
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
