@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:lyft_mate/models/loggeduser.dart';
@@ -7,9 +6,20 @@ import 'package:provider/provider.dart';
 class AuthenticationService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  Future<void> phoneAuthentication (String phoneNo) async{
+    _auth.verifyPhoneNumber(
+      phoneNumber: phoneNo,
+      verificationCompleted: (credentials) {},
+      verificationFailed: (e) {},
+      codeSent: (verificationId, resendToken) {},
+      codeAutoRetrievalTimeout: (verificationId) {},
+    );
+  }
+
   Future<void> signUpWithEmailAndPassword(String email, String password) async {
     try {
-      final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+      final UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
@@ -35,9 +45,11 @@ class AuthenticationService {
     }
   }
 
-  Future<bool> signInWithEmailAndPassword(BuildContext context, String email, String password) async {
+  Future<bool> signInWithEmailAndPassword(
+      BuildContext context, String email, String password) async {
     try {
-      final UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+      final UserCredential userCredential =
+          await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
@@ -46,10 +58,10 @@ class AuthenticationService {
         // Update user details in LoggedUser model
         LoggedUser loggedUser = Provider.of<LoggedUser>(context, listen: false);
         print("WTFFFFFFFFFFFFFFFFFFFFFFFFFFFFQERRRR");
-        print('signin methoddddd- User instance hash code: ${loggedUser.hashCode}');
+        print(
+            'signin methoddddd- User instance hash code: ${loggedUser.hashCode}');
         loggedUser.updateUID(userCredential.user!.uid);
         loggedUser.updateEmail(userCredential.user!.email ?? "");
-
 
         // Navigate to the next screen or perform any other action after successful login
         return true; // Return true if login is successful
@@ -62,7 +74,6 @@ class AuthenticationService {
     }
   }
 
-
   Future<void> signOut() async {
     try {
       await FirebaseAuth.instance.signOut();
@@ -72,24 +83,6 @@ class AuthenticationService {
     }
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // class AuthenticationService {
 //
