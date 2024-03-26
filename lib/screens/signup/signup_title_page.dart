@@ -10,7 +10,7 @@ class SignupTitlePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.only(bottom: 40.0, left: 20.0, right: 20.0, top: 80.0),
-      child: Consumer<User>(
+      child: Consumer<UserM>(
         builder: (context, user, _) {
           return Column(
             children: [

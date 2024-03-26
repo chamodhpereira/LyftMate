@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 enum NameTitle { Mr, Mrs }
 
-class UserM extends ChangeNotifier {
+class LoggedUser extends ChangeNotifier {
   String userID = "";
   String? firstName;
   String? lastName;

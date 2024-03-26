@@ -28,11 +28,11 @@ class SignupEmailPage extends StatelessWidget {
             label: label,
             controller: controller,
             onChanged: (value) {
-              Provider.of<User>(context, listen: false).updateEmail(value);
+              Provider.of<UserM>(context, listen: false).updateEmail(value);
             },
           ),
           const SizedBox(height: 20.0),
-          Consumer<User>(
+          Consumer<UserM>(
             builder: (context, user, _) {
               return Row(
                 children: [

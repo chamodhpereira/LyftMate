@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:lyft_mate/constants/colors.dart';
+
+import '../../services/authentication_service.dart';
+import '../login/login_screen.dart';
 // import 'package:lyft_mate/screens/login_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
@@ -7,6 +10,9 @@ class WelcomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+
+
     var height = MediaQuery.of(context).size.height;
 
     return Scaffold(
@@ -41,11 +47,12 @@ class WelcomeScreen extends StatelessWidget {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () {
-                        // Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(
-                        //     builder: (context) => LoginScreen(),),
-                        // );
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => LoginScreen(),),
+                        );
                       },
 
                       style: OutlinedButton.styleFrom(

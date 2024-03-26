@@ -44,6 +44,7 @@ class _SignUpFormState extends State<SignUpForm> {
   }
 
   AuthenticationService authService = AuthenticationService();
+
   // late DatabaseService _databaseService;
 
   @override
@@ -167,14 +168,14 @@ class _SignUpFormState extends State<SignUpForm> {
               ? CustomBottomButton(
                   text: "Signup",
                   onPressed: () {
-                    print('FirstName: ${context.read<User>().firstName}');
-                    print('LastName: ${context.read<User>().lastName}');
-                    print('Date of Birth: ${context.read<User>().selectedDate}');
-                    print('Selected Title: ${context.read<User>().selectedTitle}');
-                    print('USER EMAIL: ${context.read<User>().email}');
-                    print('Send Promos: ${context.read<User>().sendPromos}');
+                    print('FirstName: ${context.read<UserM>().firstName}');
+                    print('LastName: ${context.read<UserM>().lastName}');
+                    print('Date of Birth: ${context.read<UserM>().selectedDate}');
+                    print('Selected Title: ${context.read<UserM>().selectedTitle}');
+                    print('USER EMAIL: ${context.read<UserM>().email}');
+                    print('Send Promos: ${context.read<UserM>().sendPromos}');
                     print("PASssSSword: ${passwordController.text}");
-                    print("userrrr: ${context.read<User>()}");
+                    print("userrrr: ${context.read<UserM>()}");
                     // Navigator.push(
                     //   context,
                     //   MaterialPageRoute(

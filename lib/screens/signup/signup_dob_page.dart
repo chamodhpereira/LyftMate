@@ -35,7 +35,7 @@ import '../../models/user.dart';
 class SignupDOBPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Consumer<User>(
+    return Consumer<UserM>(
       builder: (context, user, _) {
         return Container(
           padding: const EdgeInsets.only(bottom: 40.0, left: 40.0, right: 40.0, top: 80.0),

@@ -21,7 +21,7 @@ class SignupNamePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    final user = Provider.of<User>(context);
+    final user = Provider.of<UserM>(context);
 
     return Container(
       padding: const EdgeInsets.only(bottom: 40.0, left: 40.0, right: 40.0, top: 80.0),
