@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:lyft_mate/models/loggeduser.dart';
 import 'package:lyft_mate/models/user.dart';
 import 'package:lyft_mate/screens/login/login_screen.dart';
+import 'package:lyft_mate/screens/signup/signup_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:lyft_mate/screens/signup/signup_form.dart';
 
@@ -31,7 +32,7 @@ class MyApp extends StatelessWidget {
         theme: LyftMateAppTheme.lightTheme,
         darkTheme: LyftMateAppTheme.darkTheme,
         themeMode: ThemeMode.system,
-        home: LoginScreen(),
+        home: SignupScreen(),
       ),
     );
   }

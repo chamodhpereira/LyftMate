@@ -1,5 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:lyft_mate/screens/signup/signup_form.dart';
+// import 'package:lyft_mate/src/screens/dummyhome.dart';
+// import 'package:lyft_mate/src/screens/signup/signup_name.dart';
+import 'package:lyft_mate/userprofile_screen.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
 
@@ -119,14 +123,14 @@ class _OTPScreenState extends State<OTPScreen> {
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => SignUpName(), // Navigate to SignupScreen
+                            builder: (context) => const SignUpForm(), // Navigate to SignupScreen
                           ),
                         );
                       } else {
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => HomePage(), // Navigate to HomeScreen
+                            builder: (context) => UserProfileScreen(), // Navigate to HomeScreen
                           ),
                         );
                       }
