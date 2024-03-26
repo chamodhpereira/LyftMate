@@ -5,16 +5,41 @@ import 'package:provider/provider.dart';
 
 class AuthenticationService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  var verificationId = "";
 
   Future<void> phoneAuthentication (String phoneNo) async{
     _auth.verifyPhoneNumber(
       phoneNumber: phoneNo,
-      verificationCompleted: (credentials) {},
-      verificationFailed: (e) {},
-      codeSent: (verificationId, resendToken) {},
-      codeAutoRetrievalTimeout: (verificationId) {},
+      verificationCompleted: (credential) async{
+        await _auth.signInWithCredential(credential);
+        // _navigateToNextScreen();
+      },
+      codeSent: (verificationId, resendToken) {
+          this.verificationId = verificationId;
+      },
+      codeAutoRetrievalTimeout: (verificationId) {
+        this.verificationId = verificationId;
+      },
+      verificationFailed: (e) {
+        print(e);
+      },
     );
   }
+
+  Future<bool> verifyOTP(String otp) async {
+    // PhoneAuthCredential credential = PhoneAuthProvider.credential(verificationId: verificationId, smsCode: otpController.text);
+    try {
+      var credentials = await _auth.signInWithCredential(PhoneAuthProvider.credential(verificationId: verificationId, smsCode: otp));
+      // _navigateToNextScreen();
+      return credentials.user != null ? true : false;
+    } catch (e) {
+      print("Failed to verify OTP: $e");
+      return false;
+      // Handle verification failure
+    }
+  }
+
+
 
   Future<void> signUpWithEmailAndPassword(String email, String password) async {
     try {

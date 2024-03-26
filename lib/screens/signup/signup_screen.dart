@@ -4,10 +4,13 @@ import 'package:flutter/material.dart';
 
 import 'package:lyft_mate/screens/signup/signup_form.dart';
 
+import '../../services/authentication_service.dart';
 import '../otp/otp_screen.dart';
 
 class SignupScreen extends StatelessWidget {
   // SignupScreen({Key key}) : super(key: key);
+
+  final AuthenticationService _authenticationService = AuthenticationService();
 
   TextEditingController phoneController = TextEditingController();
 
@@ -61,15 +64,16 @@ class SignupScreen extends StatelessWidget {
                     ),
                     onPressed: () {
                       String phoneNumber = phoneController.text;
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => OTPScreen(
-                            phonenumber: phoneNumber,
-                            fromScreen: 'signup',
-                          ),
-                        ),
-                      );
+                      
+                      // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (context) => OTPScreen(
+                      //       phonenumber: phoneNumber,
+                      //       fromScreen: 'signup',
+                      //     ),
+                      //   ),
+                      // );
                     },
 
                     child: const Text("Proceed"),
