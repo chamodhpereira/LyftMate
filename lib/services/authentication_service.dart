@@ -1,7 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:lyft_mate/models/loggeduser.dart';
 import 'package:provider/provider.dart';
+
+import 'package:lyft_mate/models/user.dart';
 
 class AuthenticationService extends ChangeNotifier{
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -50,14 +53,20 @@ class AuthenticationService extends ChangeNotifier{
 
 
 
-  Future<void> signUpWithEmailAndPassword(String email, String password) async {
+  Future<void> signUpWithEmailAndPassword(String email, String password, UserM newUser) async {
     try {
       final UserCredential userCredential =
           await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
-
+      print("USERRRRRR IDDDDDDDDD: ${userCredential.user!.uid}");
+      // Store additional user details in Firestore
+      await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
+        'firstName': newUser.firstName,
+        'lastName': newUser.lastName,
+        // Add more user details as needed
+      });
       // // Store additional user details in Firestore
       // await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
       //   'firstName': firstNameController.text,

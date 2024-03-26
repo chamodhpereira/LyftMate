@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 enum NameTitle { Mr, Mrs }
 
 class UserM extends ChangeNotifier {
-  String userID = "";
+  String? userID;
   String? firstName;
   String? lastName;
   String? email;
@@ -13,7 +13,12 @@ class UserM extends ChangeNotifier {
   NameTitle? selectedTitle;
   bool sendPromos = false;
 
-  // User();
+  UserM({
+    this.userID,
+    this.email,
+    this.firstName,
+    this.lastName,
+  });
 
   @override
   String toString() {
@@ -23,7 +28,7 @@ class UserM extends ChangeNotifier {
 
   void updateUID(String value) {
     userID = value;
-    print("userrrr id update wenawaaa huttooooo $userID");
+    print("userrrr id update wenawaaa $userID");
     notifyListeners();
   }
 
@@ -39,7 +44,7 @@ class UserM extends ChangeNotifier {
 
   void updateEmail(String value) {
     email = value;
-    print("emaaaail update wuna wttoooooo: $email");
+    print("emaaaail update wuna : $email");
     notifyListeners();
   }
 
@@ -55,7 +60,7 @@ class UserM extends ChangeNotifier {
 
   void updateDob(DateTime? dob) {
     selectedDate = dob;
-    print("date of birth wtto: $selectedDate");
+    print("date of birth : $selectedDate");
     notifyListeners();
   }
 

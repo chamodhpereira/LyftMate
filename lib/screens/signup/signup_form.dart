@@ -192,7 +192,13 @@ class _SignUpFormState extends State<SignUpForm> {
                       return;
                     } else {
                       print("${emailController.text}, ${passwordController.text}");
-                      authService.signUpWithEmailAndPassword(emailController.text, passwordController.text);
+                      UserM newUser = UserM(
+                        userID: '', // The ID will be assigned automatically after signup
+                        email: emailController.text,
+                        firstName: firstNameController.text,
+                        lastName: secondNameController.text,
+                      );
+                      authService.signUpWithEmailAndPassword(emailController.text, passwordController.text, newUser);
                     }
 
                   },

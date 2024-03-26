@@ -69,11 +69,14 @@ class SignupScreen extends StatelessWidget {
                       authenticationService.phoneAuthentication(phoneNumber);
                       Navigator.push(
                         context,
+                        // MaterialPageRoute(
+                        //   builder: (context) => OTPScreen(
+                        //     phonenumber: phoneNumber,
+                        //     fromScreen: 'signup',
+                        //   ),
+                        // ),
                         MaterialPageRoute(
-                          builder: (context) => OTPScreen(
-                            phonenumber: phoneNumber,
-                            fromScreen: 'signup',
-                          ),
+                          builder: (context) => SignUpForm(),
                         ),
                       );
                     },
