@@ -5,11 +5,16 @@ import 'package:lyft_mate/screens/signup/signup_form.dart';
 // import 'package:lyft_mate/src/screens/signup/signup_name.dart';
 import 'package:lyft_mate/userprofile_screen.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:provider/provider.dart';
+
+import '../../services/authentication_service.dart';
 
 
 class OTPScreen extends StatefulWidget {
   final String? phonenumber;
   final String fromScreen;
+
+
 
   const OTPScreen({super.key, this.phonenumber, required this.fromScreen});
 
@@ -22,6 +27,9 @@ class _OTPScreenState extends State<OTPScreen> {
   StreamController<ErrorAnimationType> errorController =
   StreamController<ErrorAnimationType>();
   StreamController<int> timerController = StreamController<int>();
+
+  // final AuthenticationService _authenticationService = AuthenticationService();
+
 
   bool hasError = false;
   bool isResendButtonEnabled = true;
@@ -47,6 +55,7 @@ class _OTPScreenState extends State<OTPScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authenticationService = Provider.of<AuthenticationService>(context);
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -108,35 +117,35 @@ class _OTPScreenState extends State<OTPScreen> {
                 onChanged: (code) {
                   print(code);
                 },
-                onCompleted: (value) {
-                  if (value != "123456") {
-                    errorController.add(ErrorAnimationType.shake);
-                    setState(() {
-                      hasError = true;
-                    });
-                  } else {
-                    setState(() {
-                      hasError = false;
-                    });
-                    if (!hasError) {
-                      if (fromScreen == 'signup') {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const SignUpForm(), // Navigate to SignupScreen
-                          ),
-                        );
-                      } else {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => UserProfileScreen(), // Navigate to HomeScreen
-                          ),
-                        );
-                      }
-                    }
-                  }
-                },
+                // onCompleted: (value) {
+                //   if (value != "123456") {
+                //     errorController.add(ErrorAnimationType.shake);
+                //     setState(() {
+                //       hasError = true;
+                //     });
+                //   } else {
+                //     setState(() {
+                //       hasError = false;
+                //     });
+                //     if (!hasError) {
+                //       if (fromScreen == 'signup') {
+                //         Navigator.pushReplacement(
+                //           context,
+                //           MaterialPageRoute(
+                //             builder: (context) => const SignUpForm(), // Navigate to SignupScreen
+                //           ),
+                //         );
+                //       } else {
+                //         Navigator.pushReplacement(
+                //           context,
+                //           MaterialPageRoute(
+                //             builder: (context) => UserProfileScreen(), // Navigate to HomeScreen
+                //           ),
+                //         );
+                //       }
+                //     }
+                //   }
+                // },
 
                 errorAnimationController: errorController,
               ),
@@ -148,8 +157,16 @@ class _OTPScreenState extends State<OTPScreen> {
                     backgroundColor:
                     MaterialStateProperty.all<Color>(Colors.green),
                   ),
-                  onPressed: () {
+                  onPressed: () async{
                     // Verify OTP or handle submission
+                    String enteredOTP = otpController.text;
+                    bool isOTPVerified = await authenticationService.verifyOTP(enteredOTP); // Call verifyOTP method from AuthenticationService
+                    if(isOTPVerified) {
+                      print("OPTOOOOO VERIFIED WTTOOOO");
+                    }else {
+                      print("SOMETHING IS WRONGGGGGGGGG OTPPPPPPPPP");
+                    }
+
                   },
                   child: const Text("Submit"),
                 ),

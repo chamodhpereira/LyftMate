@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 // import 'package:lyft_mate/src/screens/otp_screen.dart';
 
 import 'package:lyft_mate/screens/signup/signup_form.dart';
+import 'package:provider/provider.dart';
 
 import '../../services/authentication_service.dart';
 import '../otp/otp_screen.dart';
@@ -10,12 +11,13 @@ import '../otp/otp_screen.dart';
 class SignupScreen extends StatelessWidget {
   // SignupScreen({Key key}) : super(key: key);
 
-  final AuthenticationService _authenticationService = AuthenticationService();
+  // final AuthenticationService _authenticationService = AuthenticationService();
 
   TextEditingController phoneController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
+    final authenticationService = Provider.of<AuthenticationService>(context);
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
@@ -64,16 +66,16 @@ class SignupScreen extends StatelessWidget {
                     ),
                     onPressed: () {
                       String phoneNumber = phoneController.text;
-                      
-                      // Navigator.push(
-                      //   context,
-                      //   MaterialPageRoute(
-                      //     builder: (context) => OTPScreen(
-                      //       phonenumber: phoneNumber,
-                      //       fromScreen: 'signup',
-                      //     ),
-                      //   ),
-                      // );
+                      authenticationService.phoneAuthentication(phoneNumber);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => OTPScreen(
+                            phonenumber: phoneNumber,
+                            fromScreen: 'signup',
+                          ),
+                        ),
+                      );
                     },
 
                     child: const Text("Proceed"),

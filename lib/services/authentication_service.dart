@@ -3,9 +3,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:lyft_mate/models/loggeduser.dart';
 import 'package:provider/provider.dart';
 
-class AuthenticationService {
+class AuthenticationService extends ChangeNotifier{
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  var verificationId = "";
+  var verificationID = "";
 
   Future<void> phoneAuthentication (String phoneNo) async{
     _auth.verifyPhoneNumber(
@@ -15,21 +15,30 @@ class AuthenticationService {
         // _navigateToNextScreen();
       },
       codeSent: (verificationId, resendToken) {
-          this.verificationId = verificationId;
+          verificationID = verificationId;
+          print("verificationIDDDD: $verificationId");
       },
       codeAutoRetrievalTimeout: (verificationId) {
-        this.verificationId = verificationId;
+        verificationID = verificationId;
       },
       verificationFailed: (e) {
+        print("FAAAAAAAAAAAAILLLEDDDDDDD TTOOOOOOO");
         print(e);
       },
     );
   }
 
   Future<bool> verifyOTP(String otp) async {
-    // PhoneAuthCredential credential = PhoneAuthProvider.credential(verificationId: verificationId, smsCode: otpController.text);
+    if (verificationID == null) {
+      print("Verification ID is null. Unable to verify OTP.");
+      return false;
+    }
+    print("verification id: $verificationID");
+    print("Entered OTP: $otp");
+
     try {
-      var credentials = await _auth.signInWithCredential(PhoneAuthProvider.credential(verificationId: verificationId, smsCode: otp));
+      var credentials = await _auth.signInWithCredential(
+          PhoneAuthProvider.credential(verificationId: verificationID, smsCode: otp));
       // _navigateToNextScreen();
       return credentials.user != null ? true : false;
     } catch (e) {

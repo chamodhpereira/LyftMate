@@ -4,6 +4,7 @@ import 'package:lyft_mate/models/loggeduser.dart';
 import 'package:lyft_mate/models/user.dart';
 import 'package:lyft_mate/screens/login/login_screen.dart';
 import 'package:lyft_mate/screens/signup/signup_screen.dart';
+import 'package:lyft_mate/services/authentication_service.dart';
 import 'package:provider/provider.dart';
 import 'package:lyft_mate/screens/signup/signup_form.dart';
 
@@ -18,16 +19,17 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => LoggedUser(),
+    return MultiProvider( // Use MultiProvider for multiple providers
+      providers: [
+        ChangeNotifierProvider(create: (_) => LoggedUser()),
+        ChangeNotifierProvider(create: (_) => AuthenticationService()), // Provide AuthenticationService
+      ],
       child: MaterialApp(
         theme: LyftMateAppTheme.lightTheme,
         darkTheme: LyftMateAppTheme.darkTheme,
