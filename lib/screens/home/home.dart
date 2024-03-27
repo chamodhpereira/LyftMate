@@ -11,6 +11,7 @@ import 'package:lyft_mate/screens/map/map_screen.dart';
 import 'dart:math';
 
 import '../notifications/notifications_screen.dart';
+import 'confirm_route_screen.dart';
 
 // import 'maps_screen.dart';
 //
@@ -319,7 +320,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             SizedBox(height: 20),
-            Container(
+            Container(             // PROCEED Button - offer ride
               height: 50.0,
               color: Colors.transparent,
               child: ElevatedButton(
@@ -415,26 +416,26 @@ class _HomePageState extends State<HomePage> {
     } else {
       print("publish ride was pressed");
       // Implement logic for offering a ride
-      // if (pickupLat != null &&
-      //     pickupLng != null &&
-      //     dropoffLat != null &&
-      //     dropoffLng != null) {
+      if (pickupLat != null &&
+          pickupLng != null &&
+          dropoffLat != null &&
+          dropoffLng != null) {
         // Navigate to the next screen with pickup and dropoff coordinates
-        // Navigator.push(
-        //   context,
-        //   MaterialPageRoute(
-        //     builder: (context) => ConfirmRoute(
-        //       pickupLat: pickupLat!,
-        //       pickupLng: pickupLng!,
-        //       dropoffLat: dropoffLat!,
-        //       dropoffLng: dropoffLng!,
-        //     ),
-        //   ),
-        // );
-      // } else {
-      //   // Show an error or prompt the user to select locations
-      //   // before publishing the ride.
-      // }
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ConfirmRoute(
+              pickupLat: pickupLat!,
+              pickupLng: pickupLng!,
+              dropoffLat: dropoffLat!,
+              dropoffLng: dropoffLng!,
+            ),
+          ),
+        );
+      } else {
+        // Show an error or prompt the user to select locations
+        // before publishing the ride.
+      }
     }
   }
 }
