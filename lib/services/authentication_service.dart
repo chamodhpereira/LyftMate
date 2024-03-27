@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 
 import 'package:lyft_mate/models/user.dart';
 
+import '../providers/user_provider.dart';
+
 class AuthenticationService extends ChangeNotifier{
   final FirebaseAuth _auth = FirebaseAuth.instance;
   var verificationID = "";
@@ -67,12 +69,6 @@ class AuthenticationService extends ChangeNotifier{
         'lastName': newUser.lastName,
         // Add more user details as needed
       });
-      // // Store additional user details in Firestore
-      // await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
-      //   'firstName': firstNameController.text,
-      //   'lastName': secondNameController.text,
-      //   // Add more user details as needed
-      // });
 
       // Navigate to the next screen or perform any other action after successful signup
       // } on FirebaseAuthException catch (e) {
@@ -87,26 +83,36 @@ class AuthenticationService extends ChangeNotifier{
       // Handle other exceptions
     }
   }
-
-  Future<bool> signInWithEmailAndPassword(
-      BuildContext context, String email, String password) async {
+  Future<bool> signInWithEmailAndPassword(BuildContext context, String email, String password) async {
     try {
-      final UserCredential userCredential =
-          await _auth.signInWithEmailAndPassword(
+      final UserCredential userCredential = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
 
       if (userCredential.user != null) {
-        // Update user details in LoggedUser model
-        LoggedUser loggedUser = Provider.of<LoggedUser>(context, listen: false);
-        print("WTFFFFFFFFFFFFFFFFFFFFFFFFFFFFQERRRR");
-        print(
-            'signin methoddddd- User instance hash code: ${loggedUser.hashCode}');
-        loggedUser.updateUID(userCredential.user!.uid);
-        loggedUser.updateEmail(userCredential.user!.email ?? "");
+        // Fetch additional user details from Firestore
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).get();
+
+        // Create a User object with the fetched user data
+        LoggedUser newUser = LoggedUser(
+          userID: userDoc.id,
+          firstName: userDoc['firstName'],
+          // username: userDoc['username'],
+          // dateOfBirth: userDoc['dateOfBirth'],
+          // gender: userDoc['gender'],
+          // messages: List<String>.from(userDoc['messages'] ?? []),
+          // ridesBooked: List<String>.from(userDoc['ridesBooked'] ?? []),
+          // ridesOffered: List<String>.from(userDoc['ridesOffered'] ?? []),
+        );
+
+        // Update user data through UserProvider
+        Provider.of<UserProvider>(context, listen: false).updateUser(newUser);
+
+        print('User instance hash code after signInWithEmailAndPassword: ${newUser.hashCode}');
 
         // Navigate to the next screen or perform any other action after successful login
+        // Navigator.pushReplacementNamed(context, '/home');
         return true; // Return true if login is successful
       } else {
         return false; // Return false if login fails
@@ -116,6 +122,35 @@ class AuthenticationService extends ChangeNotifier{
       return false; // Return false if login fails
     }
   }
+
+  // Future<bool> signInWithEmailAndPassword(
+  //     BuildContext context, String email, String password) async {
+  //   try {
+  //     final UserCredential userCredential =
+  //         await _auth.signInWithEmailAndPassword(
+  //       email: email,
+  //       password: password,
+  //     );
+  //
+  //     if (userCredential.user != null) {
+  //       // Update user details in LoggedUser model
+  //       UserM loggedUser = Provider.of<UserM>(context, listen: false);
+  //       print("WTFFFFFFFFFFFFFFFFFFFFFFFFFFFFQERRRR");
+  //       print(
+  //           'signin methoddddd- User instance hash code: ${loggedUser.hashCode}');
+  //       loggedUser.updateUID(userCredential.user!.uid);
+  //       loggedUser.updateEmail(userCredential.user!.email ?? "");
+  //
+  //       // Navigate to the next screen or perform any other action after successful login
+  //       return true; // Return true if login is successful
+  //     } else {
+  //       return false; // Return false if login fails
+  //     }
+  //   } catch (e) {
+  //     print("Failed to sign in: $e");
+  //     return false; // Return false if login fails
+  //   }
+  // }
 
   Future<void> signOut() async {
     try {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lyft_mate/constants/sizes.dart';
 import 'package:lyft_mate/home.dart';
+import 'package:lyft_mate/screens/chat/user_list.dart';
 import 'package:lyft_mate/screens/welcome/welcome_screen.dart';
 import 'package:lyft_mate/userprofile_screen.dart';
 
@@ -87,7 +88,7 @@ class _LoginFormState extends State<LoginForm> {
                       // Navigate to the next screen only if login is successful
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) =>Home()),
+                        MaterialPageRoute(builder: (context) =>UserList()),
                             // (route) => false,
                       );
                     } else {
