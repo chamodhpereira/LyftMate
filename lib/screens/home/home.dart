@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lyft_mate/screens/map/map_screen.dart';
 // import 'package:lyft_mate/src/components/bottom_navbar.dart';
 // import 'package:lyft_mate/src/screens/available_rides.dart';
 // import 'package:lyft_mate/src/screens/chat_page_screen.dart';
@@ -180,23 +181,23 @@ class _HomePageState extends State<HomePage> {
             TextField(
               readOnly: true,
               controller: _pickupLocationController,
-              // onTap: () async {
-              //   final result = await Navigator.push(
-              //     context,
-              //     MaterialPageRoute(
-              //         builder: (context) => MapSample(locType: 'pickup',)), // Navigate to MapPage
-              //   );
-              //   if (result != null) {
-              //     double lat = result['lat'];
-              //     double lng = result['lng'];
-              //     String locationName = result['locationName'];
-              //     setState(() {
-              //       _pickupLocationController.text = locationName;
-              //       pickupLat = lat;
-              //       pickupLng = lng;
-              //     });
-              //   }
-              // },
+              onTap: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => MapScreen(locType: 'pickup',)), // Navigate to MapPage
+                );
+                if (result != null) {
+                  double lat = result['lat'];
+                  double lng = result['lng'];
+                  String locationName = result['locationName'];
+                  setState(() {
+                    _pickupLocationController.text = locationName;
+                    pickupLat = lat;
+                    pickupLng = lng;
+                  });
+                }
+              },
               decoration: InputDecoration(
                 labelText: 'Pickup Location',
                 border: OutlineInputBorder(),
@@ -206,23 +207,23 @@ class _HomePageState extends State<HomePage> {
             TextField(
               readOnly: true,
               controller: _dropoffLocationController,
-              // onTap: () async {
-              //   final result = await Navigator.push(
-              //     context,
-              //     MaterialPageRoute(
-              //         builder: (context) => MapSample(locType: 'dropoff',)), // Navigate to MapPage
-              //   );
-              //   if (result != null) {
-              //     double lat = result['lat'];
-              //     double lng = result['lng'];
-              //     String locationName = result['locationName'];
-              //     setState(() {
-              //       _dropoffLocationController.text = locationName;
-              //       dropoffLat = lat;
-              //       dropoffLng = lng;
-              //     });
-              //   }
-              // },
+              onTap: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => MapScreen(locType: 'dropoff',)), // Navigate to MapPage
+                );
+                if (result != null) {
+                  double lat = result['lat'];
+                  double lng = result['lng'];
+                  String locationName = result['locationName'];
+                  setState(() {
+                    _dropoffLocationController.text = locationName;
+                    dropoffLat = lat;
+                    dropoffLng = lng;
+                  });
+                }
+              },
               decoration: InputDecoration(
                 labelText: 'Drop Location',
                 border: OutlineInputBorder(),

@@ -10,6 +10,7 @@ import 'package:lyft_mate/screens/signup/signup_screen.dart';
 import 'package:lyft_mate/services/authentication_service.dart';
 import 'package:provider/provider.dart';
 import 'package:lyft_mate/screens/signup/signup_form.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 
 import 'constants/theme.dart';
@@ -21,7 +22,7 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
+  await dotenv.load(fileName: ".env");
   runApp(MyApp());
 }
 
