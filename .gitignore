@@ -48,3 +48,5 @@ app.*.map.json
 /ios/firebase_app_id_file.json
 
 pubspec.lock
+
+.env
