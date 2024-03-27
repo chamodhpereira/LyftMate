@@ -2,9 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:lyft_mate/screens/map/places_search_screen.dart';
 // import 'address_search.dart';
 // import 'place_service.dart';
 import 'package:uuid/uuid.dart';
+
+import '../../services/map/place_service.dart';
 
 class MapScreen extends StatefulWidget {
   final String locType;

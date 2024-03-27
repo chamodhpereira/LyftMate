@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:lyft_mate/src/constants/consts.dart';
 import 'package:http/http.dart';
 
 
@@ -65,6 +64,7 @@ class PlaceApiProvider {
 
 
   Future<Map<String, dynamic>> getPlaceDetailFromId(String placeId) async {
+    final apiKey = await _getApiKey();
     final request = Uri.parse('https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=geometry&key=$apiKey');
     final response = await client.get(request);
 
