@@ -9,6 +9,8 @@ import 'package:flutter/material.dart';
 
 import 'dart:math';
 
+import '../notifications/notifications_screen.dart';
+
 // import 'maps_screen.dart';
 //
 // import 'confirm_route.dart';
@@ -108,12 +110,12 @@ class _HomePageState extends State<HomePage> {
           IconButton(
             icon: Icon(Icons.notifications),
             onPressed: () {
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(
-              //     builder: (context) => NotificationsPage(),
-              //   ),
-              // );
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => NotificationsPage(),
+                ),
+              );
             },
           ),
         ],
