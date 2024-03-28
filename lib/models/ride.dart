@@ -1,31 +1,54 @@
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+
 class Ride {
-  final String id; // Unique identifier for the ride
-  final String userId; // ID of the user offering/requesting the ride
-  final double pickupLat; // Latitude of pickup location
-  final double pickupLng; // Longitude of pickup location
-  final double dropoffLat; // Latitude of dropoff location
-  final double dropoffLng; // Longitude of dropoff location
-  final bool isOfferingRide; // Indicates whether the ride is being offered or requested
-  List<String> passengers; // List of passenger user IDs
 
-  Ride({
-    required this.id,
-    required this.userId,
-    required this.pickupLat,
-    required this.pickupLng,
-    required this.dropoffLat,
-    required this.dropoffLng,
-    required this.isOfferingRide,
-    List<String>? passengers, // Optional list of passengers
-  }) : passengers = passengers ?? []; // If passengers is null, initialize it as an empty list
+  static final Ride _instance = Ride._internal();
 
-  // Method to add a passenger to the ride
-  void addPassenger(String passengerId) {
-    passengers.add(passengerId);
+  factory Ride() {
+    return _instance;
   }
 
-  // Method to remove a passenger from the ride
-  void removePassenger(String passengerId) {
-    passengers.remove(passengerId);
+  Ride._internal();
+
+  String? id; // Unique identifier for the ride
+  String? userId; // ID of the user offering/requesting the ride
+  double? pickupLat; // Latitude of pickup location
+  double? pickupLng; // Longitude of pickup location
+  double? dropoffLat; // Latitude of dropoff location
+  double? dropoffLng; // Longitude of dropoff location
+  List<String> passengers = []; // List of passenger user IDs
+  List<LatLng> polylinePoints = []; // List to store polyline points
+
+  void reset() {
+    id = null;
+    userId = null;
+    pickupLat = null;
+    pickupLng = null;
+    dropoffLat = null;
+    dropoffLng = null;
+    passengers.clear();
+    polylinePoints.clear();
+  }
+
+  void updatePickupCoordinates(double newLat, double newLng) {
+    pickupLat = newLat;
+    pickupLng = newLng;
+  }
+
+  void resetPolylinePoints() {
+    polylinePoints.clear();
   }
 }
+
+
+
+
+// // Method to add a passenger to the ride
+// void addPassenger(String passengerId) {
+//   passengers.add(passengerId);
+// }
+//
+// // Method to remove a passenger from the ride
+// void removePassenger(String passengerId) {
+//   passengers.remove(passengerId);
+// }
