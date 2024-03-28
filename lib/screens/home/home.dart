@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lyft_mate/screens/map/map_screen.dart';
+import 'package:provider/provider.dart';
 // import 'package:lyft_mate/src/components/bottom_navbar.dart';
 // import 'package:lyft_mate/src/screens/available_rides.dart';
 // import 'package:lyft_mate/src/screens/chat_page_screen.dart';
@@ -10,6 +11,8 @@ import 'package:lyft_mate/screens/map/map_screen.dart';
 
 import 'dart:math';
 
+import '../../models/ride.dart';
+import '../../providers/ride_provider.dart';
 import '../notifications/notifications_screen.dart';
 import 'confirm_route_screen.dart';
 
@@ -23,6 +26,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+
+  Ride ride = Ride();
+
+
   TextEditingController _pickupLocationController = TextEditingController();
   TextEditingController _dropoffLocationController = TextEditingController();
   int _currentIndex = 0;
@@ -102,6 +109,10 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+
+    // RideProvider rideProvider = Provider.of<RideProvider>(context, listen: false);
+
+
     return Scaffold(
       appBar: AppBar(
         title: Text('LyftMate'),
@@ -192,6 +203,8 @@ class _HomePageState extends State<HomePage> {
                   double lat = result['lat'];
                   double lng = result['lng'];
                   String locationName = result['locationName'];
+                  // rideProvider.updatePickupCoordinates(lat, lng);
+                  ride.updatePickupCoordinates(lat, lng);
                   setState(() {
                     _pickupLocationController.text = locationName;
                     pickupLat = lat;
@@ -200,7 +213,7 @@ class _HomePageState extends State<HomePage> {
                 }
               },
               decoration: InputDecoration(
-                labelText: 'Pickup Location',
+                labelText: 'Offer ride Pickup Location',
                 border: OutlineInputBorder(),
               ),
             ),

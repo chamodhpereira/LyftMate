@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart';
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -27,6 +30,8 @@ class _MapScreenState extends State<MapScreen> {
   late double pickedLongitude;
   late double pickedLatitude;
   late String pickedLocation;
+
+  final client = Client();
 
 
   final Completer<GoogleMapController> _controller = Completer();
@@ -75,6 +80,7 @@ class _MapScreenState extends State<MapScreen> {
                   _controller.complete(controller)),
               initialCameraPosition: _kGooglePlex,
               markers: _markers,
+              // onTap: _handleTap,
             ),
             Positioned(
               top: 8.0,
@@ -137,6 +143,52 @@ class _MapScreenState extends State<MapScreen> {
       ),
     );
   }
+
+  // Future<void> _handleTap(LatLng tappedPoint) async {
+  //   setState(() {
+  //     _markers.clear();
+  //     _markers.add(Marker(
+  //       markerId: MarkerId(tappedPoint.toString()),
+  //       position: tappedPoint,
+  //     ));
+  //     pickedLatitude = tappedPoint.latitude;
+  //     pickedLongitude = tappedPoint.longitude;
+  //   });
+  // }
+  String _getApiKey() {
+    return dotenv.env['GOOGLE_MAPS_API_KEY'] ?? 'YOUR_DEFAULT_API_KEY';
+  }
+  //
+  // Future<void> _handleTap(LatLng tappedPoint) async {
+  //   setState(() {
+  //     _markers.clear();
+  //     _markers.add(Marker(
+  //       markerId: MarkerId(tappedPoint.toString()),
+  //       position: tappedPoint,
+  //     ));
+  //     pickedLatitude = tappedPoint.latitude;
+  //     pickedLongitude = tappedPoint.longitude;
+  //   });
+  //
+  //   // Reverse geocoding to get the address
+  //   final apiKey = _getApiKey();
+  //   final request = Uri.parse('https://maps.googleapis.com/maps/api/geocode/json?latlng=${tappedPoint.latitude},${tappedPoint.longitude}&key=$apiKey');
+  //
+  //   final response = await client.get(request);
+  //
+  //   if (response.statusCode == 200) {
+  //     final jsonData = json.decode(response.body);
+  //     if (jsonData['results'] != null && jsonData['results'].isNotEmpty) {
+  //       final address = jsonData['results'][0]['formatted_address'];
+  //       setState(() {
+  //         pickedLocation = address;
+  //       });
+  //       _textController.text = address;
+  //     }
+  //   } else {
+  //     print('Failed to fetch address: ${response.statusCode}');
+  //   }
+  // }
 
   void _confirmPickupLocation(double lat, double lng, String locationName) {
     Navigator.pop(context, {'lat': lat, 'lng': lng, 'locationName': locationName});

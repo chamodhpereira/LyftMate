@@ -8,7 +8,12 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:provider/provider.dart';
+
+import '../../models/ride.dart';
+import '../../providers/ride_provider.dart';
 // import 'package:lyft_mate/src/screens/ride_options.dart';
+import 'package:http/http.dart';
 
 class ConfirmRoute extends StatefulWidget {
   final double pickupLat;
@@ -29,6 +34,10 @@ class ConfirmRoute extends StatefulWidget {
 
 class _ConfirmRouteState extends State<ConfirmRoute> {
 
+  Ride ride = Ride();
+
+  final client = Client();
+
   Location _locationController = new Location();
 
   final Completer<GoogleMapController> _mapController =
@@ -45,13 +54,25 @@ class _ConfirmRouteState extends State<ConfirmRoute> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    // RideProvider rideProvider = Provider.of<RideProvider>(context, listen: false);
     _kPickupLocation = LatLng(widget.pickupLat, widget.pickupLng);
     _kDropLocation = LatLng(widget.dropoffLat, widget.dropoffLng);
     // getDirections();
     // _fetchDirectionsAndPolylines();
-    getPolylinePoints().then(
-          (coordinates) => generatePolylineFromPoints(coordinates),
-    );
+    // print("INSIDEEEEE CONFIRMMMM ROUTEEEEEEE${rideProvider.currentRide.pickupLat}");
+    print("INSIDEEEEE Singleton CONFIRMMMM ROUTEEEEEEE${ride.pickupLat}");
+    getPolylinePoints().then((coordinates) {
+      // rideProvider.updatePolylinePoints(coordinates);
+      ride.polylinePoints = coordinates;
+      generatePolylineFromPoints(coordinates);
+    });
+  }
+
+  @override
+  void dispose() {
+    // Remove polyline points when the user goes back without confirming
+    ride.resetPolylinePoints();
+    super.dispose();
   }
 
   // Future<void> _fetchDirectionsAndPolylines() async {
@@ -61,6 +82,8 @@ class _ConfirmRouteState extends State<ConfirmRoute> {
   //     generatePolylineFromPoints(polylineCoordinates, i.toString());
   //   }
   // }
+
+
 
   List<LatLng> decodePolyline(String encoded) {
     List<LatLng> polyline = [];
@@ -223,7 +246,7 @@ class _ConfirmRouteState extends State<ConfirmRoute> {
   // }
 
   Future<List<Map<String, dynamic>>> getDirections() async {
-    final client = Client();
+    // final client = Client();
     final apiKey = _getApiKey();
     String url =
         'https://maps.googleapis.com/maps/api/directions/json?origin=7.412487,79.859083&destination=7.2000,79.8737&alternatives=true&key=$apiKey';

@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:lyft_mate/models/loggeduser.dart';
 import 'package:lyft_mate/models/user.dart';
+import 'package:lyft_mate/providers/ride_provider.dart';
 import 'package:lyft_mate/providers/user_provider.dart';
 import 'package:lyft_mate/screens/chat/user_list.dart';
 import 'package:lyft_mate/screens/home/home.dart';
@@ -32,6 +33,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider( // Use MultiProvider for multiple providers
       providers: [
         // ChangeNotifierProvider(create: (_) => LoggedUser()),
+        // ChangeNotifierProvider(create: (_) => RideProvider()),
         ChangeNotifierProvider(create: (_) => UserM()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => AuthenticationService()), // Provide AuthenticationService
