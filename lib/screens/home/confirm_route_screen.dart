@@ -15,6 +15,8 @@ import '../../providers/ride_provider.dart';
 // import 'package:lyft_mate/src/screens/ride_options.dart';
 import 'package:http/http.dart';
 
+import '../../ride/ride_options_screen.dart';
+
 class ConfirmRoute extends StatefulWidget {
   final double pickupLat;
   final double pickupLng;
@@ -174,12 +176,12 @@ class _ConfirmRouteState extends State<ConfirmRoute> {
                       ),
                       onPressed: () {
                         // _confirmPickupLocation(pickedLatitude, pickedLongitude  , _textController.text);
-                        // Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(
-                        //     builder: (context) => RideOptions(),
-                        //   ),
-                        // );
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => RideOptions(),
+                          ),
+                        );
                       },
                       child: Text("Confirm Route", style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold)),
                     ),
@@ -189,12 +191,16 @@ class _ConfirmRouteState extends State<ConfirmRoute> {
             ]
         ),
       ),
+
     );
+
+
   }
 
   String _getApiKey() {
     return dotenv.env['GOOGLE_MAPS_API_KEY'] ?? 'YOUR_DEFAULT_API_KEY';
   }
+
 
 
   Future<List<LatLng>> getPolylinePoints() async {
