@@ -7,6 +7,7 @@ import 'package:lyft_mate/providers/user_provider.dart';
 import 'package:lyft_mate/screens/chat/user_list.dart';
 import 'package:lyft_mate/screens/home/home.dart';
 import 'package:lyft_mate/screens/login/login_screen.dart';
+import 'package:lyft_mate/screens/profile/user_profile_screen.dart';
 import 'package:lyft_mate/screens/signup/signup_screen.dart';
 import 'package:lyft_mate/services/authentication_service.dart';
 import 'package:provider/provider.dart';
@@ -42,7 +43,7 @@ class MyApp extends StatelessWidget {
         theme: LyftMateAppTheme.lightTheme,
         darkTheme: LyftMateAppTheme.darkTheme,
         themeMode: ThemeMode.system,
-        home: HomePage(),
+        home: UserProfilePage(),
         // routes: ,
       ),
     );

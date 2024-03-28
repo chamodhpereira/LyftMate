@@ -15,7 +15,8 @@ import '../../providers/ride_provider.dart';
 // import 'package:lyft_mate/src/screens/ride_options.dart';
 import 'package:http/http.dart';
 
-import '../../ride/ride_options_screen.dart';
+
+import '../ride/ride_options_screen.dart';
 
 class ConfirmRoute extends StatefulWidget {
   final double pickupLat;
