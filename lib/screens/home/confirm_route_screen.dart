@@ -63,7 +63,7 @@ class _ConfirmRouteState extends State<ConfirmRoute> {
     // getDirections();
     // _fetchDirectionsAndPolylines();
     // print("INSIDEEEEE CONFIRMMMM ROUTEEEEEEE${rideProvider.currentRide.pickupLat}");
-    print("INSIDEEEEE Singleton CONFIRMMMM ROUTEEEEEEE${ride.pickupLat}");
+    print("INSIDEEEEE Singleton CONFIRMMMM ROUTEEEEEEE${ride.pickupLocation}");
     getPolylinePoints().then((coordinates) {
       // rideProvider.updatePolylinePoints(coordinates);
       ride.polylinePoints = coordinates;

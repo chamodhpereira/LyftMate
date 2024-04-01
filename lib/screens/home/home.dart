@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:geoflutterfire2/geoflutterfire2.dart';
 import 'package:lyft_mate/screens/map/map_screen.dart';
 import 'package:provider/provider.dart';
 // import 'package:lyft_mate/src/components/bottom_navbar.dart';
@@ -12,6 +14,7 @@ import 'package:provider/provider.dart';
 import 'dart:math';
 
 import '../../models/ride.dart';
+import '../../models/search_ride.dart';
 import '../../providers/ride_provider.dart';
 import '../notifications/notifications_screen.dart';
 import 'confirm_route_screen.dart';
@@ -26,9 +29,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   Ride ride = Ride();
-
+  // RideSearch rideSearch = RideSearch();
 
   TextEditingController _pickupLocationController = TextEditingController();
   TextEditingController _dropoffLocationController = TextEditingController();
@@ -37,12 +39,25 @@ class _HomePageState extends State<HomePage> {
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   String? selectedVehicle;
-  int? selectedSeats;
+  String? selectedSeats;
   double? pickupLat;
   double? pickupLng;
   double? dropoffLat;
   double? dropoffLng;
 
+  // Future<void> _selectDate(BuildContext context) async {
+  //   final DateTime? pickedDate = await showDatePicker(
+  //     context: context,
+  //     initialDate: _selectedDate ?? DateTime.now(),
+  //     firstDate: DateTime.now(),
+  //     lastDate: DateTime(2101),
+  //   );
+  //   if (pickedDate != null && pickedDate != _selectedDate) {
+  //     setState(() {
+  //       _selectedDate = pickedDate;
+  //     });
+  //   }
+  // }
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(
       context: context,
@@ -53,6 +68,8 @@ class _HomePageState extends State<HomePage> {
     if (pickedDate != null && pickedDate != _selectedDate) {
       setState(() {
         _selectedDate = pickedDate;
+        // Update the date in the Ride class
+        Ride().setDate(_selectedDate!);
       });
     }
   }
@@ -65,6 +82,8 @@ class _HomePageState extends State<HomePage> {
     if (pickedTime != null && pickedTime != _selectedTime) {
       setState(() {
         _selectedTime = pickedTime;
+        // Update the time in the Ride class
+        Ride().setTime(_selectedTime!);
       });
     }
   }
@@ -103,15 +122,14 @@ class _HomePageState extends State<HomePage> {
     if (selected != null) {
       setState(() {
         selectedVehicle = selected;
+        ride.setVehicle(selected);
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-
     // RideProvider rideProvider = Provider.of<RideProvider>(context, listen: false);
-
 
     return Scaffold(
       appBar: AppBar(
@@ -151,16 +169,18 @@ class _HomePageState extends State<HomePage> {
                     },
                     style: isFindingRide
                         ? ButtonStyle(
-                      foregroundColor:
-                      MaterialStateProperty.all<Color>(Colors.white),
-                      backgroundColor:
-                      MaterialStateProperty.all<Color>(Colors.green),
-                    )
+                            foregroundColor:
+                                MaterialStateProperty.all<Color>(Colors.white),
+                            backgroundColor:
+                                MaterialStateProperty.all<Color>(Colors.green),
+                          )
                         : ButtonStyle(
-                      foregroundColor:
-                      MaterialStateProperty.all<Color>(Colors.green),
-                    ),
-                    child: Text('Find a Ride', style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold)),
+                            foregroundColor:
+                                MaterialStateProperty.all<Color>(Colors.green),
+                          ),
+                    child: Text('Find a Ride',
+                        style: TextStyle(
+                            fontSize: 14.0, fontWeight: FontWeight.bold)),
                   ),
                 ),
                 SizedBox(width: 20),
@@ -173,18 +193,18 @@ class _HomePageState extends State<HomePage> {
                     },
                     style: !isFindingRide
                         ? ButtonStyle(
-                      foregroundColor:
-                      MaterialStateProperty.all<Color>(Colors.white),
-                      backgroundColor:
-                      MaterialStateProperty.all<Color>(Colors.green),
-                    )
+                            foregroundColor:
+                                MaterialStateProperty.all<Color>(Colors.white),
+                            backgroundColor:
+                                MaterialStateProperty.all<Color>(Colors.green),
+                          )
                         : ButtonStyle(
-                      foregroundColor:
-                      MaterialStateProperty.all<Color>(Colors.green),
-                    ),
-                    child: Text(
-                        'Offer a Ride', style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold)
-                    ),
+                            foregroundColor:
+                                MaterialStateProperty.all<Color>(Colors.green),
+                          ),
+                    child: Text('Offer a Ride',
+                        style: TextStyle(
+                            fontSize: 14.0, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],
@@ -197,7 +217,9 @@ class _HomePageState extends State<HomePage> {
                 final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => MapScreen(locType: 'pickup',)), // Navigate to MapPage
+                      builder: (context) => MapScreen(
+                            locType: 'pickup',
+                          )), // Navigate to MapPage
                 );
                 if (result != null) {
                   double lat = result['lat'];
@@ -225,12 +247,15 @@ class _HomePageState extends State<HomePage> {
                 final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => MapScreen(locType: 'dropoff',)), // Navigate to MapPage
+                      builder: (context) => MapScreen(
+                            locType: 'dropoff',
+                          )), // Navigate to MapPage
                 );
                 if (result != null) {
                   double lat = result['lat'];
                   double lng = result['lng'];
                   String locationName = result['locationName'];
+                  ride.updateDropoffCoordinates(lat, lng);
                   setState(() {
                     _dropoffLocationController.text = locationName;
                     dropoffLat = lat;
@@ -280,10 +305,10 @@ class _HomePageState extends State<HomePage> {
                           suffixIcon: Icon(Icons.access_time),
                         ),
                         controller: TextEditingController(
-                          // text: _selectedTime != null
-                          //     ? '${_selectedTime!.hourOfPeriod}:${_selectedTime!.minute} ${_selectedTime!.period == DayPeriod.am ? 'AM' : 'PM'}'
-                          //     : '',
-                        ),
+                            // text: _selectedTime != null
+                            //     ? '${_selectedTime!.hourOfPeriod}:${_selectedTime!.minute} ${_selectedTime!.period == DayPeriod.am ? 'AM' : 'PM'}'
+                            //     : '',
+                            ),
                       ),
                     ),
                   ),
@@ -319,7 +344,8 @@ class _HomePageState extends State<HomePage> {
                     child: TextField(
                       onChanged: (value) {
                         setState(() {
-                          selectedSeats = int.tryParse(value);
+                          selectedSeats = value;
+                          ride.setSeats(value);
                         });
                       },
                       keyboardType: TextInputType.number,
@@ -333,24 +359,56 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             SizedBox(height: 20),
-            Container(             // PROCEED Button - offer ride
+            Container(
+              // PROCEED Button - offer ride
               height: 50.0,
               color: Colors.transparent,
               child: ElevatedButton(
                 style: ButtonStyle(
-                  foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-                  backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
+                  foregroundColor:
+                      MaterialStateProperty.all<Color>(Colors.white),
+                  backgroundColor:
+                      MaterialStateProperty.all<Color>(Colors.green),
                 ),
-                onPressed: () {
+                onPressed: () async {
                   if (isFindingRide) {
-                    // Navigate to AvailableRides screen
-                    print("navigate to avaialable rides pages");
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //     builder: (context) => AvailableRides(),
-                    //   ),
-                    // );
+                    // Call your method here
+                    // try {
+                    //   String pickupLatitudeString = _pickupLocationController.text; // Assuming this contains the latitude string
+                    //   String pickupLongitudeString = _dropoffLocationController.text; // Assuming this contains the longitude string
+                    //   // Convert latitude and longitude strings to doubles
+                    //   double pickupLatitude = double.parse(pickupLatitudeString);
+                    //   double pickupLongitude = double.parse(pickupLongitudeString);
+                    //
+                    //   String dropoffLatitudeString = _dropoffLocationController.text; // Assuming this contains the latitude string
+                    //   String dropoffLongitudeString = _dropoffLocationController.text; // Assuming this contains the longitude string
+                    //
+                    //   // Convert latitude and longitude strings to doubles
+                    //   double dropoffLatitude = double.parse(dropoffLatitudeString);
+                    //   double dropoffLongitude = double.parse(dropoffLongitudeString);
+                    //
+                    //   GeoFirePoint pickupLocation = GeoFirePoint(pickupLatitude, pickupLongitude);
+                    //   GeoFirePoint dropoffLocation = GeoFirePoint(dropoffLatitude, dropoffLongitude);
+                    //
+                    //   List<DocumentSnapshot> rides =
+                    //       await rideSearch.filterRidesByDestinationNearUser(
+                    //           pickupLocation, dropoffLocation);
+                    //
+                    //   // Now you have the filtered rides, you can handle them as needed
+                    //   print("Filtered rides: $rides");
+                    //
+                    //   // Navigate to AvailableRides screen or do whatever you want with the filtered rides
+                    //   print("navigate to available rides pages");
+                    //   // Navigator.push(
+                    //   //   context,
+                    //   //   MaterialPageRoute(
+                    //   //     builder: (context) => AvailableRides(),
+                    //   //   ),
+                    //   // );
+                    // } catch (e) {
+                    //   // Handle any errors that might occur during filtering
+                    //   print("Error filtering rides: $e");
+                    // }
                   } else {
                     // Handle Publish Ride Button Press
                     _handlePublishRideButtonPress();

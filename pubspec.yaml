@@ -47,6 +47,8 @@ dependencies:
   location: ^5.0.3
   flutter_polyline_points: ^2.0.0
   file_picker: ^7.0.2
+  geoflutterfire2: ^2.3.15
+  dart_geohash: ^2.1.0
 
 dev_dependencies:
   flutter_test:

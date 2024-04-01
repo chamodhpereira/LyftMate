@@ -1,4 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:geoflutterfire2/geoflutterfire2.dart';
+
+import '../../models/ride.dart';
 // import 'package:lyft_mate/src/screens/home_screen.dart';
 
 class RideOptions extends StatefulWidget {
@@ -13,6 +17,8 @@ class _RideOptionsState extends State<RideOptions> {
   String _selectedPaymentOption = 'Select Payment';
   String _selectedApprovalOption = 'Select Approval';
   List<String> _selectedPreferences = [];
+
+  final Ride ride = Ride();
 
 
   void _showBottomSheet(BuildContext context, String title,
@@ -76,7 +82,7 @@ class _RideOptionsState extends State<RideOptions> {
                   SizedBox(height: 10),
                   Column(
                     children:
-                    ['Non-smoking', 'Music', 'Pet-friendly'].map((option) {
+                        ['Non-smoking', 'Music', 'Pet-friendly'].map((option) {
                       bool isSelected = _selectedPreferences.contains(option);
                       return CheckboxListTile(
                         title: Text(option),
@@ -167,7 +173,7 @@ class _RideOptionsState extends State<RideOptions> {
                   context,
                   'Select Luggage',
                   ['Small', 'Medium', 'Large'],
-                      (option) {
+                  (option) {
                     setState(() {
                       _selectedLuggageOption = option;
                     });
@@ -183,7 +189,7 @@ class _RideOptionsState extends State<RideOptions> {
                   context,
                   'Select Payment',
                   ['Cash', 'Card'],
-                      (option) {
+                  (option) {
                     setState(() {
                       _selectedPaymentOption = option;
                     });
@@ -199,7 +205,7 @@ class _RideOptionsState extends State<RideOptions> {
                   context,
                   'Select Approval',
                   ['Instant', 'Request'],
-                      (option) {
+                  (option) {
                     setState(() {
                       _selectedApprovalOption = option;
                     });
@@ -231,6 +237,7 @@ class _RideOptionsState extends State<RideOptions> {
                 backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
               ),
               onPressed: () {
+                addRideToFirestore(ride);
                 // Navigator.pushAndRemoveUntil(
                 //   context,
                 //   MaterialPageRoute(
@@ -248,3 +255,97 @@ class _RideOptionsState extends State<RideOptions> {
     );
   }
 }
+
+void addRideToFirestore(Ride ride) {
+
+  final geo = GeoFlutterFire();
+
+  print("THISSSS IS THEEE RIDEEE in mfunc: $ride");
+  print("THISSSS IS THEEE RIDEEE Pickup mfunc: ${ride.pickupLocation}");
+  print("THISSSS IS THEEE RIDEEE deoppppkup mfunc: ${ride.dropoffLocation}");
+
+  if (ride.pickupLocation == null || ride.dropoffLocation == null) {
+    print('Error: Pickup location or dropoff location is null.');
+    return;
+  }
+
+
+
+  // Access the Firestore instance
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+  // Convert pickup and dropoff locations to GeoPoint objects
+  GeoPoint pickupGeoPoint =
+  GeoPoint(ride.pickupLocation!.latitude, ride.pickupLocation!.longitude);
+  GeoPoint dropoffGeoPoint =
+  GeoPoint(ride.dropoffLocation!.latitude, ride.dropoffLocation!.longitude);
+
+  // // Convert polyline points (LatLng objects) to List<List<double>>
+  // List<List<double>> polylineCoordinates = ride.polylinePoints.map((latLng) {
+  //   return [latLng.latitude, latLng.longitude];
+  // }).toList();
+  List<Map<String, double>> polylineCoordinates = ride.polylinePoints.map((latLng) {
+    return {
+      'latitude': latLng.latitude,
+      'longitude': latLng.longitude,
+    };
+  }).toList();
+
+  // Future createStore(String name, double lng, double lat) async {
+  //   GeoFirePoint geoPickupPoint = geo.point(
+  //     latitude: lat,
+  //     longitude: lng,
+  //   );
+  //
+  //   GeoFirePoint geoDropoffPoint = geo.point(
+  //     latitude: lat,
+  //     longitude: lng,
+  //   );
+  //
+  //   final storeData = {'name': name, 'location': geoPoint.data};
+  //
+  //   try {
+  //     await _firestore.collection('stores').add(storeData);
+  //   } catch (e) {
+  //     print(e);
+  //   }
+  // }
+
+  GeoFirePoint geoPickupPoint = geo.point(
+    latitude: ride.pickupLocation!.latitude,
+    longitude: ride.pickupLocation!.longitude,
+  );
+
+  GeoFirePoint geoDropoffPoint = geo.point(
+    latitude: ride.dropoffLocation!.latitude,
+    longitude: ride.dropoffLocation!.longitude,
+  );
+
+  // Create a map containing ride data
+  Map<String, dynamic> rideData = {
+    'userId': "geoHASH-user-naha-uu-gihin",
+    'pickupLocation': geoPickupPoint.data,
+    'dropoffLocation': geoDropoffPoint.data,
+    "seats": ride.seats,
+    "vehicle": ride.vehicle,
+    "date": ride.date,
+    // "time": ride.time,
+    "pricePerSeat": ride.pricePerSeat,
+    "passengers": [], // List of passenger user IDs
+    "polylinePoints": polylineCoordinates // Store polyline points as List<List<double>>
+    // Add other ride data as needed
+  };
+
+  // Add the ride data to Firestore
+  firestore.collection('rides').add(rideData).then((value) {
+    // Successfully added ride to Firestore
+    print('Ride published successfully yakoooooooooooooooo!');
+    // Reset ride data if needed
+    ride.reset();
+  }).catchError((error) {
+    // Failed to add ride to Firestore
+    print('WTFFFF ettoooo Failed to publish ride: $error');
+  });
+}
+
+

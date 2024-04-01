@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 
+import 'edit_profile_screen.dart';
+
 class UserProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -12,7 +14,7 @@ class UserProfilePage extends StatelessWidget {
             icon: Icon(Icons.edit),
             onPressed: () {
               // Add functionality to navigate to edit profile screen
-              // Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfilePage()));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfilePage()));
             },
           ),
         ],
