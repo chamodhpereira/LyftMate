@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:lyft_mate/constants/sizes.dart';
-import 'package:lyft_mate/screens/signup/signup_dob_page.dart';
-import 'package:lyft_mate/screens/signup/signup_email_page.dart';
-import 'package:lyft_mate/screens/signup/signup_name_page.dart';
-import 'package:lyft_mate/screens/signup/signup_password_page.dart';
-import 'package:lyft_mate/screens/signup/signup_title_page.dart';
+import 'package:lyft_mate/models/signup_user.dart';
+import 'package:lyft_mate/screens/signup/screens/signup_dob_page.dart';
+import 'package:lyft_mate/screens/signup/screens/signup_email_page.dart';
+import 'package:lyft_mate/screens/signup/screens/signup_password_page.dart';
+import 'package:lyft_mate/screens/signup/screens/signup_name_page.dart';
+import 'package:lyft_mate/screens/signup/screens/signup_title_page.dart';
 import 'package:lyft_mate/widgets/custom_bottom_buttom.dart';
-import 'package:lyft_mate/widgets/custom_text_field.dart';
-import 'package:provider/provider.dart';
 
-import '../../models/user.dart';
-import '../../services/authentication_service.dart';
+
+import '../../../services/authentication_service.dart';
+
+
 // import 'package:lyft_mate/src/screens/login_screen.dart';
 // import 'package:lyft_mate/src/screens/welcome_screen.dart';
 
-// enum NameTitle { Mr, Mrs }
+// enum Gender { Mr, Mrs }
 
 class SignUpForm extends StatefulWidget {
   const SignUpForm({super.key});
@@ -27,8 +28,7 @@ class _SignUpFormState extends State<SignUpForm> {
   double _progress = 0;
   int currentPage = 0;
   DateTime? dob;
-  NameTitle? character;
-
+  Gender? character;
 
   final PageController _progressController = PageController(initialPage: 0);
   TextEditingController firstNameController = TextEditingController();
@@ -84,8 +84,24 @@ class _SignUpFormState extends State<SignUpForm> {
     }
   }
 
+  // Update method to store selected gender
+  void updateSelectedGender(Gender? gender) {
+    setState(() {
+      character = gender;
+    });
+  }
+
+  // Update method to store selected date of birth
+  void updateSelectedDOB(DateTime? dob) { // Change parameter type to DateTime?
+    setState(() {
+      this.dob = dob; // Assign the parameter value to the instance variable
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -135,15 +151,23 @@ class _SignUpFormState extends State<SignUpForm> {
                   },
                   children: [
                     SignupNamePage(
-                        labelOne: "What's your first name",
-                        labelTwo: "What's your last name",
-                        controllerOne: firstNameController,
-                        controllerTwo: secondNameController),
+                      labelOne: "What's your first name",
+                      labelTwo: "What's your last name",
+                      controllerOne: firstNameController,
+                      controllerTwo: secondNameController,
+                    ),
+                    // Pass formKey here
                     SignupEmailPage(
                         label: "What's your email",
                         controller: emailController),
-                    SignupDOBPage(),
-                    SignupTitlePage(),
+                    SignupDOBPage(
+                      // Pass method to update selected dob
+                      updateSelectedDOB: updateSelectedDOB,
+                    ),
+                    SignupGenderPage(
+                      // Pass method to update selected gender
+                      updateSelectedGender: updateSelectedGender,
+                    ),
                     SignupPasswordPage(
                         labelOne: "Enter password",
                         labelTwo: "Re-enter password",
@@ -168,20 +192,15 @@ class _SignUpFormState extends State<SignUpForm> {
               ? CustomBottomButton(
                   text: "Signup",
                   onPressed: () {
-                    print('FirstName: ${context.read<UserM>().firstName}');
-                    print('LastName: ${context.read<UserM>().lastName}');
-                    print('Date of Birth: ${context.read<UserM>().selectedDate}');
-                    print('Selected Title: ${context.read<UserM>().selectedTitle}');
-                    print('USER EMAIL: ${context.read<UserM>().email}');
-                    print('Send Promos: ${context.read<UserM>().sendPromos}');
-                    print("PASssSSword: ${passwordController.text}");
-                    print("userrrr: ${context.read<UserM>()}");
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //     builder: (context) => LoginScreen(),
-                    //   ),
-                    // );
+                      SignupUserData userData = SignupUserData();
+                      print('First Name: ${userData.firstName}');
+                      print('Last Name: ${userData.lastName}');
+                      print('Email: ${userData.email}');
+                      print('Date of Birth: ${userData.dob}');
+                      print('Title: ${userData.selectedGender}');
+
+                      // Other signup logi
+
                     String? passwordError = validatePassword();
                     if (passwordError != null) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -191,32 +210,31 @@ class _SignUpFormState extends State<SignUpForm> {
                       );
                       return;
                     } else {
-                      print("${emailController.text}, ${passwordController.text}");
-                      UserM newUser = UserM(
-                        userID: '', // The ID will be assigned automatically after signup
-                        email: emailController.text,
-                        firstName: firstNameController.text,
-                        lastName: secondNameController.text,
-                      );
-                      authService.signUpWithEmailAndPassword(emailController.text, passwordController.text, newUser);
+                      print(
+                          "${emailController.text}, ${passwordController.text}");
+                      // UserM newUser = UserM(
+                      //   userID: '', // The ID will be assigned automatically after signup
+                      //   email: emailController.text,
+                      //   firstName: firstNameController.text,
+                      //   lastName: secondNameController.text,
+                      // );
+                      // authService.signUpWithEmailAndPassword(emailController.text, passwordController.text, newUser);
                     }
-
                   },
                 )
               : CustomBottomButton(
                   text: "Proceed",
                   onPressed: () {
-                    _progressController.nextPage(
-                      duration: Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                    );
+                    // _progressController.nextPage(
+                    //   duration: Duration(milliseconds: 300),
+                    //   curve: Curves.easeInOut,
+                    // );
 
                     if (areFieldsFilledForPage(currentPage)) {
                       _progressController.nextPage(
                         duration: Duration(milliseconds: 300),
                         curve: Curves.easeInOut,
                       );
-
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(

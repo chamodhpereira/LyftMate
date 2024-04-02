@@ -1,33 +1,36 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-// import 'package:lyft_mate/src/components/forms/signup_form.dart';
-// import 'package:lyft_mate/src/screens/otp_screen.dart';
+import 'package:lyft_mate/screens/signup/screens/signup_form.dart';
+import 'package:lyft_mate/models/signup_user.dart';
 
-import 'package:lyft_mate/screens/signup/signup_form.dart';
+
 import 'package:provider/provider.dart';
 
-import '../../services/authentication_service.dart';
-import '../otp/otp_screen.dart';
+
+
+
 
 class SignupScreen extends StatelessWidget {
-  // SignupScreen({Key key}) : super(key: key);
 
-  // final AuthenticationService _authenticationService = AuthenticationService();
 
-  TextEditingController phoneController = TextEditingController();
+
+  final TextEditingController phoneController = TextEditingController();
+
+  SignupScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final authenticationService = Provider.of<AuthenticationService>(context);
+    // final authenticationService = Provider.of<AuthenticationService>(context);
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: Text('Sign Up'),
+        title: const Text('Sign Up'),
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
           onPressed: () {},
-          icon: Icon(Icons.arrow_back_ios),
+          icon: const Icon(Icons.arrow_back_ios),
         ),
       ),
       body: SafeArea(
@@ -38,7 +41,7 @@ class SignupScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SizedBox(height: 20), // Added space
+                const SizedBox(height: 20), // Added space
                 Hero(
                   tag: "logo",
                   child: Image.asset(
@@ -46,9 +49,9 @@ class SignupScreen extends StatelessWidget {
                     height: 200.0,
                   ),
                 ),
-                SizedBox(height: 20), // Added space
+                const SizedBox(height: 20), // Added space
                 Container(
-                  padding: EdgeInsets.symmetric(vertical: 30.0),
+                  padding: const EdgeInsets.symmetric(vertical: 30.0),
                   child: TextField(
                     controller: phoneController,
                     decoration: const InputDecoration(
@@ -66,7 +69,8 @@ class SignupScreen extends StatelessWidget {
                     ),
                     onPressed: () {
                       String phoneNumber = phoneController.text;
-                      authenticationService.phoneAuthentication(phoneNumber);
+                      SignupUserData().updatePhoneNumber(phoneNumber);
+                      // authenticationService.phoneAuthentication(phoneNumber);
                       Navigator.push(
                         context,
                         // MaterialPageRoute(
