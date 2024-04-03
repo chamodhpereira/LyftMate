@@ -16,11 +16,22 @@ class Ride {
   LatLng? dropoffLocation; // LatLng object representing dropoff location
   String? seats;
   String? vehicle;
+  double? rideDistance;
+  String? pickupCityName;
+  String? pickupLocationName;
+  String? dropoffCityName;
+  String? dropoffLocationName;
+  String? rideDuration;
+  String? luggageAllowance;
+  String? paymentMode;
+  String? rideApproval;
   DateTime? date; // Date of the ride
   TimeOfDay? time; // Time of the ride
   double? pricePerSeat; // Price per seat for the ride
   List<String> passengers = []; // List of passenger user IDs
   List<LatLng> polylinePoints = []; // List to store polyline points
+
+
 
   void reset() {
     id = null;
@@ -28,6 +39,12 @@ class Ride {
     pickupLocation = null;
     dropoffLocation = null;
     seats = null;
+    rideDistance = null;
+    pickupCityName = null;
+    pickupLocationName = null;
+    dropoffCityName = null;
+    dropoffLocationName = null;
+    rideDuration = null;
     date = null;
     time = null;
     pricePerSeat = null;
