@@ -60,6 +60,12 @@ class _ConfirmRouteState extends State<ConfirmRoute> {
     // RideProvider rideProvider = Provider.of<RideProvider>(context, listen: false);
     _kPickupLocation = LatLng(widget.pickupLat, widget.pickupLng);
     _kDropLocation = LatLng(widget.dropoffLat, widget.dropoffLng);
+
+    getTotalDistanceAndDuration();
+
+    // try to use traffic api??
+
+    _initializeRideDistance();
     // getDirections();
     // _fetchDirectionsAndPolylines();
     // print("INSIDEEEEE CONFIRMMMM ROUTEEEEEEE${rideProvider.currentRide.pickupLat}");
@@ -71,10 +77,53 @@ class _ConfirmRouteState extends State<ConfirmRoute> {
     });
   }
 
+  // void _initializeRideDistance() async {
+  //    double data = await getTotalDistanceAndDuration();
+  //   ride.rideDistance = distance;
+  //   print("ride from distance in ride: ${ride.rideDistance}");
+  //   // setState(() {
+  //   //   ride.rideDistance = distance;
+  //   // });
+  // }
+  // void _initializeRideDistance() async {
+  //   print("INITIAAAAAAAAAAAAAAAALIZEEE METHOD CALLEDdd");
+  //   Map<String, dynamic> result = await getTotalDistanceAndDuration();
+  //   int distance = result['distance']; // Assuming 'distance' is the key in the map
+  //   ride.rideDistance = distance as double?;
+  //
+  //   // Get duration without converting
+  //   Map<String, int> duration = result['duration'];
+  //   int? hours = duration['hours'];
+  //   int? minutes = duration['minutes'];
+  //
+  //   print("ride from distance in ride: ${ride.rideDistance}");
+  //   print("ride from DURATION in ride: $hours hours and $minutes minutes");
+  //
+  // }
+
+  void _initializeRideDistance() async {
+    print("INITIAAAAAAAAAAAAAAAALIZEEE METHOD CALLEDdd");
+    Map<String, dynamic> result = await getTotalDistanceAndDuration();
+    double distance = result['distance']; // Assuming 'distance' is the key in the map
+    ride.rideDistance = distance;
+
+    // Get duration without converting
+    Map<String, int> duration = result['duration'];
+    int? hours = duration['hours'];
+    int? minutes = duration['minutes'];
+
+    ride.rideDuration = "${hours.toString()} ${minutes.toString()}";
+
+    print("ride from distance in ride: ${ride.rideDistance}");
+    print("ride from DURATION in ride: $hours hours and $minutes minutes");
+  }
+
+
   @override
   void dispose() {
     // Remove polyline points when the user goes back without confirming
     ride.resetPolylinePoints();
+
     super.dispose();
   }
 
@@ -252,34 +301,136 @@ class _ConfirmRouteState extends State<ConfirmRoute> {
   //   });
   // }
 
-  Future<List<Map<String, dynamic>>> getDirections() async {
-    // final client = Client();
+  // Future<Map<String, dynamic>> getTotalDistanceAndDuration() async {
+  //   Map<String, dynamic> result = {};
+  //   final apiKey = _getApiKey();
+  //   String url =
+  //       'https://maps.googleapis.com/maps/api/directions/json?origin=${_kPickupLocation.latitude},${_kPickupLocation.longitude}&destination=${_kDropLocation.latitude},${_kDropLocation.longitude}&alternatives=true&key=$apiKey';
+  //
+  //   var response = await client.get(Uri.parse(url));
+  //   var json = jsonDecode(response.body);
+  //
+  //   if (json['status'] == 'OK') {
+  //     double totalDistance = 0.0;
+  //     int totalDuration = 0;
+  //     for (var route in json['routes']) {
+  //       for (var leg in route['legs']) {
+  //         totalDistance += double.parse(leg['distance']['value'].toString());
+  //         totalDuration += int.parse(leg['duration']['value'].toString());
+  //       }
+  //     }
+  //
+  //     // Convert distance from meters to kilometers
+  //     totalDistance /= 1000;
+  //
+  //     result['distance'] = totalDistance;
+  //     result['duration'] = totalDuration;
+  //
+  //     print("Totlaaaaaaa:LLLLLLLL disatance: $totalDistance");
+  //     print("TOOOOOOOOOOOOOOTAAAAAAAAAAAAAAAAL DURATTTTTIOM TIMEEEEEE: $totalDuration");
+  //   } else {
+  //     print("Failed to fetch directions: ${json['status']}");
+  //   }
+  //
+  //   return result;
+  // }
+
+  Future<Map<String, dynamic>> getTotalDistanceAndDuration() async {
+    Map<String, dynamic> result = {};
     final apiKey = _getApiKey();
     String url =
-        'https://maps.googleapis.com/maps/api/directions/json?origin=7.412487,79.859083&destination=7.2000,79.8737&alternatives=true&key=$apiKey';
+        'https://maps.googleapis.com/maps/api/directions/json?origin=${_kPickupLocation.latitude},${_kPickupLocation.longitude}&destination=${_kDropLocation.latitude},${_kDropLocation.longitude}&alternatives=true&mode=driving&key=$apiKey';
 
     var response = await client.get(Uri.parse(url));
     var json = jsonDecode(response.body);
 
-    List<Map<String, dynamic>> results = [];
-
     if (json['status'] == 'OK') {
+      double totalDistance = 0.0;
+      int totalDuration = 0;
       for (var route in json['routes']) {
-        var routeDetails = {
-          'bounds_ne': route['bounds']['northeast'],
-          'bounds_sw': route['bounds']['southwest'],
-          'start_location': route['legs'][0]['start_location'],
-          'end_location': route['legs'][0]['end_location'],
-          'polyline': route['overview_polyline']['points'],
-        };
-
-        results.add(routeDetails);
+        for (var leg in route['legs']) {
+          totalDistance += double.parse(leg['distance']['value'].toString());
+          totalDuration += int.parse(leg['duration']['value'].toString());
+        }
       }
+
+      // Convert distance from meters to kilometers
+      totalDistance /= 1000;
+
+      // Convert duration from seconds to hours and minutes
+      int hours = totalDuration ~/ 3600;
+      int minutes = (totalDuration % 3600) ~/ 60;
+
+      result['distance'] = totalDistance;
+      result['duration'] = {'hours': hours, 'minutes': minutes};
+
+      print("Totlaaaaaaa:LLLLLLLL disatance: $totalDistance");
+      print("TOOOOOOOOOOOOOOTAAAAAAAAAAAAAAAAL DURATTTTTIOM TIMEEEEEE: $result['duration']");
+    } else {
+      print("Failed to fetch directions: ${json['status']}");
     }
 
-    print("RESULLLLLLLLLLLLLTSSSSSSSSSSSSSSSS -${results.length}");
-    return results;
+    return result;
   }
+
+
+
+
+  // Future<double> getTotalDistance() async {
+  //   double totalDistance = 0.0;
+  //   final apiKey = _getApiKey();
+  //   String url =
+  //       'https://maps.googleapis.com/maps/api/directions/json?origin=${_kPickupLocation.latitude},${_kPickupLocation.longitude}&destination=${_kDropLocation.latitude},${_kDropLocation.longitude}&alternatives=true&key=$apiKey';
+  //
+  //   var response = await client.get(Uri.parse(url));
+  //   var json = jsonDecode(response.body);
+  //
+  //   if (json['status'] == 'OK') {
+  //     for (var route in json['routes']) {
+  //       for (var leg in route['legs']) {
+  //         totalDistance += double.parse(leg['distance']['value'].toString());
+  //       }
+  //     }
+  //   } else {
+  //     print("Failed to fetch directions: ${json['status']}");
+  //   }
+  //
+  //   // Convert distance from meters to kilometers
+  //   totalDistance /= 1000;
+  //
+  //   print("totaaaaaaaaaaaal distanceeeeee FRRRRROMMMMMMMMMMMM JOTUNRY: $totalDistance");
+  //
+  //   return totalDistance;
+  // }
+
+  // Future<List<Map<String, dynamic>>> getDirections() async {
+  //   // final client = Client();
+  //   final apiKey = _getApiKey();
+  //   String url =
+  //       'https://maps.googleapis.com/maps/api/directions/json?origin=7.412487,79.859083&destination=7.2000,79.8737&alternatives=true&key=$apiKey';
+  //
+  //   var response = await client.get(Uri.parse(url));
+  //   var json = jsonDecode(response.body);
+  //
+  //   List<Map<String, dynamic>> results = [];
+  //
+  //   if (json['status'] == 'OK') {
+  //     for (var route in json['routes']) {
+  //       var routeDetails = {
+  //         'bounds_ne': route['bounds']['northeast'],
+  //         'bounds_sw': route['bounds']['southwest'],
+  //         'start_location': route['legs'][0]['start_location'],
+  //         'end_location': route['legs'][0]['end_location'],
+  //         'polyline': route['overview_polyline']['points'],
+  //       };
+  //
+  //       results.add(routeDetails);
+  //     }
+  //   }
+  //
+  //   print("RESULLLLLLLLLLLLLTSSSSSSSSSSSSSSSS -${results.length}");
+  //   return results;
+  // }
 
 
 // Future<Map<String, dynamic>> getDirections() async{

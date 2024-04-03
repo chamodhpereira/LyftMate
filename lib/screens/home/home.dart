@@ -225,9 +225,15 @@ class _HomePageState extends State<HomePage> {
                   double lat = result['lat'];
                   double lng = result['lng'];
                   String locationName = result['locationName'];
+                  String cityName = result['cityName'];
+
+
+                  print("CITTTTTTYYYY POOOOOOOOOOOOOOOOOOOP NAMEEEEEEEEEEEE: $cityName");
                   // rideProvider.updatePickupCoordinates(lat, lng);
                   ride.updatePickupCoordinates(lat, lng);
-                  setState(() {
+                  ride.pickupCityName = cityName;
+                  ride.pickupLocationName = locationName;
+                      setState(() {
                     _pickupLocationController.text = locationName;
                     pickupLat = lat;
                     pickupLng = lng;
@@ -255,7 +261,11 @@ class _HomePageState extends State<HomePage> {
                   double lat = result['lat'];
                   double lng = result['lng'];
                   String locationName = result['locationName'];
+                  String cityName = result['cityName'];
                   ride.updateDropoffCoordinates(lat, lng);
+                  ride.dropoffCityName = cityName;
+                  ride.dropoffLocationName = locationName;
+                  // ride.cityName =
                   setState(() {
                     _dropoffLocationController.text = locationName;
                     dropoffLat = lat;

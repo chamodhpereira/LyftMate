@@ -4,123 +4,15 @@ import 'dart:math' as math;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lyft_mate/screens/find_ride/ride_route.dart';
 import '../../services/ride_matching_service.dart';
+import 'carpool_ride_card_widget.dart';
+import 'confirm_booking.dart';
 
-// class RideMatchingScreen extends StatelessWidget {
-//   final GeoPoint userPickupLocation;
-//   final GeoPoint userDropoffLocation;
-//
-//   RideMatchingScreen({required this.userPickupLocation, required this.userDropoffLocation});
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     RideMatching rideMatching = RideMatching();
-//
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text('Filtered Rides'),
-//       ),
-//       body: FutureBuilder<List<DocumentSnapshot>>(
-//         future: rideMatching.findRides(userPickupLocation, userDropoffLocation),
-//         builder: (context, snapshot) {
-//           if (snapshot.connectionState == ConnectionState.waiting) {
-//             return Center(child: CircularProgressIndicator());
-//           } else if (snapshot.hasError) {
-//             return Center(child: Text('Error: ${snapshot.error}'));
-//           } else if (snapshot.data == null || snapshot.data!.isEmpty) {
-//             return Center(child: Text('No rides found.'));
-//           } else {
-//             return ListView.builder(
-//               itemCount: snapshot.data!.length,
-//               itemBuilder: (context, index) {
-//                 var ride = snapshot.data![index];
-//
-//                 // Extract polyline coordinates from Firestore document
-//                 List<dynamic> polylineCoordinates = ride['polylinePoints'];
-//
-//                 GeoPoint dropoffGeoPoint = ride['dropoffLocation']['geopoint'];
-//
-//                 // Find closest coordinate to user's pickup location
-//                 GeoPoint closestCoordinate = _findClosestCoordinate(polylineCoordinates, userPickupLocation);
-//
-//                 // Calculate distance between closest coordinate and user's pickup location
-//                 double pickupDistance = calculateDistance(userPickupLocation.latitude, userPickupLocation.longitude,
-//                     closestCoordinate.latitude, closestCoordinate.longitude);
-//
-//                 double dropoffDistance = calculateDistance(userDropoffLocation.latitude, userDropoffLocation.longitude,
-//                     dropoffGeoPoint.latitude, dropoffGeoPoint.longitude);
-//
-//                 return GestureDetector(
-//                   onTap: () {
-//                     // Navigate to ride details screen
-//                     Navigator.push(
-//                       context,
-//                       MaterialPageRoute(
-//                         builder: (context) => RideDetailsScreen(
-//                           ride: ride,
-//                           pickupDistance: pickupDistance,
-//                           dropoffDistance: dropoffDistance,
-//                         ),
-//                       ),
-//                     );
-//                   },
-//                   child: ListTile(
-//                     title: Text('Ride ID: ${ride.id}'),
-//                     subtitle: Text('Seats: ${ride['seats']}, Vehicle: ${ride['vehicle']}, Pickup Distance: $pickupDistance meters, Dropoff Distance: $dropoffDistance meters'),
-//                     // Add more details here as needed
-//                   ),
-//                 );
-//               },
-//             );
-//           }
-//         },
-//       ),
-//     );
-//   }
-//
-//   GeoPoint _findClosestCoordinate(List<dynamic> coordinates, GeoPoint userPickupLocation) {
-//     double minDistance = double.infinity;
-//     GeoPoint closestCoordinate = GeoPoint(0, 0); // Default value
-//     for (var coord in coordinates) {
-//       double lat = coord['latitude'];
-//       double lng = coord['longitude'];
-//       double distance = calculateDistance(lat, lng, userPickupLocation.latitude, userPickupLocation.longitude);
-//       if (distance < minDistance) {
-//         minDistance = distance;
-//         closestCoordinate = GeoPoint(lat, lng);
-//       }
-//     }
-//     return closestCoordinate;
-//   }
-//
-//   double calculateDistance(double startLatitude, double startLongitude,
-//       double endLatitude, double endLongitude) {
-//     const int earthRadius = 6371000; // in meters
-//     double lat1Rad = radians(startLatitude);
-//     double lon1Rad = radians(startLongitude);
-//     double lat2Rad = radians(endLatitude);
-//     double lon2Rad = radians(endLongitude);
-//
-//     double deltaLat = lat2Rad - lat1Rad;
-//     double deltaLon = lon2Rad - lon1Rad;
-//
-//     double a = math.pow(math.sin(deltaLat / 2), 2) +
-//         math.cos(lat1Rad) *
-//             math.cos(lat2Rad) *
-//             math.pow(math.sin(deltaLon / 2), 2);
-//     double c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
-//
-//     return earthRadius * c;
-//   }
-//
-//   double radians(double degrees) {
-//     return degrees * (math.pi / 180);
-//   }
-// }
 class RideMatchingScreen extends StatelessWidget {
   final GeoPoint userPickupLocation;
   final GeoPoint userDropoffLocation;
 
-  RideMatchingScreen({required this.userPickupLocation, required this.userDropoffLocation});
+  RideMatchingScreen(
+      {required this.userPickupLocation, required this.userDropoffLocation});
 
   @override
   Widget build(BuildContext context) {
@@ -147,29 +39,53 @@ class RideMatchingScreen extends StatelessWidget {
                 var ride = rideData['ride'];
                 double pickupDistance = rideData['pickupDistance'];
                 double dropoffDistance = rideData['dropoffDistance'];
-                GeoPoint closestCoordinateToPickup = rideData['closestCoordinateToPickup'];
+                GeoPoint closestCoordinateToPickup =
+                rideData['closestCoordinateToPickup'];
 
-                return GestureDetector(
-                  onTap: () {
-                    // Navigate to ride details screen
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => RideDetailsScreen(
+                // Get the driver ID from the ride
+                String driverId = ride['driverId'];
+
+                return FutureBuilder<DocumentSnapshot>(
+                  future: FirebaseFirestore.instance.collection('users').doc(driverId).get(),
+                  builder: (context, driverSnapshot) {
+                    if (driverSnapshot.connectionState == ConnectionState.waiting) {
+                      return CircularProgressIndicator();
+                    } else if (driverSnapshot.hasError) {
+                      return Text('Error: ${driverSnapshot.error}');
+                    } else if (!driverSnapshot.hasData || driverSnapshot.data!.data() == null) {
+                      return Text('No driver data found');
+                    } else {
+                      var driverData = driverSnapshot.data!;
+                      // Now you have driver details, you can display them as needed
+                      // For example, you can access driverData['name'], driverData['age'], etc.
+                      print("DRriveeeeeeeeer nameeee: ${driverData["firstName"]}");
+                      return GestureDetector(
+                        onTap: () {
+                          // Navigate to ride details screen
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => RideDetailsScreen(
+                                ride: ride,
+                                pickupDistance: pickupDistance,
+                                dropoffDistance: dropoffDistance,
+                                closestCoordinateToPickup: closestCoordinateToPickup,
+                                userLocation: userPickupLocation,
+                                driverDetails: driverData,
+                              ),
+                            ),
+                          );
+                        },
+                        child: CarpoolRideCard(
                           ride: ride,
                           pickupDistance: pickupDistance,
                           dropoffDistance: dropoffDistance,
                           closestCoordinateToPickup: closestCoordinateToPickup,
-                          userLocation: userPickupLocation,
+                          driver: driverData,
                         ),
-                      ),
-                    );
+                      );
+                    }
                   },
-                  child: ListTile(
-                    title: Text('Ride ID: ${ride.id}'),
-                    subtitle: Text('Seats: ${ride['seats']}, Vehicle: ${ride['vehicle']}, Pickup Distance: $pickupDistance meters, Dropoff Distance: $dropoffDistance meters'),
-                    // Add more details here as needed
-                  ),
                 );
               },
             );
@@ -183,96 +99,26 @@ class RideMatchingScreen extends StatelessWidget {
 
 
 
-class RideDetailsScreen extends StatelessWidget {
-  final DocumentSnapshot ride;
-  final double pickupDistance;
-  final double dropoffDistance;
-  final GeoPoint closestCoordinateToPickup;
-  final GeoPoint userLocation;
-
-  RideDetailsScreen({required this.ride, required this.pickupDistance, required this.dropoffDistance, required this.closestCoordinateToPickup, required this.userLocation,});
-
-  @override
-  Widget build(BuildContext context) {
-    // Build UI for ride details screen
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Ride Details'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Ride ID: ${ride.id}'),
-            Text('Seats: ${ride['seats']}'),
-            Text('Vehicle: ${ride['vehicle']}'),
-            Text('Pickup Distance: $pickupDistance meters'),
-            Text('Dropoff Distance: $dropoffDistance meters'),
-            // Add more details here as needed
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => RideMapScreen(
-                      ride: ride,
-                      closestCoordinateToPickup: closestCoordinateToPickup,
-                      userLocation: userLocation,
-                    ),
-                  ),
-                );
-              },
-              child: Text('View in Map'),
-            )
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-// import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:flutter/material.dart';
-// import 'dart:async';
-// import 'dart:math' as math;
-//
-//
-// import '../../services/ride_matching_service.dart';
-//
 // class RideMatchingScreen extends StatelessWidget {
 //   final GeoPoint userPickupLocation;
 //   final GeoPoint userDropoffLocation;
 //
-//   RideMatchingScreen({required this.userPickupLocation, required this.userDropoffLocation});
+//   RideMatchingScreen(
+//       {required this.userPickupLocation, required this.userDropoffLocation});
 //
 //   @override
-//
-//
 //   Widget build(BuildContext context) {
-//
 //     RideMatching rideMatching = RideMatching();
 //
 //     return Scaffold(
 //       appBar: AppBar(
 //         title: Text('Filtered Rides'),
 //       ),
-//       body: FutureBuilder<List<DocumentSnapshot>>(
-//         future: rideMatching.findRides(userPickupLocation, userDropoffLocation),
+//       body: FutureBuilder<List<Map<String, dynamic>>>(
+//         future: rideMatching.findRidesWithDistances(userPickupLocation, userDropoffLocation),
 //         builder: (context, snapshot) {
 //           if (snapshot.connectionState == ConnectionState.waiting) {
 //             return Center(child: CircularProgressIndicator());
@@ -284,28 +130,35 @@ class RideDetailsScreen extends StatelessWidget {
 //             return ListView.builder(
 //               itemCount: snapshot.data!.length,
 //               itemBuilder: (context, index) {
-//                 var ride = snapshot.data![index];
+//                 var rideData = snapshot.data![index];
+//                 var ride = rideData['ride'];
+//                 double pickupDistance = rideData['pickupDistance'];
+//                 double dropoffDistance = rideData['dropoffDistance'];
+//                 GeoPoint closestCoordinateToPickup =
+//                     rideData['closestCoordinateToPickup'];
 //
-//                 // Extract polyline coordinates from Firestore document
-//                 List<dynamic> polylineCoordinates = ride['polylinePoints'];
-//
-//                 GeoPoint dropoffGeoPoint = ride['dropoffLocation']['geopoint'];
-//
-//                 // Find closest coordinate to user's pickup location
-//                 GeoPoint closestCoordinate = _findClosestCoordinate(polylineCoordinates, userPickupLocation);
-//
-//                 // Calculate distance between closest coordinate and user's pickup location
-//                 double pickupDistance = calculateDistance(userPickupLocation.latitude, userPickupLocation.longitude,
-//                     closestCoordinate.latitude, closestCoordinate.longitude);
-//
-//                 double dropoffDistance = calculateDistance(userDropoffLocation.latitude, userDropoffLocation.longitude,
-//                     dropoffGeoPoint.latitude, dropoffGeoPoint.longitude);
-//
-//
-//                 return ListTile(
-//                   title: Text('Ride ID: ${ride.id}'),
-//                   subtitle: Text('Seats: ${ride['seats']}, Vehicle: ${ride['vehicle']}, Pickup Distance: $pickupDistance meters, Dropoff Distance: $dropoffDistance meters'),
-//                   // Add more details here as needed
+//                 return GestureDetector(
+//                   onTap: () {
+//                     // Navigate to ride details screen
+//                     Navigator.push(
+//                       context,
+//                       MaterialPageRoute(
+//                         builder: (context) => RideDetailsScreen(
+//                           ride: ride,
+//                           pickupDistance: pickupDistance,
+//                           dropoffDistance: dropoffDistance,
+//                           closestCoordinateToPickup: closestCoordinateToPickup,
+//                           userLocation: userPickupLocation,
+//                         ),
+//                       ),
+//                     );
+//                   },
+//                   child: CarpoolRideCard(
+//                     ride: ride,
+//                     pickupDistance: pickupDistance,
+//                     dropoffDistance: dropoffDistance,
+//                     closestCoordinateToPickup: closestCoordinateToPickup,
+//                   ),
 //                 );
 //               },
 //             );
@@ -314,44 +167,701 @@ class RideDetailsScreen extends StatelessWidget {
 //       ),
 //     );
 //   }
-//
-//   GeoPoint _findClosestCoordinate(List<dynamic> coordinates, GeoPoint userPickupLocation) {
-//     double minDistance = double.infinity;
-//     GeoPoint closestCoordinate = GeoPoint(0, 0); // Default value
-//     for (var coord in coordinates) {
-//       double lat = coord['latitude'];
-//       double lng = coord['longitude'];
-//       double distance = calculateDistance(lat, lng, userPickupLocation.latitude, userPickupLocation.longitude);
-//       if (distance < minDistance) {
-//         minDistance = distance;
-//         closestCoordinate = GeoPoint(lat, lng);
-//       }
-//     }
-//     return closestCoordinate;
-//   }
-//
-//   double calculateDistance(double startLatitude, double startLongitude,
-//       double endLatitude, double endLongitude) {
-//     const int earthRadius = 6371000; // in meters
-//     double lat1Rad = radians(startLatitude);
-//     double lon1Rad = radians(startLongitude);
-//     double lat2Rad = radians(endLatitude);
-//     double lon2Rad = radians(endLongitude);
-//
-//     double deltaLat = lat2Rad - lat1Rad;
-//     double deltaLon = lon2Rad - lon1Rad;
-//
-//     double a = math.pow(math.sin(deltaLat / 2), 2) +
-//         math.cos(lat1Rad) *
-//             math.cos(lat2Rad) *
-//             math.pow(math.sin(deltaLon / 2), 2);
-//     double c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
-//
-//     return earthRadius * c;
-//   }
-//
-//   double radians(double degrees) {
-//     return degrees * (math.pi / 180);
-//   }
-//
 // }
+
+
+// return ListView.builder(
+//   itemCount: snapshot.data!.length,
+//   itemBuilder: (context, index) {
+//     var rideData = snapshot.data![index];
+//     var ride = rideData['ride'];
+//     double pickupDistance = rideData['pickupDistance'];
+//     double dropoffDistance = rideData['dropoffDistance'];
+//     GeoPoint closestCoordinateToPickup = rideData['closestCoordinateToPickup'];
+//
+//     return GestureDetector(
+//       onTap: () {
+//         // Navigate to ride details screen
+//         Navigator.push(
+//           context,
+//           MaterialPageRoute(
+//             builder: (context) => RideDetailsScreen(
+//               ride: ride,
+//               pickupDistance: pickupDistance,
+//               dropoffDistance: dropoffDistance,
+//               closestCoordinateToPickup: closestCoordinateToPickup,
+//               userLocation: userPickupLocation,
+//             ),
+//           ),
+//         );
+//       },
+//       child: ListTile(
+//         title: Text('Ride ID: ${ride.id}'),
+//         subtitle: Text('Seats: ${ride['seats']}, Vehicle: ${ride['vehicle']}, Pickup Distance: $pickupDistance meters, Dropoff Distance: $dropoffDistance meters'),
+//         // Add more details here as needed
+//       ),
+//     );
+//   },
+// );
+
+
+
+class RideDetailsScreen extends StatelessWidget {
+  final DocumentSnapshot ride;
+  final double pickupDistance;
+  final double dropoffDistance;
+  final GeoPoint closestCoordinateToPickup;
+  final GeoPoint userLocation;
+  final Object driverDetails;
+
+  RideDetailsScreen({super.key,
+    required this.ride,
+    required this.pickupDistance,
+    required this.dropoffDistance,
+    required this.closestCoordinateToPickup,
+    required this.userLocation, required this.driverDetails,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // Build UI for ride details screen
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // Navigator.pop(
+              //   context,
+              //   MaterialPageRoute(builder: (context) => AvailableRides()),
+              // );
+            },
+            icon: Icon(Icons.arrow_back_ios)),
+        title: Text('Ride Details'),
+        titleSpacing: 0,
+        leadingWidth: 60.0,
+        backgroundColor: Colors.green,
+      ),
+      // body: Center(
+      //   child: Column(
+      //     mainAxisAlignment: MainAxisAlignment.center,
+      //     children: [
+      //       Text('Ride ID: ${ride.id}'),
+      //       Text('Seats: ${ride['seats']}'),
+      //       Text('Vehicle: ${ride['vehicle']}'),
+      //       Text('Pickup Distance: $pickupDistance meters'),
+      //       Text('Dropoff Distance: $dropoffDistance meters'),
+      //       // Add more details here as needed
+      //       ElevatedButton(
+      //         onPressed: () {
+      //           Navigator.push(
+      //             context,
+      //             MaterialPageRoute(
+      //               builder: (context) => RideMapScreen(
+      //                 ride: ride,
+      //                 closestCoordinateToPickup: closestCoordinateToPickup,
+      //                 userLocation: userLocation,
+      //               ),
+      //             ),
+      //           );
+      //         },
+      //         child: Text('View in Map'),
+      //       )
+      //     ],
+      //   ),
+      // ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.all(8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Card(
+                child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Trip Information',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18.0,
+                            ),
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => RideMapScreen(
+                                    ride: ride,
+                                    closestCoordinateToPickup:
+                                        closestCoordinateToPickup,
+                                    userLocation: userLocation,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Text('View in Map'),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 18.0),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.calendar_today,
+                            size: 20.0,
+                          ),
+                          SizedBox(width: 8.0),
+                          Text('Saturday, 15 May 2024'),
+                        ],
+                      ),
+                      SizedBox(height: 8.0),
+                      Row(
+                        children: [
+                          Icon(Icons.access_time, size: 20.0),
+                          SizedBox(width: 8.0),
+                          Text(' (Estimated)'),
+                        ],
+                      ),
+                      SizedBox(height: 8.0),
+                      Row(
+                        children: [
+                          Icon(Icons.route, size: 20.0),
+                          SizedBox(width: 8.0),
+                          Text('110km'),
+                        ],
+                      ),
+                      Divider(),
+                      SizedBox(height: 15.0),
+                      // Text("Pickup Location"),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Column(
+                            children: [
+                              Icon(Icons.location_on),
+                              Container(
+                                height:
+                                    50.0, // Height of the dashed line container
+                                child: CustomPaint(
+                                  painter: VerticalDashedLinePainter(),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(width: 8.0),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(ride['pickupCityName']),
+                              Text(
+                                "Fort Station, Colombo Fort",
+                                style: TextStyle(fontSize: 12.0),
+                              ),
+                              Text(
+                                '11.30 AM',
+                                style: TextStyle(fontSize: 12.0),
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Icon(
+                                    Icons.directions_walk,
+                                    color: Colors.green,
+                                    size: 18.0,
+                                  ), // Human walking icon
+                                  Text(
+                                    '- ${pickupDistance} from your pickup location',
+                                    style: TextStyle(fontSize: 12.0),
+                                  ), // Distance
+                                ],
+                              )
+                            ],
+                          )
+                        ],
+                      ),
+                      SizedBox(height: 20.0),
+                      // SizedBox(height: 5.0), // Add some space between texts and dashed line
+                      //
+                      // Container(
+                      //   height: 50.0, // Height of the dashed line container
+                      //   child: CustomPaint(
+                      //     painter: VerticalDashedLinePainter(),
+                      //   ),
+                      // ),
+                      // SizedBox(height: 5.0),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Column(
+                            children: [
+                              Container(
+                                height:
+                                    50.0, // Height of the dashed line container
+                                child: CustomPaint(
+                                  painter: VerticalDashedLinePainter(),
+                                ),
+                              ),
+                              Icon(Icons.location_on),
+                            ],
+                          ),
+                          SizedBox(width: 8.0),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(ride['dropoffCityName']),
+                              Text(
+                                "Kandy Station, Kandy",
+                                style: TextStyle(fontSize: 12.0),
+                              ),
+                              Text(
+                                '02.15 PM',
+                                style: TextStyle(fontSize: 12.0),
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Icon(
+                                    Icons.directions_walk,
+                                    color: Colors.red,
+                                    size: 18.0,
+                                  ), // Human walking icon
+                                  Text(
+                                    '- 6 km from your dropoff location',
+                                    style: TextStyle(fontSize: 12.0),
+                                  ), // Distance
+                                ],
+                              )
+                            ],
+                          )
+                        ],
+                      ),
+                      SizedBox(height: 15.0),
+                      Divider(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Seats Left: 2'),
+                          SizedBox(width: 16.0),
+                          Text('Price per Seat: LKR 300'),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: 2.0),
+              Card(
+                child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Driver Information',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18.0,
+                        ),
+                      ),
+                      SizedBox(height: 8.0),
+                      Row(
+                        children: [
+                          Stack(
+                            alignment: Alignment.bottomRight,
+                            children: [
+                              CircleAvatar(
+                                radius: 30.0,
+                                child: Icon(
+                                  Icons.person,
+                                  size: 20.0,
+                                ),
+                              ),
+                              Icon(Icons.verified_user,
+                                  color: Colors.green, size: 20),
+                            ],
+                          ),
+                          SizedBox(width: 8.0),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('John Doe',
+                                  style: TextStyle(fontSize: 16.0)),
+                              Row(
+                                children: [
+                                  Text('4.5', style: TextStyle(fontSize: 12.0)),
+                                  Icon(
+                                    Icons.star,
+                                    color: Colors.blueGrey,
+                                    size: 14.0,
+                                  ),
+                                  SizedBox(
+                                    width: 10.0,
+                                  ),
+                                  Text('25 Reviews',
+                                      style: TextStyle(fontSize: 12.0)),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 8.0),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.directions_car,
+                                size: 24.0,
+                              ),
+                              SizedBox(width: 8.0),
+                              Text(
+                                'Toyota Prius (2018)',
+                                style: TextStyle(fontSize: 12.0),
+                              ),
+                            ],
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              // Add functionality to contact driver
+                            },
+                            child: Row(
+                              children: [
+                                Text('Contact Driver'),
+                                SizedBox(
+                                  width: 5.0,
+                                ),
+                                Icon(
+                                  Icons.call,
+                                  size: 18.0,
+                                  color: Colors.black,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 8.0),
+                      Divider(),
+                      Text(
+                        'Ride Preferences',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18.0,
+                        ),
+                      ),
+                      SizedBox(height: 18.0),
+                      Row(
+                        children: [
+                          Icon(Icons.flash_on),
+                          SizedBox(width: 8.0),
+                          Text('Instant Approval'),
+                        ],
+                      ),
+                      SizedBox(height: 18.0),
+                      Row(
+                        children: [
+                          Icon(Icons.smoking_rooms),
+                          SizedBox(width: 8.0),
+                          Text('Smoking is Allowed'),
+                        ],
+                      ),
+                      SizedBox(height: 18.0),
+                      Row(
+                        children: [
+                          Icon(Icons.pets),
+                          SizedBox(width: 8.0),
+                          Text('Pets are Allowed'),
+                        ],
+                      ),
+                      SizedBox(height: 18.0),
+                      Divider(),
+                      Text(
+                        'Co-passengers',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18.0,
+                        ),
+                      ),
+                      SizedBox(height: 8.0),
+                      Row(
+                        children: [
+                          CircleAvatar(),
+                          SizedBox(width: 8.0),
+                          Text('Jane Smith'),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      bottomNavigationBar: BottomSeatSelectionContainer(availableSeats: ride['seats'] ?? 4, ride: ride,),
+    );
+  }
+}
+
+class VerticalDashedLinePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint paint = Paint()
+      ..color = Colors.black
+      ..strokeWidth = 1.0
+      ..style = PaintingStyle.stroke;
+
+    final double dashHeight = 5.0;
+    final double dashSpace = 5.0;
+
+    double startY = 0.0;
+    while (startY < size.height) {
+      canvas.drawLine(
+        Offset(0.0, startY),
+        Offset(0.0, startY + dashHeight),
+        paint,
+      );
+      startY += dashHeight + dashSpace;
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return false;
+  }
+}
+
+class DashedLinePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint paint = Paint()
+      ..color = Colors.black
+      ..strokeWidth = 1.0
+      ..style = PaintingStyle.stroke;
+
+    final double dashWidth = 5.0;
+    final double dashSpace = 5.0;
+
+    double startX = 0.0;
+    while (startX < size.width) {
+      canvas.drawLine(
+        Offset(startX, 0.0),
+        Offset(startX + dashWidth, 0.0),
+        paint,
+      );
+      startX += dashWidth + dashSpace;
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return false;
+  }
+}
+
+// class BottomSeatSelectionContainer extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return Container(
+//       // color: Colors.grey[200],
+//       padding: EdgeInsets.all(16.0),
+//       child: Row(
+//         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//         children: [
+//           ElevatedButton(
+//             onPressed: () {
+//               // Show seat selection screen
+//               showModalBottomSheet(
+//                 context: context,
+//                 builder: (BuildContext context) {
+//                   return SeatSelectionBottomSheet();
+//                 },
+//               );
+//             },
+//             child: Text('Select Seats'),
+//           ),
+//           ElevatedButton(
+//             onPressed: () {
+//               // Continue button functionality
+//             },
+//             child: Text('Continue'),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
+
+class BottomSeatSelectionContainer extends StatefulWidget {
+  final int availableSeats;
+  final DocumentSnapshot ride;
+
+  const BottomSeatSelectionContainer({super.key, required this.availableSeats, required this.ride});
+
+  @override
+  _BottomSeatSelectionContainerState createState() =>
+      _BottomSeatSelectionContainerState();
+}
+
+class _BottomSeatSelectionContainerState
+    extends State<BottomSeatSelectionContainer> {
+  int selectedSeats = 0;
+
+  void updateSelectedSeats(int count) {
+    print("updateee method: $count");
+    setState(() {
+      selectedSeats = count;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(16.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              TextButton(
+                onPressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return SeatSelectionBottomSheet(
+                        availableSeats: widget.availableSeats,
+                        initialSeats: selectedSeats,
+                        onUpdate: updateSelectedSeats,
+                      );
+                    },
+                  );
+                },
+                child: Row(
+                  // children: [
+                  //   Text("Select Seats"),
+                  //   Icon(Icons.keyboard_arrow_down),
+                  // ],
+                  children: [
+                    Text(selectedSeats >= 1 ? "Seats Selected: ${selectedSeats.toString()}" : "Select Seats"),
+                    Icon(Icons.keyboard_arrow_down),
+                  ],
+                ),
+              )
+            ],
+          ),
+          ElevatedButton(
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
+            ),
+            onPressed: () {
+              // Navigate to ConfirmBookingPage with necessary parameters
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ConfirmBookingPage(
+                    ride: widget.ride, // Pass the ride details to the confirm booking page
+                    selectedSeats: selectedSeats, // Pass the selected number of seats
+                  ),
+                ),
+              );
+            },
+            child: Text('Continue'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class SeatSelectionBottomSheet extends StatefulWidget {
+  final int availableSeats;
+  final int initialSeats;
+  final Function(int) onUpdate;
+
+  SeatSelectionBottomSheet({
+    required this.availableSeats,
+    required this.initialSeats,
+    required this.onUpdate,
+  });
+
+  @override
+  _SeatSelectionBottomSheetState createState() =>
+      _SeatSelectionBottomSheetState();
+}
+
+class _SeatSelectionBottomSheetState extends State<SeatSelectionBottomSheet> {
+  late int selectedSeats;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedSeats = widget.initialSeats;
+  }
+
+  void increaseSeats() {
+    setState(() {
+      if (selectedSeats < widget.availableSeats) {
+        selectedSeats++;
+        widget.onUpdate(selectedSeats);
+        print(selectedSeats);
+      }
+    });
+  }
+
+  void decreaseSeats() {
+    setState(() {
+      if (selectedSeats > 1) {
+        selectedSeats--;
+        widget.onUpdate(selectedSeats);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(16.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Select Number of Seats',
+            style: TextStyle(
+              fontSize: 18.0,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 16.0),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              IconButton(
+                onPressed: decreaseSeats,
+                icon: Icon(Icons.remove),
+              ),
+              Text(
+                '$selectedSeats',
+                style: TextStyle(fontSize: 16.0),
+              ),
+              IconButton(
+                onPressed: increaseSeats,
+                icon: Icon(Icons.add),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
+

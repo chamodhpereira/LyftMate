@@ -20,7 +20,6 @@ class _RideOptionsState extends State<RideOptions> {
 
   final Ride ride = Ride();
 
-
   void _showBottomSheet(BuildContext context, String title,
       List<String> options, Function(String) onSelect) {
     showModalBottomSheet(
@@ -257,7 +256,6 @@ class _RideOptionsState extends State<RideOptions> {
 }
 
 void addRideToFirestore(Ride ride) {
-
   final geo = GeoFlutterFire();
 
   print("THISSSS IS THEEE RIDEEE in mfunc: $ride");
@@ -269,22 +267,21 @@ void addRideToFirestore(Ride ride) {
     return;
   }
 
-
-
   // Access the Firestore instance
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   // Convert pickup and dropoff locations to GeoPoint objects
   GeoPoint pickupGeoPoint =
-  GeoPoint(ride.pickupLocation!.latitude, ride.pickupLocation!.longitude);
+      GeoPoint(ride.pickupLocation!.latitude, ride.pickupLocation!.longitude);
   GeoPoint dropoffGeoPoint =
-  GeoPoint(ride.dropoffLocation!.latitude, ride.dropoffLocation!.longitude);
+      GeoPoint(ride.dropoffLocation!.latitude, ride.dropoffLocation!.longitude);
 
   // // Convert polyline points (LatLng objects) to List<List<double>>
   // List<List<double>> polylineCoordinates = ride.polylinePoints.map((latLng) {
   //   return [latLng.latitude, latLng.longitude];
   // }).toList();
-  List<Map<String, double>> polylineCoordinates = ride.polylinePoints.map((latLng) {
+  List<Map<String, double>> polylineCoordinates =
+      ride.polylinePoints.map((latLng) {
     return {
       'latitude': latLng.latitude,
       'longitude': latLng.longitude,
@@ -332,8 +329,16 @@ void addRideToFirestore(Ride ride) {
     // "time": ride.time,
     "pricePerSeat": ride.pricePerSeat,
     "passengers": [], // List of passenger user IDs
-    "polylinePoints": polylineCoordinates // Store polyline points as List<List<double>>
-    // Add other ride data as needed
+    "polylinePoints": polylineCoordinates, // Store polyline points as List<List<double>>
+    "rideDistance": ride.rideDistance,
+    "pickupCityName": ride.pickupCityName,
+    "pickupLocationName": ride.pickupLocationName,
+    "dropoffCityName": ride.dropoffCityName,
+    "dropoffLocationName": ride.dropoffLocationName,
+    "rideDuration": ride.rideDuration,
+    "luggageAllowance": ride.luggageAllowance ?? "",
+    "paymentMode": ride.paymentMode ?? "",
+    "rideApproval": ride.rideApproval ?? "",
   };
 
   // Add the ride data to Firestore
@@ -347,5 +352,3 @@ void addRideToFirestore(Ride ride) {
     print('WTFFFF ettoooo Failed to publish ride: $error');
   });
 }
-
-

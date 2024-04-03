@@ -61,23 +61,74 @@ class PlaceApiProvider {
     }
   }
 
+  //// workinggggggggggggggggg
+  // Future<Map<String, dynamic>> getPlaceDetailFromId(String placeId) async {
+  //   final apiKey = _getApiKey();
+  //   final request = Uri.parse('https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=geometry&key=$apiKey');
+  //   final response = await client.get(request);
+  //
+  //   if (response.statusCode == 200) {
+  //     final result = json.decode(response.body);
+  //     if (result['status'] == 'OK') {
+  //       // print(result);
+  //       final location = result['result']['geometry']['location'];
+  //       print("QQQQLOOOOOOOOCATTTIOMMMMM: $location");
+  //       final latitude = location['lat'];
+  //       final longitude = location['lng'];
+  //       print("LLAAAAAAAAAAAAAAAAAAAAAT $latitude");
+  //       // return Suggestion(placeId, '', latitude, longitude);
+  //       return result;
+  //     } else {
+  //       throw Exception(result['error_message']);
+  //     }
+  //   } else {
+  //     throw Exception('Failed to fetch place details');
+  //   }
+  // }
+
 
   Future<Map<String, dynamic>> getPlaceDetailFromId(String placeId) async {
     final apiKey = _getApiKey();
-    final request = Uri.parse('https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=geometry&key=$apiKey');
+    final request = Uri.parse(
+        'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=geometry&key=$apiKey');
     final response = await client.get(request);
 
     if (response.statusCode == 200) {
       final result = json.decode(response.body);
       if (result['status'] == 'OK') {
-        // print(result);
         final location = result['result']['geometry']['location'];
-        print("QQQQLOOOOOOOOCATTTIOMMMMM: $location");
         final latitude = location['lat'];
         final longitude = location['lng'];
-        print("LLAAAAAAAAAAAAAAAAAAAAAT $latitude");
-        // return Suggestion(placeId, '', latitude, longitude);
-        return result;
+
+        // Reverse Geocoding to get city name
+        final reverseGeocodingRequest = Uri.parse(
+            'https://maps.googleapis.com/maps/api/geocode/json?latlng=$latitude,$longitude&key=$apiKey');
+        final reverseGeocodingResponse =
+        await client.get(reverseGeocodingRequest);
+
+        if (reverseGeocodingResponse.statusCode == 200) {
+          final reverseGeocodingResult =
+          json.decode(reverseGeocodingResponse.body);
+          if (reverseGeocodingResult['status'] == 'OK') {
+            // Extract city name from the response
+            final addressComponents =
+            reverseGeocodingResult['results'][0]['address_components'];
+            String cityName = '';
+            for (var component in addressComponents) {
+              if (component['types'].contains('locality')) {
+                cityName = component['long_name'];
+                break;
+              }
+            }
+            print("CCCCCCCCCCCCCCCCITTTTTTTTTTTTTTTTTY  NAMEEEEEEEEEEE: $cityName");
+            return {'city': cityName, 'latitude': latitude, 'longitude': longitude};
+          } else {
+            throw Exception(reverseGeocodingResult['error_message']);
+          }
+        } else {
+          throw Exception(
+              'Failed to fetch reverse geocoding details: ${reverseGeocodingResponse.statusCode}');
+        }
       } else {
         throw Exception(result['error_message']);
       }

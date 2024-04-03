@@ -30,6 +30,7 @@ class _MapScreenState extends State<MapScreen> {
   late double pickedLongitude;
   late double pickedLatitude;
   late String pickedLocation;
+  late String pickedCity;
 
   final client = Client();
 
@@ -98,7 +99,7 @@ class _MapScreenState extends State<MapScreen> {
                       delegate: AddressSearch(sessionToken),
                     );
                     if (result != null) {
-                      pickedLocation = result.description;
+                      // pickedLocation = result.description;
                       var place = await PlaceApiProvider(sessionToken)
                           .getPlaceDetailFromId(result.placeId);
                       _goToPlace(place);
@@ -125,7 +126,7 @@ class _MapScreenState extends State<MapScreen> {
                   color: Colors.transparent,
                   child: ElevatedButton(
                     onPressed: () {
-                      _confirmPickupLocation(pickedLatitude, pickedLongitude  , _textController.text);
+                      _confirmPickupLocation(pickedLatitude, pickedLongitude  , _textController.text, pickedCity);
                     },
                     style: ButtonStyle(
                       foregroundColor:
@@ -190,23 +191,21 @@ class _MapScreenState extends State<MapScreen> {
   //   }
   // }
 
-  void _confirmPickupLocation(double lat, double lng, String locationName) {
-    Navigator.pop(context, {'lat': lat, 'lng': lng, 'locationName': locationName});
+  void _confirmPickupLocation(double lat, double lng, String locationName, String cityName) {
+    Navigator.pop(context, {'lat': lat, 'lng': lng, 'locationName': locationName, 'cityName': cityName});
   }
 
   Future<void> _goToPlace(Map<String, dynamic> place) async {
     if (place != null &&
-        place.containsKey('result') &&
-        place['result'] != null &&
-        place['result'].containsKey('geometry') &&
-        place['result']['geometry'] != null &&
-        place['result']['geometry'].containsKey('location') &&
-        place['result']['geometry']['location'] != null) {
-      final double lat = place['result']['geometry']['location']['lat'];
-      final double lng = place['result']['geometry']['location']['lng'];
+        place.containsKey('latitude') &&
+        place.containsKey('longitude')) {
+      final double lat = place['latitude'];
+      final double lng = place['longitude'];
+      final String city = place['city'];
 
       pickedLatitude = lat;
       pickedLongitude = lng;
+      pickedCity = city;
 
       final GoogleMapController controller = await _controller.future;
       CameraPosition _newCameraPosition = CameraPosition(
@@ -223,4 +222,35 @@ class _MapScreenState extends State<MapScreen> {
       print("Some properties are missing or null in the place object.");
     }
   }
+
+
+// Future<void> _goToPlace(Map<String, dynamic> place) async {
+  //   if (place != null &&
+  //       place.containsKey('result') &&
+  //       place['result'] != null &&
+  //       place['result'].containsKey('geometry') &&
+  //       place['result']['geometry'] != null &&
+  //       place['result']['geometry'].containsKey('location') &&
+  //       place['result']['geometry']['location'] != null) {
+  //     final double lat = place['result']['geometry']['location']['lat'];
+  //     final double lng = place['result']['geometry']['location']['lng'];
+  //
+  //     pickedLatitude = lat;
+  //     pickedLongitude = lng;
+  //
+  //     final GoogleMapController controller = await _controller.future;
+  //     CameraPosition _newCameraPosition = CameraPosition(
+  //       target: LatLng(lat, lng),
+  //       zoom: 13,
+  //     );
+  //
+  //     await controller.animateCamera(
+  //       CameraUpdate.newCameraPosition(_newCameraPosition),
+  //     );
+  //
+  //     _setMarker(LatLng(lat, lng));
+  //   } else {
+  //     print("Some properties are missing or null in the place object.");
+  //   }
+  // }
 }

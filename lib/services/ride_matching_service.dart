@@ -33,40 +33,86 @@ class RideMatching {
       }
 
       print("filtereeeeeeeeeeeeeeeeeeed ridesssssssssssgeooooo: ${filteredRides.length}");
+      // Adjust the threshold distance according to your preference
+      const double distanceThreshold = 1000; // meters
 
-      // Calculate distances for each ride
+      // Filter rides where the minimum distance of polyline route from the pickup location is within the threshold
       for (var ride in filteredRides) {
         List<GeoPoint> polylinePoints = (ride['polylinePoints'] as List).map((point) {
           return GeoPoint(point['latitude'], point['longitude']);
         }).toList();
 
-        GeoPoint closestCoordinate = _findClosestCoordinate(polylinePoints, userPickupLocation);
-        double pickupDistance = calculateDistance(
-          userPickupLocation.latitude,
-          userPickupLocation.longitude,
-          closestCoordinate.latitude,
-          closestCoordinate.longitude,
-        );
+        double minDistance = double.infinity;
+        GeoPoint nearestCoordinate = GeoPoint(0, 0);
+        String distanceText = 'N/A';
 
-        // Calculate dropoff distance (assuming the dropoff point is stored in the ride document)
-        GeoPoint dropoffGeoPoint = ride['dropoffLocation']['geopoint'];
-        double dropoffDistance = calculateDistance(
-          userDropoffLocation.latitude,
-          userDropoffLocation.longitude,
-          dropoffGeoPoint.latitude,
-          dropoffGeoPoint.longitude,
-        );
+        for (var point in polylinePoints) {
+          double distance = calculateDistance(
+            userPickupLocation.latitude,
+            userPickupLocation.longitude,
+            point.latitude,
+            point.longitude,
+          );
 
-        // Add ride with distances to the list
-        ridesWithDistances.add({
-          'ride': ride,
-          'pickupDistance': pickupDistance,
-          'dropoffDistance': dropoffDistance,
-          'closestCoordinateToPickup' : closestCoordinate,
-        });
+          if (distance < minDistance) {
+            minDistance = distance;
+            nearestCoordinate = point;
+            distanceText = '${(minDistance / 1000).toStringAsFixed(2)} km';
+          }
+        }
+
+        if (minDistance < distanceThreshold) {
+          // Add ride with distances to the list
+          ridesWithDistances.add({
+            'ride': ride,
+            'pickupDistance': minDistance,
+            'dropoffDistance': calculateDistance(
+              userDropoffLocation.latitude,
+              userDropoffLocation.longitude,
+              ride['dropoffLocation']['geopoint'].latitude,
+              ride['dropoffLocation']['geopoint'].longitude,
+            ),
+            'closestCoordinateToPickup' : nearestCoordinate,
+            'distanceText': distanceText,
+          });
+        }
       }
 
       return ridesWithDistances;
+
+      // // Calculate distances for each ride
+      // for (var ride in filteredRides) {
+      //   List<GeoPoint> polylinePoints = (ride['polylinePoints'] as List).map((point) {
+      //     return GeoPoint(point['latitude'], point['longitude']);
+      //   }).toList();
+      //
+      //   GeoPoint closestCoordinate = _findClosestCoordinate(polylinePoints, userPickupLocation);
+      //   double pickupDistance = calculateDistance(
+      //     userPickupLocation.latitude,
+      //     userPickupLocation.longitude,
+      //     closestCoordinate.latitude,
+      //     closestCoordinate.longitude,
+      //   );
+      //
+      //   // Calculate dropoff distance (assuming the dropoff point is stored in the ride document)
+      //   GeoPoint dropoffGeoPoint = ride['dropoffLocation']['geopoint'];
+      //   double dropoffDistance = calculateDistance(
+      //     userDropoffLocation.latitude,
+      //     userDropoffLocation.longitude,
+      //     dropoffGeoPoint.latitude,
+      //     dropoffGeoPoint.longitude,
+      //   );
+      //
+      //   // Add ride with distances to the list
+      //   ridesWithDistances.add({
+      //     'ride': ride,
+      //     'pickupDistance': pickupDistance,
+      //     'dropoffDistance': dropoffDistance,
+      //     'closestCoordinateToPickup' : closestCoordinate,
+      //   });
+      // }
+      //
+      // return ridesWithDistances;
     } catch (e) {
       print("Error fetching rides: $e");
       return []; // Return empty list in case of error
@@ -83,7 +129,7 @@ class RideMatching {
         userPickupLocation.latitude,
         userPickupLocation.longitude,
       );
-      if (distance < minDistance) {
+      if (distance < minDistance && distance <= 1000) {
         minDistance = distance;
         closestCoordinate = coord;
       }

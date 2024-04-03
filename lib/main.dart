@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:lyft_mate/home.dart';
 import 'package:lyft_mate/map_test/map_test.dart';
 import 'package:lyft_mate/models/loggeduser.dart';
@@ -10,12 +11,15 @@ import 'package:lyft_mate/screens/chat/user_list.dart';
 import 'package:lyft_mate/screens/find_ride/find_rides.dart';
 import 'package:lyft_mate/screens/home/home.dart';
 import 'package:lyft_mate/screens/login/login_screen.dart';
+import 'package:lyft_mate/screens/onboarding/onboarding_screen.dart';
+// import 'package:lyft_mate/screens/payment/card_form_screen.dart';
 import 'package:lyft_mate/screens/profile/initial_setup.dart';
 import 'package:lyft_mate/screens/profile/user_profile_screen.dart';
-import 'package:lyft_mate/screens/signup/signup_screen.dart';
+import 'package:lyft_mate/screens/signup/screens/signup_screen.dart';
+
 import 'package:lyft_mate/services/authentication_service.dart';
 import 'package:provider/provider.dart';
-import 'package:lyft_mate/screens/signup/signup_form.dart';
+
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 
@@ -26,6 +30,7 @@ import 'map_test/radius_provider.dart';
 Future<void> main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -50,6 +55,7 @@ class MyApp extends StatelessWidget {
         darkTheme: LyftMateAppTheme.darkTheme,
         themeMode: ThemeMode.system,
         home: FindRides(),
+        // home: HomePage(),
         // home: MapPage(),
         // routes: ,
       ),
