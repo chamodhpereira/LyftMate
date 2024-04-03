@@ -11,6 +11,7 @@ import 'package:lyft_mate/screens/chat/user_list.dart';
 import 'package:lyft_mate/screens/find_ride/find_rides.dart';
 import 'package:lyft_mate/screens/home/home.dart';
 import 'package:lyft_mate/screens/login/login_screen.dart';
+import 'package:lyft_mate/screens/navigation/navigation_screen.dart';
 import 'package:lyft_mate/screens/onboarding/onboarding_screen.dart';
 // import 'package:lyft_mate/screens/payment/card_form_screen.dart';
 import 'package:lyft_mate/screens/profile/initial_setup.dart';
@@ -54,8 +55,8 @@ class MyApp extends StatelessWidget {
         theme: LyftMateAppTheme.lightTheme,
         darkTheme: LyftMateAppTheme.darkTheme,
         themeMode: ThemeMode.system,
-        home: FindRides(),
-        // home: HomePage(),
+        // home: FindRides(),
+        home: NavigationScreen(),
         // home: MapPage(),
         // routes: ,
       ),
