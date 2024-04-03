@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lyft_mate/screens/chat/user_list.dart';
 import 'package:lyft_mate/screens/notifications/notifications_screen.dart';
+import 'package:lyft_mate/screens/user_rides/user_rides.dart';
 import 'package:lyft_mate/userprofile_screen.dart';
 
 
@@ -19,7 +20,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
   int selectedIndex = 0;
   List<Widget> widgetList = [
     HomePage(),
-    NotificationsPage(),  //should be user booked and published rides
+    UserRides(),  //should be user booked and published rides
     UserList(), // should be user chat list
     UserProfileScreen()
   ];
