@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lyft_mate/constants/sizes.dart';
 import 'package:lyft_mate/models/signup_user.dart';
+import 'package:lyft_mate/screens/login/login_screen.dart';
 import 'package:lyft_mate/screens/signup/screens/signup_dob_page.dart';
 import 'package:lyft_mate/screens/signup/screens/signup_email_page.dart';
 import 'package:lyft_mate/screens/signup/screens/signup_password_page.dart';
@@ -10,6 +11,7 @@ import 'package:lyft_mate/widgets/custom_bottom_buttom.dart';
 
 
 import '../../../services/authentication_service.dart';
+import '../../home/home.dart';
 
 
 // import 'package:lyft_mate/src/screens/login_screen.dart';
@@ -191,7 +193,7 @@ class _SignUpFormState extends State<SignUpForm> {
           child: currentPage == 4
               ? CustomBottomButton(
                   text: "Signup",
-                  onPressed: () {
+                  onPressed: () async {
                       SignupUserData userData = SignupUserData();
                       print('First Name: ${userData.firstName}');
                       print('Last Name: ${userData.lastName}');
@@ -212,13 +214,40 @@ class _SignUpFormState extends State<SignUpForm> {
                     } else {
                       print(
                           "${emailController.text}, ${passwordController.text}");
+
+                      // Retrieve the BuildContext
+                      BuildContext currentContext = context;
                       // UserM newUser = UserM(
                       //   userID: '', // The ID will be assigned automatically after signup
                       //   email: emailController.text,
                       //   firstName: firstNameController.text,
                       //   lastName: secondNameController.text,
                       // );
-                      // authService.signUpWithEmailAndPassword(emailController.text, passwordController.text, newUser);
+                      // authService.signUpWithEmailAndPassword(emailController.text, passwordController.text);
+
+                      bool signUpSuccess = await authService.signUpWithEmailAndPassword(emailController.text, passwordController.text);
+
+                      // Future<void> _navigateToMainScreen(BuildContext context) async {
+                      //   await Future.delayed(const Duration(seconds: 3));
+                      //   if (context.mounted) {
+                      //     Navigator.pushReplacement(
+                      //       context,
+                      //       MaterialPageRoute(builder: (context) => HomePage()), // Replace HomePage() with your actual home page widget
+                      //     );
+                      //   }
+                      // }
+                      // Check if sign-up was successful
+                      if (signUpSuccess) {
+                        if (context.mounted) {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => LoginScreen()), // Replace HomePage() with your actual home page widget
+                          );
+                        }
+                      } else {
+                        // Handle sign-up failure (e.g., show error message)
+                      }
+
                     }
                   },
                 )

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lyft_mate/constants/sizes.dart';
 import 'package:lyft_mate/home.dart';
 import 'package:lyft_mate/screens/chat/user_list.dart';
+import 'package:lyft_mate/screens/navigation/navigation_screen.dart';
 import 'package:lyft_mate/screens/welcome/welcome_screen.dart';
 import 'package:lyft_mate/userprofile_screen.dart';
 
@@ -86,9 +87,9 @@ class _LoginFormState extends State<LoginForm> {
                     bool success = await authService.signInWithEmailAndPassword(context, _emailController.text, _passwordController.text);
                     if (success) {
                       // Navigate to the next screen only if login is successful
-                      Navigator.push(
+                      Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) =>UserList()),
+                        MaterialPageRoute(builder: (context) =>NavigationScreen()),
                             // (route) => false,
                       );
                     } else {

@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lyft_mate/screens/chat/user_list.dart';
 import 'package:lyft_mate/screens/notifications/notifications_screen.dart';
@@ -30,6 +31,13 @@ class _NavigationScreenState extends State<NavigationScreen> {
 
     });
   }
+  @override
+  void initState() {
+    print("The cureeeenttt userrr: ${FirebaseAuth.instance.currentUser?.uid}");
+    super.initState();
+  }
+
+
 
   @override
   Widget build(BuildContext context) {

@@ -6,10 +6,19 @@ import 'package:provider/provider.dart';
 
 import 'package:lyft_mate/models/user.dart';
 
+import '../models/signup_user.dart';
 import '../providers/user_provider.dart';
 
 class AuthenticationService extends ChangeNotifier{
+
+
+
+
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  // Singleton instance of SignupUserData
+  final SignupUserData _signupUserData = SignupUserData();
   var verificationID = "";
 
   Future<void> phoneAuthentication (String phoneNo) async{
@@ -53,36 +62,87 @@ class AuthenticationService extends ChangeNotifier{
     }
   }
 
-
-
-  Future<void> signUpWithEmailAndPassword(String email, String password, UserM newUser) async {
+  // Method to sign up with email and password
+  Future<bool> signUpWithEmailAndPassword(String email, String password) async {
     try {
-      final UserCredential userCredential =
-          await _auth.createUserWithEmailAndPassword(
+      // Create user with email and password
+      final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
-      print("USERRRRRR IDDDDDDDDD: ${userCredential.user!.uid}");
-      // Store additional user details in Firestore
-      await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
-        'firstName': newUser.firstName,
-        'lastName': newUser.lastName,
-        // Add more user details as needed
-      });
 
-      // Navigate to the next screen or perform any other action after successful signup
-      // } on FirebaseAuthException catch (e) {
-      //   if (e.code == 'weak-password') {
-      //     print('The password provided is too weak.');
-      //   } else if (e.code == 'email-already-in-use') {
-      //     print('The account already exists for that email.');
-      //   }
-      // Show relevant error messages to the user
+      // Create user document based on signup data
+      await createUserDocument(userCredential.user!.uid);
+
+      // Reset SignupUserData after successful signup
+      _signupUserData.reset();
+
+      return true;
     } catch (e) {
       print(e);
-      // Handle other exceptions
+      // Handle signup failure
+      return false;
     }
   }
+
+  // Method to create user document in Firestore
+  Future<void> createUserDocument(String userId) async {
+    try {
+
+      Map<String, String> emergencyContacts = {};
+
+      await _firestore.collection('users').doc(userId).set({
+        'firstName': _signupUserData.firstName,
+        'lastName': _signupUserData.lastName,
+        'gender': _signupUserData.selectedGender.toString(), // Convert enum to string
+        'email': _signupUserData.email,
+        'dob': _signupUserData.dob.toIso8601String(),
+        'bio': "",
+        'phoneNumber': _signupUserData.phoneNumber,
+        'vehicle': [],
+        'emergencyContacts' : emergencyContacts,
+        'ridesPublished': [],
+        'ridesBooked': [],
+        'preferences': [],
+        // Add more fields as needed
+      });
+    } catch (e) {
+      print("Failed to create user document: $e");
+      // Handle document creation failure
+    }
+  }
+
+// --------------worjinggggggggggg-
+  // Future<void> signUpWithEmailAndPassword(String email, String password) async {
+  //   try {
+  //     final UserCredential userCredential =
+  //         await _auth.createUserWithEmailAndPassword(
+  //       email: email,
+  //       password: password,
+  //     );
+  //     print("USERRRRRR IDDDDDDDDD: ${userCredential.user!.uid}");
+  //     // Store additional user details in Firestore
+  //     await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
+  //       'firstName': newUser.firstName,
+  //       'lastName': newUser.lastName,
+  //       // Add more user details as needed
+  //     });
+  //
+  //     // Navigate to the next screen or perform any other action after successful signup
+  //     // } on FirebaseAuthException catch (e) {
+  //     //   if (e.code == 'weak-password') {
+  //     //     print('The password provided is too weak.');
+  //     //   } else if (e.code == 'email-already-in-use') {
+  //     //     print('The account already exists for that email.');
+  //     //   }
+  //     // Show relevant error messages to the user
+  //   } catch (e) {
+  //     print(e);
+  //     // Handle other exceptions
+  //   }
+  // }
+
+
   Future<bool> signInWithEmailAndPassword(BuildContext context, String email, String password) async {
     try {
       final UserCredential userCredential = await _auth.signInWithEmailAndPassword(

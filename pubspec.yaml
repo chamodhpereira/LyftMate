@@ -52,6 +52,8 @@ dependencies:
   dart_geohash: ^2.1.0
   flutter_stripe: ^9.5.0+1
   flutter_bloc: ^8.1.5
+  firebase_storage: ^11.6.0
+  image_picker: ^1.0.7
 
 dev_dependencies:
   flutter_test:

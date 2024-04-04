@@ -19,6 +19,7 @@ import 'package:lyft_mate/screens/profile/user_profile_screen.dart';
 import 'package:lyft_mate/screens/signup/screens/signup_screen.dart';
 
 import 'package:lyft_mate/services/authentication_service.dart';
+import 'package:lyft_mate/userprofile_screen.dart';
 import 'package:provider/provider.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -56,7 +57,7 @@ class MyApp extends StatelessWidget {
         darkTheme: LyftMateAppTheme.darkTheme,
         themeMode: ThemeMode.system,
         // home: FindRides(),
-        home: NavigationScreen(),
+        home: LoginScreen(),
         // home: MapPage(),
         // routes: ,
       ),

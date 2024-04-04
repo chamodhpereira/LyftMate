@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 
+import '../../services/authentication_service.dart';
 import 'edit_profile_screen.dart';
 
 class UserProfilePage extends StatelessWidget {
+
+  final AuthenticationService authService = AuthenticationService();
+
+  UserProfilePage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -15,6 +21,12 @@ class UserProfilePage extends StatelessWidget {
             onPressed: () {
               // Add functionality to navigate to edit profile screen
               Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfilePage()));
+            },
+          ),
+          IconButton( // Added Sign-out Button
+            icon: Icon(Icons.logout),
+            onPressed: () async {
+              await authService.signOut();
             },
           ),
         ],
