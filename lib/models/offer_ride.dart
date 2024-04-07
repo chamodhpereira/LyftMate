@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-class Ride {
-  static final Ride _instance = Ride._internal();
+class OfferRide {
+  static final OfferRide _instance = OfferRide._internal();
 
-  factory Ride() {
+  factory OfferRide() {
     return _instance;
   }
 
-  Ride._internal();
+  OfferRide._internal();
 
   String? id; // Unique identifier for the ride
   String? userId; // ID of the user offering/requesting the ride
@@ -52,8 +52,22 @@ class Ride {
     polylinePoints.clear();
   }
 
-  void updatePickupCoordinates(double newLat, double newLng) {
-    pickupLocation = LatLng(newLat, newLng);
+  // void updatePickupCoordinates(double newLat, double newLng) {
+  //   pickupLocation = LatLng(newLat, newLng);
+  // }
+
+  // Update method to set pickup location details
+  void setPickupLocation(double lat, double lng, String locationName, String cityName) {
+    pickupLocation = LatLng(lat, lng);
+    pickupLocationName = locationName;
+    pickupCityName = cityName;
+  }
+
+  // Update method to set dropoff location details
+  void setDropoffLocation(double lat, double lng, String locationName, String cityName) {
+    dropoffLocation = LatLng(lat, lng);
+    dropoffLocationName = locationName;
+    dropoffCityName = cityName;
   }
 
   void updateDropoffCoordinates(double newLat, double newLng) {
