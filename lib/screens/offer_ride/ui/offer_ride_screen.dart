@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../models/ride.dart';
+import '../../models/ride.dart';
 
 class OfferRideScreen extends StatefulWidget {
   const OfferRideScreen({super.key});
