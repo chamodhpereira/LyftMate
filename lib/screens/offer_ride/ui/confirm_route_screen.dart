@@ -10,42 +10,43 @@ import 'package:location/location.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:provider/provider.dart';
 
-import '../../models/ride.dart';
-import '../../providers/ride_provider.dart';
+import '../../../models/offer_ride.dart';
+// import '../providers/ride_provider.dart';
 // import 'package:lyft_mate/src/screens/ride_options.dart';
 import 'package:http/http.dart';
 
-
-import '../ride/ride_options_screen.dart';
+import '../../ride/ride_options_screen.dart';
 
 class ConfirmRoute extends StatefulWidget {
-  final double pickupLat;
-  final double pickupLng;
-  final double dropoffLat;
-  final double dropoffLng;
+  // final double pickupLat;
+  // final double pickupLng;
+  // final double dropoffLat;
+  // final double dropoffLng;
+  final LatLng? pickupLocation;
+  final LatLng? dropoffLocation;
 
-  ConfirmRoute({
-    required this.dropoffLat,
-    required this.dropoffLng,
-    required this.pickupLat,
-    required this.pickupLng,
-  });
+  ConfirmRoute({required this.pickupLocation, required this.dropoffLocation});
+
+  // ConfirmRoute({
+  //   required this.dropoffLat,
+  //   required this.dropoffLng,
+  //   required this.pickupLat,
+  //   required this.pickupLng,
+  // });
 
   @override
   State<ConfirmRoute> createState() => _ConfirmRouteState();
 }
 
 class _ConfirmRouteState extends State<ConfirmRoute> {
-
-  Ride ride = Ride();
+  OfferRide ride = OfferRide();
 
   final client = Client();
 
   Location _locationController = new Location();
 
   final Completer<GoogleMapController> _mapController =
-  Completer<GoogleMapController>();
-
+      Completer<GoogleMapController>();
 
   late LatLng _kPickupLocation;
   late LatLng _kDropLocation;
@@ -58,8 +59,8 @@ class _ConfirmRouteState extends State<ConfirmRoute> {
     // TODO: implement initState
     super.initState();
     // RideProvider rideProvider = Provider.of<RideProvider>(context, listen: false);
-    _kPickupLocation = LatLng(widget.pickupLat, widget.pickupLng);
-    _kDropLocation = LatLng(widget.dropoffLat, widget.dropoffLng);
+    _kPickupLocation = widget.pickupLocation!;
+    _kDropLocation = widget.dropoffLocation!;
 
     getTotalDistanceAndDuration();
 
@@ -104,7 +105,8 @@ class _ConfirmRouteState extends State<ConfirmRoute> {
   void _initializeRideDistance() async {
     print("INITIAAAAAAAAAAAAAAAALIZEEE METHOD CALLEDdd");
     Map<String, dynamic> result = await getTotalDistanceAndDuration();
-    double distance = result['distance']; // Assuming 'distance' is the key in the map
+    double distance =
+        result['distance']; // Assuming 'distance' is the key in the map
     ride.rideDistance = distance;
 
     // Get duration without converting
@@ -117,7 +119,6 @@ class _ConfirmRouteState extends State<ConfirmRoute> {
     print("ride from distance in ride: ${ride.rideDistance}");
     print("ride from DURATION in ride: $hours hours and $minutes minutes");
   }
-
 
   @override
   void dispose() {
@@ -135,8 +136,6 @@ class _ConfirmRouteState extends State<ConfirmRoute> {
   //   }
   // }
 
-
-
   List<LatLng> decodePolyline(String encoded) {
     List<LatLng> polyline = [];
     List<PointLatLng> decoded = PolylinePoints().decodePolyline(encoded);
@@ -148,7 +147,6 @@ class _ConfirmRouteState extends State<ConfirmRoute> {
 
   @override
   Widget build(BuildContext context) {
-
     LatLngBounds bounds = LatLngBounds(
       southwest: _kPickupLocation,
       northeast: _kDropLocation,
@@ -170,7 +168,6 @@ class _ConfirmRouteState extends State<ConfirmRoute> {
       mapCenter = _kPickupLocation;
     }
 
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.green,
@@ -185,73 +182,68 @@ class _ConfirmRouteState extends State<ConfirmRoute> {
         title: Text("Confirm Route"),
       ),
       body: SafeArea(
-        child: Stack(
-            children:[
-              GoogleMap(
-                onMapCreated: ((GoogleMapController controller) =>
-                    _mapController.complete(controller)),
-                initialCameraPosition: CameraPosition(
-                  target: _kPickupLocation,
-                  zoom: 10.8,
-                ),
-                markers: {
-                  Marker(
-                    markerId: const MarkerId("_pickupLocation"),
-                    icon: BitmapDescriptor.defaultMarker,
-                    position: _kPickupLocation,
-                  ),
-                  Marker(
-                    markerId: MarkerId("_dropLocation"),
-                    icon: BitmapDescriptor.defaultMarker,
-                    position: _kDropLocation,
-                  ),
-                },
-                polylines: Set<Polyline>.of(polylines.values),
+        child: Stack(children: [
+          GoogleMap(
+            onMapCreated: ((GoogleMapController controller) =>
+                _mapController.complete(controller)),
+            initialCameraPosition: CameraPosition(
+              target: _kPickupLocation,
+              zoom: 10.8,
+            ),
+            markers: {
+              Marker(
+                markerId: const MarkerId("_pickupLocation"),
+                icon: BitmapDescriptor.defaultMarker,
+                position: _kPickupLocation,
               ),
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    height: 50.0,
-                    color: Colors.transparent,
-                    child: ElevatedButton(
-                      style: ButtonStyle(
-                        foregroundColor:
+              Marker(
+                markerId: MarkerId("_dropLocation"),
+                icon: BitmapDescriptor.defaultMarker,
+                position: _kDropLocation,
+              ),
+            },
+            polylines: Set<Polyline>.of(polylines.values),
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Container(
+                height: 50.0,
+                color: Colors.transparent,
+                child: ElevatedButton(
+                  style: ButtonStyle(
+                    foregroundColor:
                         MaterialStateProperty.all<Color>(Colors.white),
-                        backgroundColor:
+                    backgroundColor:
                         MaterialStateProperty.all<Color>(Colors.green),
-                      ),
-                      onPressed: () {
-                        // _confirmPickupLocation(pickedLatitude, pickedLongitude  , _textController.text);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => RideOptions(),
-                          ),
-                        );
-                      },
-                      child: Text("Confirm Route", style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold)),
-                    ),
                   ),
+                  onPressed: () {
+                    // _confirmPickupLocation(pickedLatitude, pickedLongitude  , _textController.text);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => RideOptions(),
+                      ),
+                    );
+                  },
+                  child: Text("Confirm Route",
+                      style: TextStyle(
+                          fontSize: 14.0, fontWeight: FontWeight.bold)),
                 ),
               ),
-            ]
-        ),
+            ),
+          ),
+        ]),
       ),
-
     );
-
-
   }
 
   String _getApiKey() {
     return dotenv.env['GOOGLE_MAPS_API_KEY'] ?? 'YOUR_DEFAULT_API_KEY';
   }
-
-
 
   Future<List<LatLng>> getPolylinePoints() async {
     List<LatLng> polylineCoordinates = [];
@@ -285,7 +277,6 @@ class _ConfirmRouteState extends State<ConfirmRoute> {
     setState(() {
       polylines[id] = polyline;
     });
-
   }
 
   // void generatePolylineFromPoints(List<LatLng> polylineCoordinates, String id) async {
@@ -365,16 +356,14 @@ class _ConfirmRouteState extends State<ConfirmRoute> {
       result['duration'] = {'hours': hours, 'minutes': minutes};
 
       print("Totlaaaaaaa:LLLLLLLL disatance: $totalDistance");
-      print("TOOOOOOOOOOOOOOTAAAAAAAAAAAAAAAAL DURATTTTTIOM TIMEEEEEE: $result['duration']");
+      print(
+          "TOOOOOOOOOOOOOOTAAAAAAAAAAAAAAAAL DURATTTTTIOM TIMEEEEEE: $result['duration']");
     } else {
       print("Failed to fetch directions: ${json['status']}");
     }
 
     return result;
   }
-
-
-
 
   // Future<double> getTotalDistance() async {
   //   double totalDistance = 0.0;
@@ -431,7 +420,6 @@ class _ConfirmRouteState extends State<ConfirmRoute> {
   //   print("RESULLLLLLLLLLLLLTSSSSSSSSSSSSSSSS -${results.length}");
   //   return results;
   // }
-
 
 // Future<Map<String, dynamic>> getDirections() async{
 //   final client = Client();

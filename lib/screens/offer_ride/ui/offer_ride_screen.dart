@@ -1,57 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lyft_mate/screens/offer_ride/bloc/offer_ride_bloc.dart';
 
-import '../../models/ride.dart';
+import '../../../models/offer_ride.dart';
+import '../../home/bloc/home_bloc.dart';
+import '../../map/map_screen.dart';
+import 'confirm_route_screen.dart';
 
 class OfferRideScreen extends StatefulWidget {
-  const OfferRideScreen({super.key});
+  final HomeBloc homeBloc; // TODO: inject this instead of this
+  const OfferRideScreen({super.key, required this.homeBloc});
 
   @override
   State<OfferRideScreen> createState() => _OfferRideScreenState();
 }
 
 class _OfferRideScreenState extends State<OfferRideScreen> {
-  Ride ride = Ride();
+  final OfferRideBloc offerRideBloc = OfferRideBloc();
 
-  TextEditingController _pickupLocationController = TextEditingController();
-  TextEditingController _dropoffLocationController = TextEditingController();
-  double? pickupLat;
-  double? pickupLng;
-  double? dropoffLat;
-  double? dropoffLng;
-  DateTime? _selectedDate;
-  TimeOfDay? _selectedTime;
+  OfferRide ride = OfferRide();
+
+  final TextEditingController _pickupLocationController = TextEditingController();
+  final TextEditingController _dropoffLocationController = TextEditingController();
+  final TextEditingController _dateController = TextEditingController();
+  final TextEditingController _timeController = TextEditingController();
+
   String? selectedVehicle;
   String? selectedSeats;
-
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? pickedDate = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate ?? DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2101),
-    );
-    if (pickedDate != null && pickedDate != _selectedDate) {
-      setState(() {
-        _selectedDate = pickedDate;
-        // Update the date in the Ride class
-        ride.setDate(_selectedDate!);
-      });
-    }
-  }
-
-  Future<void> _selectTime(BuildContext context) async {
-    final TimeOfDay? pickedTime = await showTimePicker(
-      context: context,
-      initialTime: _selectedTime ?? TimeOfDay.now(),
-    );
-    if (pickedTime != null && pickedTime != _selectedTime) {
-      setState(() {
-        _selectedTime = pickedTime;
-        // Update the time in the Ride class
-        ride.setTime(_selectedTime!);
-      });
-    }
-  }
 
   Future<void> _selectVehicle(BuildContext context) async {
     final selected = await showModalBottomSheet<String>(
@@ -94,212 +70,198 @@ class _OfferRideScreenState extends State<OfferRideScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(15.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          TextField(
-            readOnly: true,
-            controller: _pickupLocationController,
-            onTap: () async {
-              // final result = await Navigator.push(
-              //   context,
-              //   MaterialPageRoute(
-              //     builder: (context) => MapScreen(
-              //       locType: 'pickup',
-              //     ),
-              //   ),
-              // );
-              // if (result != null) {
-              //   double lat = result['lat'];
-              //   double lng = result['lng'];
-              //   String locationName = result['locationName'];
-              //   String cityName = result['cityName'];
-              //
-              //   ride.updatePickupCoordinates(lat, lng);
-              //   ride.pickupCityName = cityName;
-              //   ride.pickupLocationName = locationName;
-              //   setState(() {
-              //     _pickupLocationController.text = locationName;
-              //     pickupLat = lat;
-              //     pickupLng = lng;
-              //   });
-              // }
-            },
-            decoration: const InputDecoration(
-              labelText: 'Pickup Location',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 10),
-          TextField(
-            readOnly: true,
-            controller: _dropoffLocationController,
-            onTap: () async {
-              // final result = await Navigator.push(
-              //   context,
-              //   MaterialPageRoute(
-              //     builder: (context) => MapScreen(
-              //       locType: 'dropoff',
-              //     ),
-              //   ),
-              // );
-              // if (result != null) {
-              //   double lat = result['lat'];
-              //   double lng = result['lng'];
-              //   String locationName = result['locationName'];
-              //   String cityName = result['cityName'];
-              //   ride.updateDropoffCoordinates(lat, lng);
-              //   ride.dropoffCityName = cityName;
-              //   ride.dropoffLocationName = locationName;
-              //   setState(() {
-              //     _dropoffLocationController.text = locationName;
-              //     dropoffLat = lat;
-              //     dropoffLng = lng;
-              //   });
-              // }
-            },
-            decoration: const InputDecoration(
-              labelText: 'Drop off Location',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => _selectDate(context),
-                  child: AbsorbPointer(
-                    child: TextFormField(
-                      readOnly: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Select Date',
-                        border: OutlineInputBorder(),
-                        suffixIcon: Icon(Icons.calendar_today),
-                      ),
-                      controller: TextEditingController(
-                        text: _selectedDate != null
-                            ? '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}'
-                            : '',
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => _selectTime(context),
-                  child: AbsorbPointer(
-                    child: TextFormField(
-                      readOnly: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Select Time',
-                        border: OutlineInputBorder(),
-                        suffixIcon: Icon(Icons.access_time),
-                      ),
-                      controller: TextEditingController(
-                        text: _selectedTime != null
-                            ? '${_selectedTime!.hourOfPeriod}:${_selectedTime!.minute} ${_selectedTime!.period == DayPeriod.am ? 'AM' : 'PM'}'
-                            : '',
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => _selectVehicle(context),
-                  child: AbsorbPointer(
-                    child: TextFormField(
-                      readOnly: true,
-                      decoration: InputDecoration(
-                        labelText: 'Select Vehicle',
-                        border: OutlineInputBorder(),
-                        suffixIcon: Icon(Icons.directions_car),
-                      ),
-                      controller: TextEditingController(
-                        text: selectedVehicle ?? '',
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: TextField(
-                  onChanged: (value) {
-                    setState(() {
-                      selectedSeats = value;
-                      ride.setSeats(value);
-                    });
-                  },
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: 'Select Seats',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Container(
-            // PROCEED Button - Offer Ride
-            height: 50.0,
-            color: Colors.transparent,
-            child: ElevatedButton(
-              style: ButtonStyle(
-                foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-                backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
-              ),
-              onPressed: () {
-                _handlePublishRideButtonPress();
-              },
-              child: const Text(
-                'Proceed',
-                style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+    return BlocConsumer<OfferRideBloc, OfferRideState>(
+      bloc: offerRideBloc,
+      listenWhen: (prev, curr) => curr is OfferRideActionState, //Take action if ActionState
+      buildWhen: (prev, curr) => curr is! OfferRideActionState, //Build ui if not ActionState
+      listener: (context, state) async {
+        if (state is OfferRideNavToPickupMapPageActionState) {                    // get user pickup location
+          final result = await Navigator.push(
+            context, MaterialPageRoute(builder: (context) => MapScreen(locType: 'pickup')));
 
-  // Function to handle button press
-  void _handlePublishRideButtonPress() {
-    if (pickupLat != null &&
-        pickupLng != null &&
-        dropoffLat != null &&
-        dropoffLng != null) {
-      // Navigate to the next screen with pickup and dropoff coordinates
-      // Navigator.push(
-      //   context,
-      //   MaterialPageRoute(
-      //     builder: (context) => ConfirmRoute(
-      //       pickupLat: pickupLat!,
-      //       pickupLng: pickupLng!,
-      //       dropoffLat: dropoffLat!,
-      //       dropoffLng: dropoffLng!,
-      //     ),
-      //   ),
-      // );
-    } else {
-      // Show an error or prompt the user to select locations
-      // before publishing the ride.
-    }
+          if (result != null) {
+            // context.read<OfferRideBloc>().add(LocationResultEvent(result));
+            offerRideBloc.add(OfferRidePickupLocationResultEvent(locationResult: result));
+            print("this is the resultsssss: $result");
+          }
+        } else if (state is OfferRideNavToDropoffMapPageActionState) { // get user drop-off location
+          final result = await Navigator.push(
+              context, MaterialPageRoute(
+              builder: (context) => MapScreen(locType: 'dropoff')));
+
+          if (result != null) {
+            offerRideBloc.add(
+                OfferRideDropoffLocationResultEvent(locationResult: result));
+            print("this is the DROPPPPPP resultsssss: $result");
+          }
+        } else if (state is OfferRideNavToConfirmRoutePageActionState) {
+          if (ride.pickupLocation != null && ride.dropoffLocation != null ) {
+            Navigator.push(
+              context, MaterialPageRoute(
+                builder: (context) => ConfirmRoute(pickupLocation: ride.pickupLocation, dropoffLocation: ride.dropoffLocation)));
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Please select pickup and dropoff locations.'),
+              ),
+            );
+          }
+        }
+      },
+      builder: (context, state) {
+        if (state is OfferRidePickupLocationUpdatedState) {                       // Update _pickupLocationController with the new location name
+          _pickupLocationController.text = state.ride.pickupLocationName ?? '';
+        } else if (state is OfferRideDropoffLocationUpdatedState) {               // Update _dropoffLocationController with the new location name
+          _dropoffLocationController.text = state.ride.dropoffLocationName ?? '';
+        } else if (state is OfferRideDateSelectedState) {
+          final formattedDate = state.ride.date != null
+              ? DateFormat('dd/MM/yyyy').format(state.ride.date!) : '';           // Handle the case when the DateTime object is null
+          _dateController.text = formattedDate;
+        } else if (state is OfferRideTimeSelectedState) {
+          final formattedTime = state.ride.time != null ? state.ride.time?.format(context) : ''; // Handle the case when the TimeOfDay object is null
+          _timeController.text = formattedTime!;
+        }
+
+        return Padding(
+          padding: const EdgeInsets.all(15.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextField(
+                readOnly: true,
+                controller: _pickupLocationController,
+                onTap: () {
+                  offerRideBloc.add(OfferRidePickupNavigateMapEvent());
+                },
+                decoration: const InputDecoration(
+                  labelText: 'Pickup Location',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                readOnly: true,
+                controller: _dropoffLocationController,
+                onTap: () async {
+                  offerRideBloc.add(OfferRideDropoffNavigateMapEvent());
+                },
+                decoration: const InputDecoration(
+                  labelText: 'Drop off Location',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        offerRideBloc.add(OfferRideSelectDateEvent(context));
+                      },
+                      // onTap: () => _selectDate(context),
+                      child: AbsorbPointer(
+                        child: TextFormField(
+                          readOnly: true,
+                          decoration: const InputDecoration(
+                            labelText: 'Select Date',
+                            border: OutlineInputBorder(),
+                            suffixIcon: Icon(Icons.calendar_today),
+                          ),
+                          controller: _dateController,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => offerRideBloc.add(OfferRideSelectTimeEvent(context)),
+                      child: AbsorbPointer(
+                        child: TextFormField(
+                          readOnly: true,
+                          decoration: const InputDecoration(
+                            labelText: 'Select Time',
+                            border: OutlineInputBorder(),
+                            suffixIcon: Icon(Icons.access_time),
+                          ),
+                          controller: _timeController,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => _selectVehicle(context),
+                      child: AbsorbPointer(
+                        child: TextFormField(
+                          readOnly: true,
+                          decoration: const InputDecoration(
+                            labelText: 'Select Vehicle',
+                            border: OutlineInputBorder(),
+                            suffixIcon: Icon(Icons.directions_car),
+                          ),
+                          controller: TextEditingController(
+                            text: selectedVehicle ?? '',
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: TextField(
+                      onChanged: (value) {
+                        setState(() {
+                          selectedSeats = value;
+                          ride.setSeats(value);
+                        });
+                      },
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Select Seats',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Container(
+                // PROCEED Button - Offer Ride
+                height: 50.0,
+                color: Colors.transparent,
+                child: ElevatedButton(
+                  style: ButtonStyle(
+                    foregroundColor:
+                        MaterialStateProperty.all<Color>(Colors.white),
+                    backgroundColor:
+                        MaterialStateProperty.all<Color>(Colors.green),
+                  ),
+                  onPressed: () {
+                    // widget.homeBloc.add(HomeOfferRideBtnNavigateEvent());
+                    offerRideBloc.add(OfferRideBtnNavigateEvent());
+
+                    // _handlePublishRideButtonPress();
+                  },
+                  child: const Text(
+                    'Proceed',
+                    style:
+                        TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
