@@ -7,6 +7,8 @@ import '../../../models/offer_ride.dart';
 import '../../home/bloc/home_bloc.dart';
 import '../../map/map_screen.dart';
 import 'confirm_route_screen.dart';
+import 'multi_route_screen.dart';
+import 'new_confirm_route_screen.dart';
 
 class OfferRideScreen extends StatefulWidget {
   final HomeBloc homeBloc; // TODO: inject this instead of this
@@ -98,7 +100,7 @@ class _OfferRideScreenState extends State<OfferRideScreen> {
           if (ride.pickupLocation != null && ride.dropoffLocation != null ) {
             Navigator.push(
               context, MaterialPageRoute(
-                builder: (context) => ConfirmRoute(pickupLocation: ride.pickupLocation, dropoffLocation: ride.dropoffLocation)));
+                builder: (context) => NewMapsRoute(pickupLocation: ride.pickupLocation, dropoffLocation: ride.dropoffLocation)));
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(

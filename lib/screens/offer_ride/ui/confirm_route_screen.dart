@@ -1,38 +1,22 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart';
-
 import 'package:flutter/material.dart';
-// import 'package:lyft_mate/src/constants/consts.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart'; // TODO - use Dio package
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:provider/provider.dart';
 
 import '../../../models/offer_ride.dart';
-// import '../providers/ride_provider.dart';
-// import 'package:lyft_mate/src/screens/ride_options.dart';
-import 'package:http/http.dart';
 
 import '../../ride/ride_options_screen.dart';
 
 class ConfirmRoute extends StatefulWidget {
-  // final double pickupLat;
-  // final double pickupLng;
-  // final double dropoffLat;
-  // final double dropoffLng;
   final LatLng? pickupLocation;
   final LatLng? dropoffLocation;
 
-  ConfirmRoute({required this.pickupLocation, required this.dropoffLocation});
-
-  // ConfirmRoute({
-  //   required this.dropoffLat,
-  //   required this.dropoffLng,
-  //   required this.pickupLat,
-  //   required this.pickupLng,
-  // });
+  const ConfirmRoute(
+      {super.key, required this.pickupLocation, required this.dropoffLocation});
 
   @override
   State<ConfirmRoute> createState() => _ConfirmRouteState();
@@ -62,15 +46,17 @@ class _ConfirmRouteState extends State<ConfirmRoute> {
     _kPickupLocation = widget.pickupLocation!;
     _kDropLocation = widget.dropoffLocation!;
 
-    getTotalDistanceAndDuration();
+    // getTotalDistanceAndDuration();
 
-    // try to use traffic api??
+    // TODO - try to use traffic api??
 
     _initializeRideDistance();
+
+
     // getDirections();
     // _fetchDirectionsAndPolylines();
-    // print("INSIDEEEEE CONFIRMMMM ROUTEEEEEEE${rideProvider.currentRide.pickupLat}");
     print("INSIDEEEEE Singleton CONFIRMMMM ROUTEEEEEEE${ride.pickupLocation}");
+
     getPolylinePoints().then((coordinates) {
       // rideProvider.updatePolylinePoints(coordinates);
       ride.polylinePoints = coordinates;
@@ -78,36 +64,12 @@ class _ConfirmRouteState extends State<ConfirmRoute> {
     });
   }
 
-  // void _initializeRideDistance() async {
-  //    double data = await getTotalDistanceAndDuration();
-  //   ride.rideDistance = distance;
-  //   print("ride from distance in ride: ${ride.rideDistance}");
-  //   // setState(() {
-  //   //   ride.rideDistance = distance;
-  //   // });
-  // }
-  // void _initializeRideDistance() async {
-  //   print("INITIAAAAAAAAAAAAAAAALIZEEE METHOD CALLEDdd");
-  //   Map<String, dynamic> result = await getTotalDistanceAndDuration();
-  //   int distance = result['distance']; // Assuming 'distance' is the key in the map
-  //   ride.rideDistance = distance as double?;
-  //
-  //   // Get duration without converting
-  //   Map<String, int> duration = result['duration'];
-  //   int? hours = duration['hours'];
-  //   int? minutes = duration['minutes'];
-  //
-  //   print("ride from distance in ride: ${ride.rideDistance}");
-  //   print("ride from DURATION in ride: $hours hours and $minutes minutes");
-  //
-  // }
-
   void _initializeRideDistance() async {
     print("INITIAAAAAAAAAAAAAAAALIZEEE METHOD CALLEDdd");
     Map<String, dynamic> result = await getTotalDistanceAndDuration();
     double distance =
         result['distance']; // Assuming 'distance' is the key in the map
-    ride.rideDistance = distance;
+    // ride.rideDistance = distance;
 
     // Get duration without converting
     Map<String, int> duration = result['duration'];
@@ -147,27 +109,6 @@ class _ConfirmRouteState extends State<ConfirmRoute> {
 
   @override
   Widget build(BuildContext context) {
-    LatLngBounds bounds = LatLngBounds(
-      southwest: _kPickupLocation,
-      northeast: _kDropLocation,
-    );
-
-    // LatLng center = LatLng(
-    //   (bounds.southwest.latitude + bounds.northeast.latitude) / 2,
-    //   (bounds.southwest.longitude + bounds.northeast.longitude) / 2,
-    // );
-
-    LatLng? mapCenter;
-    try {
-      mapCenter = LatLng(
-        (bounds.southwest.latitude + bounds.northeast.latitude) / 2,
-        (bounds.southwest.longitude + bounds.northeast.longitude) / 2,
-      );
-    } catch (error) {
-      print("Error calculating center: $error");
-      mapCenter = _kPickupLocation;
-    }
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.green,
@@ -182,61 +123,63 @@ class _ConfirmRouteState extends State<ConfirmRoute> {
         title: Text("Confirm Route"),
       ),
       body: SafeArea(
-        child: Stack(children: [
-          GoogleMap(
-            onMapCreated: ((GoogleMapController controller) =>
-                _mapController.complete(controller)),
-            initialCameraPosition: CameraPosition(
-              target: _kPickupLocation,
-              zoom: 10.8,
+        child: Stack(
+          children: [
+            GoogleMap(
+              onMapCreated: ((GoogleMapController controller) =>
+                  _mapController.complete(controller)),
+              initialCameraPosition: CameraPosition(
+                target: _kPickupLocation,
+                zoom: 10.8,
+              ),
+              markers: {
+                Marker(
+                  markerId: const MarkerId("_pickupLocation"),
+                  icon: BitmapDescriptor.defaultMarker,
+                  position: _kPickupLocation,
+                ),
+                Marker(
+                  markerId: MarkerId("_dropLocation"),
+                  icon: BitmapDescriptor.defaultMarker,
+                  position: _kDropLocation,
+                ),
+              },
+              polylines: Set<Polyline>.of(polylines.values),
             ),
-            markers: {
-              Marker(
-                markerId: const MarkerId("_pickupLocation"),
-                icon: BitmapDescriptor.defaultMarker,
-                position: _kPickupLocation,
-              ),
-              Marker(
-                markerId: MarkerId("_dropLocation"),
-                icon: BitmapDescriptor.defaultMarker,
-                position: _kDropLocation,
-              ),
-            },
-            polylines: Set<Polyline>.of(polylines.values),
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                height: 50.0,
-                color: Colors.transparent,
-                child: ElevatedButton(
-                  style: ButtonStyle(
-                    foregroundColor:
-                        MaterialStateProperty.all<Color>(Colors.white),
-                    backgroundColor:
-                        MaterialStateProperty.all<Color>(Colors.green),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Container(
+                  height: 50.0,
+                  color: Colors.transparent,
+                  child: ElevatedButton(
+                    style: ButtonStyle(
+                      foregroundColor:
+                          MaterialStateProperty.all<Color>(Colors.white),
+                      backgroundColor:
+                          MaterialStateProperty.all<Color>(Colors.green),
+                    ),
+                    onPressed: () {
+                      // _confirmPickupLocation(pickedLatitude, pickedLongitude  , _textController.text);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => RideOptions(),
+                        ),
+                      );
+                    },
+                    child: Text("Confirm Route",
+                        style: TextStyle(
+                            fontSize: 14.0, fontWeight: FontWeight.bold)),
                   ),
-                  onPressed: () {
-                    // _confirmPickupLocation(pickedLatitude, pickedLongitude  , _textController.text);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => RideOptions(),
-                      ),
-                    );
-                  },
-                  child: Text("Confirm Route",
-                      style: TextStyle(
-                          fontSize: 14.0, fontWeight: FontWeight.bold)),
                 ),
               ),
             ),
-          ),
-        ]),
+          ],
+        ),
       ),
     );
   }
