@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geoflutterfire2/geoflutterfire2.dart';
 
-import '../../models/ride.dart';
+import '../../models/offer_ride.dart';
 // import 'package:lyft_mate/src/screens/home_screen.dart';
 
 class RideOptions extends StatefulWidget {
@@ -13,12 +14,15 @@ class RideOptions extends StatefulWidget {
 }
 
 class _RideOptionsState extends State<RideOptions> {
+  final TextEditingController _notesController = TextEditingController();
+  final TextEditingController _pricePerSeatController = TextEditingController();
+
   String _selectedLuggageOption = 'Select Luggage';
   String _selectedPaymentOption = 'Select Payment';
   String _selectedApprovalOption = 'Select Approval';
-  List<String> _selectedPreferences = [];
+  final List<String> _selectedPreferences = [];
 
-  final Ride ride = Ride();
+  final OfferRide ride = OfferRide();
 
   void _showBottomSheet(BuildContext context, String title,
       List<String> options, Function(String) onSelect) {
@@ -33,13 +37,13 @@ class _RideOptionsState extends State<RideOptions> {
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
                   title,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Column(
                 children: options.map((option) {
                   return ListTile(
@@ -68,8 +72,8 @@ class _RideOptionsState extends State<RideOptions> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
+                  const Padding(
+                    padding: EdgeInsets.all(8.0),
                     child: Text(
                       'Select Preferences',
                       style: TextStyle(
@@ -78,7 +82,7 @@ class _RideOptionsState extends State<RideOptions> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   Column(
                     children:
                         ['Non-smoking', 'Music', 'Pet-friendly'].map((option) {
@@ -98,7 +102,7 @@ class _RideOptionsState extends State<RideOptions> {
                       );
                     }).toList(),
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                 ],
               ),
             );
@@ -112,24 +116,24 @@ class _RideOptionsState extends State<RideOptions> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Publish Ride'),
+        title: const Text('Publish Ride'),
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
         elevation: 0.5,
         // leadingWidth: 50.0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios), // Back button icon
+          icon: const Icon(Icons.arrow_back_ios), // Back button icon
           onPressed: () {
             Navigator.pop(context); // Handle back navigation
           },
         ),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(20),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(
+            const Center(
               child: Column(
                 children: [
                   Icon(
@@ -145,27 +149,40 @@ class _RideOptionsState extends State<RideOptions> {
                 ],
               ),
             ),
-            SizedBox(height: 20),
-            Text(
+            const SizedBox(height: 20),
+            const Text(
               'Got anything to add about the ride?',
               style: TextStyle(fontSize: 16),
             ),
-            Text(
+            const Text(
               'eg: Flexible about when and where to meet/ got limited space in the boot/ need passengers to be punctual/ etc.',
               style: TextStyle(fontSize: 12),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             TextField(
-              decoration: InputDecoration(
+              controller: _notesController,
+              decoration: const InputDecoration(
                 hintText: 'Enter your additional notes (max 100 characters)',
                 border: OutlineInputBorder(),
               ),
               maxLength: 100,
               maxLines: 3,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
+            TextField(
+              controller: _pricePerSeatController,
+              keyboardType: TextInputType.numberWithOptions(
+                  decimal: true), // Allow decimal numbers
+              decoration: const InputDecoration(
+                hintText: 'Price per seat',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(
+              height: 10,
+            ),
             ListTile(
-              title: Text('Luggage Allowance'),
+              title: const Text('Luggage Allowance'),
               trailing: Text(_selectedLuggageOption),
               onTap: () {
                 _showBottomSheet(
@@ -181,7 +198,7 @@ class _RideOptionsState extends State<RideOptions> {
               },
             ),
             ListTile(
-              title: Text('Mode of Payment'),
+              title: const Text('Mode of Payment'),
               trailing: Text(_selectedPaymentOption),
               onTap: () {
                 _showBottomSheet(
@@ -197,7 +214,7 @@ class _RideOptionsState extends State<RideOptions> {
               },
             ),
             ListTile(
-              title: Text('Ride Approval'),
+              title: const Text('Ride Approval'),
               trailing: Text(_selectedApprovalOption),
               onTap: () {
                 _showBottomSheet(
@@ -213,16 +230,16 @@ class _RideOptionsState extends State<RideOptions> {
               },
             ),
             ListTile(
-              title: Text('Preferences'),
+              title: const Text('Preferences'),
               // trailing: _selectedPreferences.isNotEmpty
               //     ? Text('Change Preferences')
               //     : Text('Select Preferences'),
-              trailing: Icon(Icons.arrow_drop_down),
+              trailing: const Icon(Icons.arrow_drop_down),
               onTap: () {
                 _showPreferencesBottomSheet(context);
               },
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -236,7 +253,23 @@ class _RideOptionsState extends State<RideOptions> {
                 backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
               ),
               onPressed: () {
-                addRideToFirestore(ride);
+                User? user = FirebaseAuth.instance.currentUser;
+
+                if (user != null) {
+                  // User is signed in
+                  print('User ID: ${user.uid}');
+                  print('User Name: ${user.email}');
+                }
+
+                ride.setPricePerSeat(
+                    double.parse(_pricePerSeatController.text));
+                ride.setLuggageAllowance(_selectedLuggageOption);
+                ride.setPaymentMode(_selectedPaymentOption);
+                ride.setRideApproval(_selectedApprovalOption);
+                ride.setPreferences(_selectedPreferences);
+                ride.setNotes(_notesController.text);
+
+                // addRideToFirestore(ride);
                 // Navigator.pushAndRemoveUntil(
                 //   context,
                 //   MaterialPageRoute(
@@ -245,7 +278,7 @@ class _RideOptionsState extends State<RideOptions> {
                 //       (route) => false,
                 // );
               },
-              child: Text(
+              child: const Text(
                 "Publish Ride",
                 style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold),
               ),
@@ -255,12 +288,12 @@ class _RideOptionsState extends State<RideOptions> {
   }
 }
 
-void addRideToFirestore(Ride ride) {
+Future<void> addRideToFirestore(OfferRide ride) async {
   final geo = GeoFlutterFire();
 
-  print("THISSSS IS THEEE RIDEEE in mfunc: $ride");
-  print("THISSSS IS THEEE RIDEEE Pickup mfunc: ${ride.pickupLocation}");
-  print("THISSSS IS THEEE RIDEEE deoppppkup mfunc: ${ride.dropoffLocation}");
+  // print("THISSSS IS THEEE RIDEEE in mfunc: $ride");
+  // print("THISSSS IS THEEE RIDEEE Pickup mfunc: ${ride.pickupLocation}");
+  // print("THISSSS IS THEEE RIDEEE deoppppkup mfunc: ${ride.dropoffLocation}");
 
   if (ride.pickupLocation == null || ride.dropoffLocation == null) {
     print('Error: Pickup location or dropoff location is null.');
@@ -269,44 +302,6 @@ void addRideToFirestore(Ride ride) {
 
   // Access the Firestore instance
   FirebaseFirestore firestore = FirebaseFirestore.instance;
-
-  // Convert pickup and dropoff locations to GeoPoint objects
-  GeoPoint pickupGeoPoint =
-      GeoPoint(ride.pickupLocation!.latitude, ride.pickupLocation!.longitude);
-  GeoPoint dropoffGeoPoint =
-      GeoPoint(ride.dropoffLocation!.latitude, ride.dropoffLocation!.longitude);
-
-  // // Convert polyline points (LatLng objects) to List<List<double>>
-  // List<List<double>> polylineCoordinates = ride.polylinePoints.map((latLng) {
-  //   return [latLng.latitude, latLng.longitude];
-  // }).toList();
-  List<Map<String, double>> polylineCoordinates =
-      ride.polylinePoints.map((latLng) {
-    return {
-      'latitude': latLng.latitude,
-      'longitude': latLng.longitude,
-    };
-  }).toList();
-
-  // Future createStore(String name, double lng, double lat) async {
-  //   GeoFirePoint geoPickupPoint = geo.point(
-  //     latitude: lat,
-  //     longitude: lng,
-  //   );
-  //
-  //   GeoFirePoint geoDropoffPoint = geo.point(
-  //     latitude: lat,
-  //     longitude: lng,
-  //   );
-  //
-  //   final storeData = {'name': name, 'location': geoPoint.data};
-  //
-  //   try {
-  //     await _firestore.collection('stores').add(storeData);
-  //   } catch (e) {
-  //     print(e);
-  //   }
-  // }
 
   GeoFirePoint geoPickupPoint = geo.point(
     latitude: ride.pickupLocation!.latitude,
@@ -318,37 +313,64 @@ void addRideToFirestore(Ride ride) {
     longitude: ride.dropoffLocation!.longitude,
   );
 
-  // Create a map containing ride data
-  Map<String, dynamic> rideData = {
-    'userId': "geoHASH-user-naha-uu-gihin",
-    'pickupLocation': geoPickupPoint.data,
-    'dropoffLocation': geoDropoffPoint.data,
-    "seats": ride.seats,
-    "vehicle": ride.vehicle,
-    "date": ride.date,
-    // "time": ride.time,
-    "pricePerSeat": ride.pricePerSeat,
-    "passengers": [], // List of passenger user IDs
-    "polylinePoints": polylineCoordinates, // Store polyline points as List<List<double>>
-    "rideDistance": ride.rideDistance,
-    "pickupCityName": ride.pickupCityName,
-    "pickupLocationName": ride.pickupLocationName,
-    "dropoffCityName": ride.dropoffCityName,
-    "dropoffLocationName": ride.dropoffLocationName,
-    "rideDuration": ride.rideDuration,
-    "luggageAllowance": ride.luggageAllowance ?? "",
-    "paymentMode": ride.paymentMode ?? "",
-    "rideApproval": ride.rideApproval ?? "",
-  };
+  List<Map<String, double>> polylineCoordinates =
+      ride.polylinePoints.map((latLng) {
+    return {
+      'latitude': latLng.latitude,
+      'longitude': latLng.longitude,
+    };
+  }).toList();
 
-  // Add the ride data to Firestore
-  firestore.collection('rides').add(rideData).then((value) {
-    // Successfully added ride to Firestore
-    print('Ride published successfully yakoooooooooooooooo!');
-    // Reset ride data if needed
-    ride.reset();
-  }).catchError((error) {
-    // Failed to add ride to Firestore
-    print('WTFFFF ettoooo Failed to publish ride: $error');
-  });
+  try {
+    User? user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      // Create a map containing ride data
+      Map<String, dynamic> rideData = {
+        'userId': user.uid,
+        'pickupLocation': geoPickupPoint.data,
+        'dropoffLocation': geoDropoffPoint.data,
+        "seats": ride.seats,
+        "vehicle": ride.vehicle,
+        "date": ride.date,
+        // "time": ride.time,
+        "pricePerSeat": ride.pricePerSeat,
+        "passengers": [], // List of passenger user IDs
+        "polylinePoints": polylineCoordinates, // Store polyline points as List<List<double>>
+        "rideDistance": ride.rideDistance,
+        "pickupCityName": ride.pickupCityName,
+        "pickupLocationName": ride.pickupLocationName,
+        "dropoffCityName": ride.dropoffCityName,
+        "dropoffLocationName": ride.dropoffLocationName,
+        "rideDuration": ride.rideDuration,
+        "luggageAllowance": ride.luggageAllowance ?? "",
+        "paymentMode": ride.paymentMode ?? "",
+        "rideApproval": ride.rideApproval ?? "",
+      };
+
+      // Add the ride data to Firestore
+      DocumentReference rideRef =
+      await firestore.collection('rides').add(rideData);
+
+      // Get the user document from Firestore
+      DocumentSnapshot userSnapshot = await firestore.collection('users').doc(user.uid).get();
+
+      // Extract the 'ridesPublished' array from the user document
+      List<String> userRides = List<String>.from(userSnapshot.get('ridesPublished') ?? []);
+
+      // Add the ID of the newly added ride to the 'ridesPublished' array
+      userRides.add(rideRef.id);
+
+      await firestore.collection('users').doc(user.uid).update({
+        'ridesPublished': userRides,
+      });
+
+      ride.reset();
+      print('Ride published successfully!');
+    } else {
+      print('Error: No user is currently signed in.');
+    }
+  } catch (error) {
+    print(error.toString());
+  }
 }
