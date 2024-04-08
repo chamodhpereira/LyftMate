@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-import '../models/ride.dart';
+import '../models/offer_ride.dart';
 
 // class RideProvider with ChangeNotifier {
 //   final Ride _currentRide = Ride();

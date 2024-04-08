@@ -11,7 +11,7 @@ import 'package:lyft_mate/widgets/custom_bottom_buttom.dart';
 
 
 import '../../../services/authentication_service.dart';
-import '../../home/home.dart';
+import '../../home/ui/home.dart';
 
 
 // import 'package:lyft_mate/src/screens/login_screen.dart';

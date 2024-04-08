@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../../../models/ride.dart';
+import '../../models/offer_ride.dart';
+import '../home/bloc/home_bloc.dart';
 
 class FindRideScreen extends StatefulWidget {
-  const FindRideScreen({super.key});
+  final HomeBloc homeBloc;
+  const FindRideScreen({super.key, required this.homeBloc});
 
   @override
   State<FindRideScreen> createState() => _FindRideScreenState();
@@ -11,7 +13,7 @@ class FindRideScreen extends StatefulWidget {
 
 class _FindRideScreenState extends State<FindRideScreen> {
 
-  Ride ride = Ride();
+  OfferRide ride = OfferRide();
 
   TextEditingController _pickupLocationController = TextEditingController();
   TextEditingController _dropoffLocationController = TextEditingController();
@@ -191,6 +193,7 @@ class _FindRideScreenState extends State<FindRideScreen> {
                 backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
               ),
               onPressed: () {
+                widget.homeBloc.add(HomeFindRideNavBtnNavigateEvent());
                 // _handlePublishRideButtonPress();
               },
               child: const Text(

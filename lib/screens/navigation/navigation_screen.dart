@@ -1,12 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lyft_mate/screens/chat/user_list.dart';
+import 'package:lyft_mate/screens/offer_ride/ui/offer_ride_screen.dart';
 import 'package:lyft_mate/screens/notifications/notifications_screen.dart';
 import 'package:lyft_mate/screens/user_rides/user_rides.dart';
 import 'package:lyft_mate/userprofile_screen.dart';
 
 
-import '../home/home.dart';
+import '../home/ui/home.dart';
 
 
 class NavigationScreen extends StatefulWidget {
@@ -21,8 +22,9 @@ class _NavigationScreenState extends State<NavigationScreen> {
   int selectedIndex = 0;
   List<Widget> widgetList = [
     HomePage(),
+    // OfferRideScreen(),
     UserRides(),  //should be user booked and published rides
-    UserList(), // should be user chat list
+    const UserList(), // should be user chat list
     UserProfileScreen()
   ];
 
@@ -52,7 +54,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
           },
           selectedItemColor: Colors.blue, // Color for selected item
           unselectedItemColor: Colors.grey, // Color for unselected items
-          items: [
+          items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.home),
               label: 'Home',

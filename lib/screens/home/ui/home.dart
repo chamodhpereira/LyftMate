@@ -142,7 +142,7 @@ class _HomePageState extends State<HomePage> {
 // import 'package:provider/provider.dart';
 //
 //
-// import '../../../models/ride.dart';
+// import '../../../models/offer_ride.dart';
 // import '../../../models/search_ride.dart';
 // import '../../../providers/ride_provider.dart';
 // import '../../notifications/notifications_screen.dart';

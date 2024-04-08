@@ -13,13 +13,10 @@ import 'package:uuid/uuid.dart';
 import '../../services/map/place_service.dart';
 
 class MapScreen extends StatefulWidget {
-  final String locType;
+  final String? locType;
 
 
-  MapScreen({super.key,
-    required this.locType,
-
-  });
+  MapScreen({super.key, this.locType,});
 
   @override
   State<MapScreen> createState() => _MapScreenState();
@@ -58,7 +55,7 @@ class _MapScreenState extends State<MapScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    locationType = widget.locType;
+    locationType = widget.locType!;
   }
 
   @override

@@ -9,10 +9,13 @@ import 'package:lyft_mate/providers/ride_provider.dart';
 import 'package:lyft_mate/providers/user_provider.dart';
 import 'package:lyft_mate/screens/chat/user_list.dart';
 import 'package:lyft_mate/screens/find_ride/find_rides.dart';
-import 'package:lyft_mate/screens/home/home.dart';
+import 'package:lyft_mate/screens/home/ui/home.dart';
+import 'package:lyft_mate/screens/map/map_screen.dart';
+import 'package:lyft_mate/screens/offer_ride/ui/offer_ride_screen.dart';
 import 'package:lyft_mate/screens/login/login_screen.dart';
 import 'package:lyft_mate/screens/navigation/navigation_screen.dart';
 import 'package:lyft_mate/screens/onboarding/onboarding_screen.dart';
+import 'package:lyft_mate/screens/payment/payment_screen.dart';
 // import 'package:lyft_mate/screens/payment/card_form_screen.dart';
 import 'package:lyft_mate/screens/profile/initial_setup.dart';
 import 'package:lyft_mate/screens/profile/user_profile_screen.dart';
@@ -37,6 +40,8 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await dotenv.load(fileName: ".env");
+  Stripe.publishableKey = dotenv.env['STRIPE_PUBLISHABLE_KEY']!;
+  await Stripe.instance.applySettings();
   runApp(MyApp());
 }
 
@@ -56,9 +61,18 @@ class MyApp extends StatelessWidget {
         theme: LyftMateAppTheme.lightTheme,
         darkTheme: LyftMateAppTheme.darkTheme,
         themeMode: ThemeMode.system,
+        onGenerateRoute: (settings) {
+          if (settings.name == '/mapScreen') {
+            return MaterialPageRoute(
+              builder: (context) => MapScreen(),
+            );
+          }
+          return null;
+        },
         // home: FindRides(),
-        home: LoginScreen(),
+        home: HomePage(),
         // home: MapPage(),
+        // home: PaymentScreen(),
         // routes: ,
       ),
     );
