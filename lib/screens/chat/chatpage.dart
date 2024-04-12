@@ -31,6 +31,10 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
+
+    print("this is the reciever user id: ${widget.receiverUserID}");
+
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.receiverUserEmail),
@@ -38,7 +42,8 @@ class _ChatPageState extends State<ChatPage> {
       body: Column(
         children: [
           Expanded(
-            child: _buildMessageList(),
+            // child: _buildMessageList(),
+            child: Container(),
           ),
           _buildMessageInput()
         ],
@@ -46,31 +51,86 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
+  // working commtented for dash chat
+
+  // Widget _buildMessageList() {
+  //   return FutureBuilder<Stream<QuerySnapshot>>(
+  //     future: _chatService.getMessages(widget.receiverUserID, _firebaseAuth.currentUser!.uid),
+  //     builder: (context, snapshot) {
+  //       if (snapshot.connectionState == ConnectionState.waiting) {
+  //         return Text("Loading...");
+  //       }
+  //       if (snapshot.hasError) {
+  //         return Text("Error: ${snapshot.error}");
+  //       }
+  //
+  //       Stream<QuerySnapshot>? messagesStream = snapshot.data;
+  //       if (messagesStream == null) {
+  //         return Center(
+  //           child: Text("No messages yet."),
+  //         );
+  //       }
+  //
+  //       return StreamBuilder<QuerySnapshot>(
+  //         stream: messagesStream,
+  //         builder: (context, snapshot) {
+  //           if (snapshot.connectionState == ConnectionState.waiting) {
+  //             return Text("Loading...");
+  //           }
+  //           if (snapshot.hasError) {
+  //             return Text("Error: ${snapshot.error}");
+  //           }
+  //           if (snapshot.data!.docs.isEmpty) {
+  //             return Center(
+  //               child: Text("No messages yet."),
+  //             );
+  //           }
+  //
+  //           List<Widget> messageWidgets = snapshot.data!.docs
+  //               .map<Widget>((document) => _buildMessageItem(document))
+  //               .toList();
+  //
+  //           return ListView(
+  //             children: messageWidgets,
+  //           );
+  //         },
+  //       );
+  //     },
+  //   );
+  // }
+
+
+// working
   //build message list
-  Widget _buildMessageList() {
-    return StreamBuilder(
-      stream: _chatService.getMessages(
-          widget.receiverUserID, _firebaseAuth.currentUser!.uid),
-      builder: (context, snapshot) {
-        if(snapshot.hasError){
-          return Text("Error${snapshot.error}");
-        }
-        
-        if(snapshot.connectionState == ConnectionState.waiting) {
-          return Text("loading.....");
-
-        }
-
-        List<Widget> messageWidgets = snapshot.data!.docs
-            .map<Widget>((document) => _buildMessageItem(document))
-            .toList();
-
-        return ListView(
-          children: messageWidgets,
-        );
-      },
-    );
-  }
+  // Widget _buildMessageList() {
+  //   return StreamBuilder(
+  //     stream: _chatService.getMessages(
+  //         widget.receiverUserID, _firebaseAuth.currentUser!.uid),
+  //     builder: (context, snapshot) {
+  //       if(snapshot.hasError){
+  //         return Text("Error${snapshot.error}");
+  //       }
+  //
+  //       if(snapshot.connectionState == ConnectionState.waiting) {
+  //         return Text("loading.....");
+  //
+  //       }
+  //       if(snapshot.data!.docs.isEmpty) {
+  //         return Center(
+  //           child: Text("No messages yet."),
+  //         );
+  //       }
+  //
+  //       List<Widget> messageWidgets = snapshot.data!.docs
+  //           .map<Widget>((document) => _buildMessageItem(document))
+  //           .toList();
+  //
+  //       return ListView(
+  //         children: messageWidgets,
+  //       );
+  //     },
+  //   );
+  // }
 
 // build message item
 //   Widget _buildMessageItem(DocumentSnapshot document) {

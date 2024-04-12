@@ -61,16 +61,9 @@ class MyApp extends StatelessWidget {
         theme: LyftMateAppTheme.lightTheme,
         darkTheme: LyftMateAppTheme.darkTheme,
         themeMode: ThemeMode.system,
-        onGenerateRoute: (settings) {
-          if (settings.name == '/mapScreen') {
-            return MaterialPageRoute(
-              builder: (context) => MapScreen(),
-            );
-          }
-          return null;
-        },
+        home: NavigationScreen(),
         // home: FindRides(),
-        home: HomePage(),
+        // home: HomePage(),
         // home: MapPage(),
         // home: PaymentScreen(),
         // routes: ,

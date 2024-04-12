@@ -32,6 +32,7 @@ class OfferRide {
   List<String> ridePreferences = [];
   List<String> passengers = []; // List of passenger user IDs
   List<LatLng> polylinePoints = []; // List to store polyline points
+  String rideStatus = "pending";
 
 
 

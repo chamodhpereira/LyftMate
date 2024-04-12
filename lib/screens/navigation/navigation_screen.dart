@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:lyft_mate/screens/chat/chat_screen.dart';
 import 'package:lyft_mate/screens/chat/user_list.dart';
 import 'package:lyft_mate/screens/offer_ride/ui/offer_ride_screen.dart';
 import 'package:lyft_mate/screens/notifications/notifications_screen.dart';
@@ -7,6 +8,7 @@ import 'package:lyft_mate/screens/user_rides/user_rides.dart';
 import 'package:lyft_mate/userprofile_screen.dart';
 
 
+import '../chat/chat_list.dart';
 import '../home/ui/home.dart';
 
 
@@ -25,6 +27,8 @@ class _NavigationScreenState extends State<NavigationScreen> {
     // OfferRideScreen(),
     UserRides(),  //should be user booked and published rides
     const UserList(), // should be user chat list
+    // InteractedUsersPage(),
+    // ChatScreen(),
     UserProfileScreen()
   ];
 

@@ -269,7 +269,7 @@ class _RideOptionsState extends State<RideOptions> {
                 ride.setPreferences(_selectedPreferences);
                 ride.setNotes(_notesController.text);
 
-                // addRideToFirestore(ride);
+                addRideToFirestore(ride);
                 // Navigator.pushAndRemoveUntil(
                 //   context,
                 //   MaterialPageRoute(
@@ -346,6 +346,7 @@ Future<void> addRideToFirestore(OfferRide ride) async {
         "luggageAllowance": ride.luggageAllowance ?? "",
         "paymentMode": ride.paymentMode ?? "",
         "rideApproval": ride.rideApproval ?? "",
+        "rideStatus" : ride.rideStatus,
       };
 
       // Add the ride data to Firestore
