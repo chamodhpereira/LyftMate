@@ -58,6 +58,7 @@ dependencies:
   crypto: ^3.0.3
   url_launcher: ^6.1.14
   dash_chat_2: ^0.0.20
+  geolocator: ^11.0.0
 
 dev_dependencies:
   flutter_test:
