@@ -59,6 +59,8 @@ dependencies:
   url_launcher: ^6.1.14
   dash_chat_2: ^0.0.20
   geolocator: ^11.0.0
+  firebase_messaging: ^14.7.10
+  flutter_local_notifications: ^17.0.1
 
 dev_dependencies:
   flutter_test:
