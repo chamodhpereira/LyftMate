@@ -1,11 +1,15 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lyft_mate/screens/find_ride/find_ride_screen.dart';
 import 'package:lyft_mate/screens/notifications/notifications_screen.dart';
 import 'package:lyft_mate/screens/offer_ride/ui/offer_ride_screen.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:provider/provider.dart';
 
+import '../../../providers/notification_provider.dart';
 import '../bloc/home_bloc.dart';
-
 
 class HomePage extends StatefulWidget {
   // const Home({super.key});
@@ -15,9 +19,43 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  // void _getToken() {
+  //   FirebaseMessaging.instance.getToken().then((token) {
+  //     print('FCM Token: $token');
+  //   });
+  // }
+  String? userID = FirebaseAuth.instance.currentUser?.uid;
+  bool newNotificationsAvailable = false;
+
   @override
   void initState() {
     homeBloc.add(HomeInitialEvent());
+
+    // Add listener to FirebaseMessaging to detect new notifications
+    // FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    //   // Update state variable when new notification is received
+    //   setState(() {
+    //     newNotificationsAvailable = true;
+    //   });
+    // });
+
+    // FirebaseFirestore.instance
+    //     .collection('users')
+    //     .doc(userID)
+    //     .collection('notifications')
+    //     .snapshots()
+    //     .listen((snapshot) {
+    //   // Check if there are new documents or modifications
+    //   bool hasNewDocument = snapshot.docChanges.any((change) => change.type == DocumentChangeType.added || change.type == DocumentChangeType.modified);
+    //   print("HAASSSSSSSSSSSSSS in homeeeee CHANGEEEEEEEEEE: $hasNewDocument");
+    //   if(hasNewDocument){
+    //     setState(() {
+    //       newNotificationsAvailable = true;
+    //     });
+    //   }
+    //
+    // });
+
     super.initState();
   }
 
@@ -25,21 +63,46 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final notificationProvider = context.watch<NotificationProvider>();
+    print(
+        "hasssNewNotification value: ${notificationProvider.hasNewNotification}");
+
+    // _getToken();
     return Scaffold(
-        appBar: AppBar(
+      appBar: AppBar(
         title: Text('LyftMate'),
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
         elevation: 0.5,
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications),
+            icon: Icon(
+              notificationProvider.hasNewNotification
+                  ? Icons
+                      .notifications_active // Change icon if new notifications are available
+                  : Icons.notifications,
+            ),
             onPressed: () {
-              homeBloc.add(
-                  HomeNotificationNavBtnNavigateEvent()
-              );
+              homeBloc.add(HomeNotificationNavBtnNavigateEvent());
             },
           ),
+          // Consumer<NotificationProvider>(
+          //   builder: (context, notificationProvider, _) {
+          //     print("Doessss have new notificationsss: ${notificationProvider.hasNewNotification}");
+          //     return IconButton(
+          //       icon: Icon(
+          //         notificationProvider.hasNewNotification
+          //             ? Icons.notifications_active // Change icon if new notifications are available
+          //             : Icons.notifications,
+          //       ),
+          //       onPressed: () {
+          //         homeBloc.add(
+          //             HomeNotificationNavBtnNavigateEvent()
+          //         );
+          //       },
+          //     );
+          //   },
+          // ),
         ],
       ),
       body: Column(
@@ -81,13 +144,15 @@ class _HomePageState extends State<HomePage> {
             child: BlocConsumer<HomeBloc, HomeState>(
               bloc: homeBloc,
               listenWhen: (prev, curr) =>
-              curr is HomeActionState, //Take action if ActionState
+                  curr is HomeActionState, //Take action if ActionState
               buildWhen: (prev, curr) =>
-              curr is! HomeActionState, //Build ui if not ActionState
+                  curr is! HomeActionState, //Build ui if not ActionState
               listener: (context, state) {
                 if (state is HomeNavToNotificationPageActionState) {
                   Navigator.push(
-                      context, MaterialPageRoute(builder: (context) => NotificationsPage()));
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => NotificationsPage()));
                 } else if (state is HomeNavToFindRidePageActionState) {
                   print("navigating to find ride screeen");
                 }
@@ -103,9 +168,13 @@ class _HomePageState extends State<HomePage> {
               builder: (context, state) {
                 // the three states that need to be handled in my builder
                 if (state is HomeDisplayFindRideScreen) {
-                  return FindRideScreen(homeBloc: homeBloc,);
+                  return FindRideScreen(
+                    homeBloc: homeBloc,
+                  );
                 } else if (state is HomeDisplayOfferRideScreen) {
-                  return OfferRideScreen(homeBloc: homeBloc,); //not the right way - change this after testing
+                  return OfferRideScreen(
+                    homeBloc: homeBloc,
+                  ); //not the right way - change this after testing
                 } else {
                   return SizedBox();
                 }
@@ -118,20 +187,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // ---- working but deleted some code can be taken from git commit refactor ride screen
 // import 'package:flutter/material.dart';

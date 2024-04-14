@@ -1,10 +1,14 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:lyft_mate/home.dart';
 import 'package:lyft_mate/map_test/map_test.dart';
 import 'package:lyft_mate/models/loggeduser.dart';
 import 'package:lyft_mate/models/user.dart';
+import 'package:lyft_mate/providers/notification_provider.dart';
 import 'package:lyft_mate/providers/ride_provider.dart';
 import 'package:lyft_mate/providers/user_provider.dart';
 import 'package:lyft_mate/screens/chat/user_list.dart';
@@ -22,6 +26,7 @@ import 'package:lyft_mate/screens/profile/user_profile_screen.dart';
 import 'package:lyft_mate/screens/signup/screens/signup_screen.dart';
 
 import 'package:lyft_mate/services/authentication_service.dart';
+import 'package:lyft_mate/services/notifications/notifications_service.dart';
 import 'package:lyft_mate/userprofile_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -39,9 +44,20 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+
+
+
   await dotenv.load(fileName: ".env");
   Stripe.publishableKey = dotenv.env['STRIPE_PUBLISHABLE_KEY']!;
   await Stripe.instance.applySettings();
+
+  if (Firebase.apps.isNotEmpty) {
+      NotificationService.initNotifications();
+  }
+
+  // NotificationService.initNotifications();
+
   runApp(MyApp());
 }
 
@@ -52,6 +68,7 @@ class MyApp extends StatelessWidget {
       providers: [
         // ChangeNotifierProvider(create: (_) => LoggedUser()),
         // ChangeNotifierProvider(create: (_) => RideProvider()),
+        ChangeNotifierProvider(create: (_)=> NotificationProvider()),
         ChangeNotifierProvider(create: (context) => RadiusProvider()),
         ChangeNotifierProvider(create: (_) => UserM()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
@@ -61,7 +78,9 @@ class MyApp extends StatelessWidget {
         theme: LyftMateAppTheme.lightTheme,
         darkTheme: LyftMateAppTheme.darkTheme,
         themeMode: ThemeMode.system,
-        home: NavigationScreen(),
+        // home: LocationPickScreen(),
+        // home: NavigationScreen(),
+        home: LoginScreen(),
         // home: FindRides(),
         // home: HomePage(),
         // home: MapPage(),

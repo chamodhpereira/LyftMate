@@ -12,6 +12,7 @@ class OfferRide {
 
   String? id; // Unique identifier for the ride
   String? userId; // ID of the user offering/requesting the ride
+  LatLng? rideLocation;
   LatLng? pickupLocation; // LatLng object representing pickup location
   LatLng? dropoffLocation; // LatLng object representing dropoff location
   String? seats;
@@ -39,6 +40,7 @@ class OfferRide {
   void reset() {
     id = null;
     userId = null;
+    rideLocation = null;
     pickupLocation = null;
     dropoffLocation = null;
     seats = null;
@@ -77,6 +79,7 @@ class OfferRide {
     pickupLocation = LatLng(lat, lng);
     pickupLocationName = locationName;
     pickupCityName = cityName;
+    rideLocation = LatLng(lat, lng);
   }
 
   // Update method to set dropoff location details

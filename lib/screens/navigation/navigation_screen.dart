@@ -4,6 +4,8 @@ import 'package:lyft_mate/screens/chat/chat_screen.dart';
 import 'package:lyft_mate/screens/chat/user_list.dart';
 import 'package:lyft_mate/screens/offer_ride/ui/offer_ride_screen.dart';
 import 'package:lyft_mate/screens/notifications/notifications_screen.dart';
+import 'package:lyft_mate/screens/profile/user_profile_screen.dart';
+import 'package:lyft_mate/screens/ride_tracking/start_ride_screen.dart';
 import 'package:lyft_mate/screens/user_rides/user_rides.dart';
 import 'package:lyft_mate/userprofile_screen.dart';
 
@@ -29,7 +31,9 @@ class _NavigationScreenState extends State<NavigationScreen> {
     const UserList(), // should be user chat list
     // InteractedUsersPage(),
     // ChatScreen(),
-    UserProfileScreen()
+    // UserProfileScreen()
+    // StartRideScreen()
+    UserProfilePage()
   ];
 
   void onTap() {

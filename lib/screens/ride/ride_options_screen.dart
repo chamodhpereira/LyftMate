@@ -328,6 +328,7 @@ Future<void> addRideToFirestore(OfferRide ride) async {
       // Create a map containing ride data
       Map<String, dynamic> rideData = {
         'userId': user.uid,
+        'rideLocation': geoPickupPoint.data,
         'pickupLocation': geoPickupPoint.data,
         'dropoffLocation': geoDropoffPoint.data,
         "seats": ride.seats,

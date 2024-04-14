@@ -1,22 +1,31 @@
+import 'dart:math';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:location/location.dart';
 import 'package:lyft_mate/screens/user_rides/published_rides_details.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import '../ride_tracking/ride_tracking_screen.dart';
 
 class UserRides extends StatefulWidget {
   @override
   _UserRidesState createState() => _UserRidesState();
 }
 
-class _UserRidesState extends State<UserRides>
-    with SingleTickerProviderStateMixin {
+class _UserRidesState extends State<UserRides> with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  late User _user = FirebaseAuth
-      .instance.currentUser!; // Add a User object to store the current user
+  Location location = Location();
+
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+  late CollectionReference ridesCollection;
+
+  late User _user = FirebaseAuth.instance.currentUser!; // Add a User object to store the current user
 
   List<String> canceledRideIds = [];
 
@@ -24,6 +33,7 @@ class _UserRidesState extends State<UserRides>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    ridesCollection = firestore.collection('rides');
     // _getUser(); // Call _getUser method to get the current user
   }
 
@@ -140,7 +150,7 @@ class _UserRidesState extends State<UserRides>
                     return Center(child: Text('No ride details available'));
                   }
 
-                  // Display ridesPublished with details in a list
+                  // Display ridesBooked with details in a list
                   return ListView.builder(
                     itemCount: ridesSnapshot.data!.length,
                     itemBuilder: (context, index) {
@@ -160,20 +170,8 @@ class _UserRidesState extends State<UserRides>
     );
   }
 
-  // Future<List<Map<String, dynamic>>> _fetchRidesDetails(List<dynamic> rideIds) async {
-  //   List<Map<String, dynamic>> ridesDetails = [];
-  //   // Fetch ride details for each ride ID
-  //   for (var rideId in rideIds) {
-  //     DocumentSnapshot rideSnapshot = await FirebaseFirestore.instance.collection('rides').doc(rideId).get();
-  //     if (rideSnapshot.exists) {
-  //       ridesDetails.add(rideSnapshot.data() as Map<String, dynamic>);
-  //     }
-  //   }
-  //   return ridesDetails;
-  // }
 
-  Future<List<Map<String, dynamic>>> _fetchRidesDetails(
-      List<dynamic> rideIds) async {
+  Future<List<Map<String, dynamic>>> _fetchRidesDetails(List<dynamic> rideIds) async {
     List<Map<String, dynamic>> ridesDetails = [];
 
     for (var rideId in rideIds) {
@@ -209,6 +207,71 @@ class _UserRidesState extends State<UserRides>
     return ridesDetails;
   }
 
+
+  Future<void> updateRideLocation(String rideId, double newLatitude, double newLongitude) async {
+    try {
+      final DocumentSnapshot rideTrackingDoc = await ridesCollection.doc(rideId).get();
+
+      // Check if doc with ride id exists:
+      if (rideTrackingDoc.exists) {
+        // Update the existing doc
+        await ridesCollection.doc(rideId).update({
+          'rideLocation': GeoPoint(newLatitude, newLongitude),
+        });
+
+        print("Updatedddd ride location in ride Document $rideId");
+      } else {
+        // Create a new one
+        print("NOOOOOOOOOOOO DOCSSSSSSS FOUNF WITH ID $rideId");
+        // await addRideTracking(rideId, newLatitude, newLongitude);
+      }
+    } catch(e) {
+      print("Error updating in update order loc method: $e");
+    }
+  }
+
+  double _previousLatitude = 0;
+  double _previousLongitude = 0;
+
+  void _subscribeToLocationChanges(String rideId) {
+    location.onLocationChanged.listen((LocationData currentLocation) {
+      double newLatitude = currentLocation.latitude ?? 0;
+      double newLongitude = currentLocation.longitude ?? 0;
+
+      // Calculate the distance between the new and previous locations
+      double distance = _calculateDistance(_previousLatitude, _previousLongitude, newLatitude, newLongitude);
+
+      // Update Firestore only if the distance exceeds a certain threshold (e.g., 100 meters)
+      if (distance >= 1000) {
+        print("Location changed: ${currentLocation}");
+        updateRideLocation(rideId, newLatitude, newLongitude);
+
+        // Update previous location data
+        _previousLatitude = newLatitude;
+        _previousLongitude = newLongitude;
+      }
+    });
+
+    location.enableBackgroundMode(enable: true);
+  }
+
+// Function to calculate distance between two coordinates (in meters)
+  double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+    const double earthRadius = 6371000; // Radius of the earth in meters
+    double dLat = _degreesToRadians(lat2 - lat1);
+    double dLon = _degreesToRadians(lon2 - lon1);
+    double a = sin(dLat / 2) * sin(dLat / 2) +
+        cos(_degreesToRadians(lat1)) * cos(_degreesToRadians(lat2)) *
+            sin(dLon / 2) * sin(dLon / 2);
+    double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+    return earthRadius * c;
+  }
+
+  double _degreesToRadians(double degrees) {
+    return degrees * pi / 180;
+  }
+
+
   Widget _buildPublishedRideCard(Map<String, dynamic> rideData, String rideId) {
     // Replace this with your actual ride data
     String startingPoint = rideData['pickupCityName'] ?? 'Starting Point';
@@ -223,23 +286,32 @@ class _UserRidesState extends State<UserRides>
 
     bool isRideCancelled = canceledRideIds.contains(rideId);
 
+    bool isRideStarted = false;
+
     // Extract driver details
     Map<String, dynamic> driverDetails = rideData['driverDetails'];
-    String driverName =
-        driverDetails['firstName'] + " " + driverDetails['lastName'] ??
-            'Unknown';
+    String driverName = driverDetails['firstName'] + " " + driverDetails['lastName'] ?? 'Unknown';
     double driverRating = driverDetails['rating'] ?? 0.0;
     int numberOfReviews = driverDetails['numberOfReviews'] ?? 0;
+
 
     void _startJourney() async {
       // Update ride status to 'In Progress' in Firestore
       await FirebaseFirestore.instance.collection('rides').doc(rideId).update({
         'rideStatus': 'In Progress',
       });
+
       // Update UI if necessary
       setState(() {
         rideStatus = 'In Progress';
+        isRideStarted = true;
       });
+
+      if(isRideStarted) {
+        print("Rideeeee JORUNEY STARTEDDDDD $rideId, inside WIDGET CARD");
+        _subscribeToLocationChanges(rideId);
+        // addRideTracking(rideIDController.text, customerLatitude, customerLongitude);
+      }
     }
 
     void _cancelRide() async {
@@ -307,7 +379,7 @@ class _UserRidesState extends State<UserRides>
               title: Text('$startingPoint -> $endingPoint'),
               trailing: Chip(
                 // label: Text(toBeginningOfSentenceCase(rideStatus)), // TODO: fix intl downgraded dependecy issue
-                label: Text("Status issue"),
+                label: Text(rideStatus + "**"),
                 backgroundColor:
                     toBeginningOfSentenceCase(rideStatus) == 'Pending'
                         ? Colors.blue
@@ -442,6 +514,8 @@ class _UserRidesState extends State<UserRides>
 
     bool isInProgress = rideStatus.toLowerCase() == 'in progress';
 
+    print("RIDDDDDDDDDDDDEEEEEEEEEE IDDDDD FOR TRACKING $rideId");
+
     void _leaveRide() async {
       passengers.remove(user?.uid); // Assuming userId is available in the scope
 
@@ -472,7 +546,7 @@ class _UserRidesState extends State<UserRides>
             title: Text('$startingPoint -- --> $endingPoint', style: TextStyle(fontWeight: FontWeight.w900),),
             trailing: Chip(
               // label: Text(toBeginningOfSentenceCase(rideStatus ?? '')), // TODO: fix intl downgraded dependecy issue
-            label: Text("Status issue"),
+            label: Text(rideStatus),
               backgroundColor:
                   toBeginningOfSentenceCase(rideStatus) == 'Pending'
                       ? Colors.blue
@@ -550,7 +624,10 @@ class _UserRidesState extends State<UserRides>
                   padding: const EdgeInsets.all(8.0),
                   child: ElevatedButton(
                     onPressed: () {
-                      // Track ride action
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => RideTrackingPage(rideId: rideId, rideData: rideData)),
+                      );
                     },
                     child: Text('Track Ride'),
                   ),
@@ -564,137 +641,3 @@ class _UserRidesState extends State<UserRides>
   }
 }
 
-// --------------- just the ui -------------
-// class UserRides extends StatefulWidget {
-//   @override
-//   _UserRidesState createState() => _UserRidesState();
-// }
-//
-// class _UserRidesState extends State<UserRides> with SingleTickerProviderStateMixin {
-//   late TabController _tabController;
-//
-//
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     _tabController = TabController(length: 2, vsync: this);
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text('Rides'),
-//         backgroundColor: Colors.green,
-//         foregroundColor: Colors.white,
-//         elevation: 0.5,
-//         leadingWidth: 50.0,
-//         bottom: TabBar(
-//           controller: _tabController,
-//           tabs: [
-//             Tab(text: 'Published'),
-//             Tab(text: 'Booked'),
-//           ],
-//         ),
-//       ),
-//       body: TabBarView(
-//         controller: _tabController,
-//         children: [
-//           // Published Rides Tab
-//           Center(
-//             child: Text('No any Published Rides'),
-//           ),
-//           // Booked Rides Tab
-//           ListView(
-//             children: [
-//               _buildBookedRideCard('Upcoming'),
-//               _buildBookedRideCard('Cancelled'),
-//               _buildBookedRideCard('Completed'),
-//               _buildBookedRideCard('Upcoming'),
-//             ],
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-//
-//   Widget _buildBookedRideCard(String rideStatus) {
-//     // Replace this with your actual ride data
-//     String startingPoint = 'Starting Point';
-//     String endingPoint = 'Ending Point';
-//     double price = 50.0;
-//     DateTime rideDate = DateTime.now();
-//     TimeOfDay startingTime = TimeOfDay(hour: 8, minute: 0);
-//     TimeOfDay endingTime = TimeOfDay(hour: 10, minute: 0);
-//     int passengers = 3;
-//     String driverName = 'John Doe';
-//     double driverRating = 4.5;
-//     int numberOfReviews = 20;
-//
-//     return Card(
-//       margin: EdgeInsets.all(10),
-//       child: Column(
-//         crossAxisAlignment: CrossAxisAlignment.start,
-//         children: [
-//           ListTile(
-//             title: Text('$startingPoint -> $endingPoint'),
-//             trailing: Chip(
-//               label: Text(rideStatus),
-//               backgroundColor: rideStatus == 'Upcoming'
-//                   ? Colors.blue
-//                   : rideStatus == 'Cancelled'
-//                   ? Colors.red
-//                   : Colors.green,
-//             ),
-//           ),
-//           Padding(
-//             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-//             child: Row(
-//               children: [
-//                 Icon(Icons.attach_money),
-//                 SizedBox(width: 8),
-//                 Text('\$$price'),
-//               ],
-//             ),
-//           ),
-//           Padding(
-//             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-//             child: Row(
-//               children: [
-//                 Icon(Icons.calendar_today),
-//                 SizedBox(width: 8),
-//                 Text('${rideDate.year}-${rideDate.month}-${rideDate.day}'),
-//               ],
-//             ),
-//           ),
-//           Padding(
-//             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-//             child: Row(
-//               children: [
-//                 Icon(Icons.access_time),
-//                 SizedBox(width: 8),
-//                 Text('${startingTime.format(context)} - ${endingTime.format(context)}'),
-//               ],
-//             ),
-//           ),
-//           ListTile(
-//             leading: CircleAvatar(
-//               // Replace with driver's profile image
-//               backgroundColor: Colors.blue,
-//               child: Icon(Icons.person),
-//             ),
-//             title: Text('$driverName'),
-//             subtitle: Row(
-//               children: [
-//                 Icon(Icons.star, color: Colors.yellow),
-//                 SizedBox(width: 4),
-//                 Text('$driverRating ($numberOfReviews Reviews)'),
-//               ],
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
