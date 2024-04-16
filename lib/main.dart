@@ -23,6 +23,7 @@ import 'package:lyft_mate/screens/payment/payment_screen.dart';
 // import 'package:lyft_mate/screens/payment/card_form_screen.dart';
 import 'package:lyft_mate/screens/profile/initial_setup.dart';
 import 'package:lyft_mate/screens/profile/user_profile_screen.dart';
+import 'package:lyft_mate/screens/signup/screens/signup_emergency_contacts_page.dart';
 import 'package:lyft_mate/screens/signup/screens/signup_screen.dart';
 
 import 'package:lyft_mate/services/authentication_service.dart';
@@ -81,6 +82,8 @@ class MyApp extends StatelessWidget {
         // home: LocationPickScreen(),
         // home: NavigationScreen(),
         home: LoginScreen(),
+        // home: AddEmergencyContactScreen(),
+        // home: SignupScreen(),
         // home: FindRides(),
         // home: HomePage(),
         // home: MapPage(),

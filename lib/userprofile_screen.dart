@@ -5,6 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lyft_mate/editprofile_screen.dart';
+import 'package:lyft_mate/services/authentication_service.dart';
 import 'models/user_profile.dart';
 
 class UserProfileScreen extends StatefulWidget {
@@ -13,8 +14,12 @@ class UserProfileScreen extends StatefulWidget {
 }
 
 class _UserProfileScreenState extends State<UserProfileScreen> {
+
+  final AuthenticationService authService = AuthenticationService();
+
   late Future<UserProfile> _futureUserProfile;
   late User _currentUser;
+  String? _profileImageUrl;
 
   @override
   void initState() {
@@ -30,6 +35,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
     if (userProfileSnapshot.exists) {
       return UserProfile.fromMap(userProfileSnapshot.data() as Map<String, dynamic>);
+      // _profileImageUrl = userProfile.profileImageUrl;
     } else {
       throw Exception('User profile not found');
     }
@@ -54,6 +60,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   _futureUserProfile = fetchUserProfile();
                 });
               });
+            },
+          ),
+          IconButton( // Added Sign-out Button
+            icon: Icon(Icons.logout),
+            onPressed: () async {
+              await authService.signOut();
             },
           ),
         ],
@@ -81,16 +93,42 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 children: [
                   CircleAvatar(
                     radius: 70,
-                    child: Icon(
-                      Icons.person,
-                      size: 55.0,
-                    ),
+                    backgroundImage: userProfile.profileImageUrl != null
+                        ? NetworkImage(userProfile.profileImageUrl!)
+                        : null, // Provide path to default user icon
+                    child: userProfile.profileImageUrl == null ? Icon(Icons.person, size: 55.0) : null,
                   ),
+                  // CircleAvatar(
+                  //   radius: 70,
+                  //   child: Icon(
+                  //     Icons.person,
+                  //     size: 55.0,
+                  //   ),
+                  // ),
                   SizedBox(height: 20),
-                  Text(
-                    "${userProfile.firstName}",
-                    style: const TextStyle(
-                        fontSize: 24, fontWeight: FontWeight.bold),
+                  // Text(
+                  //   "${userProfile.firstName}",
+                  //   style: const TextStyle(
+                  //       fontSize: 24, fontWeight: FontWeight.bold),
+                  // ),
+                  // SizedBox(height: 10),
+                  // Show user rating below the name
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "${userProfile.firstName} ${userProfile.firstName}",
+                        style: const TextStyle(
+                            fontSize: 24, fontWeight: FontWeight.bold),
+                      ),
+                      Icon(Icons.star, color: Colors.amber, size: 20),
+                      SizedBox(width: 5),
+                      Text(
+                        "4.0",
+                        // userRating.toStringAsFixed(1), // Show rating with one decimal point
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ],
                   ),
                   SizedBox(height: 10),
                   Text(
@@ -121,13 +159,29 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   ),
                   ListTile(
                     leading: Icon(
-                      _currentUser?.emailVerified ?? false ? Icons.check_circle : Icons.cancel,
+                      _currentUser?.emailVerified ?? false ? Icons.check_circle : Icons.cancel_outlined,
                       color: _currentUser?.emailVerified ?? false ? Colors.green : Colors.red,
                     ),
                     title: Text(
                       'Email Verified',
                       style: TextStyle(fontSize: 16),
                     ),
+                  ),
+                  SizedBox(height: 20,),
+                  ListTile(
+                    leading: Icon(Icons.rocket_launch_outlined),
+                    title: Text('Rides Published'),
+                    subtitle: Text('10'), // Replace with actual number of rides published
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.book),
+                    title: Text('Rides Booked'),
+                    subtitle: Text('5'), // Replace with actual number of rides booked
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.calendar_today),
+                    title: Text('Member Since'),
+                    subtitle: Text('January 2022'), // Replace with actual join date
                   ),
                 ],
               ),
@@ -180,8 +234,27 @@ class _VerificationItemState extends State<VerificationItem> {
   Widget build(BuildContext context) {
     return ListTile(
       leading: Icon(
-        widget.verified ? Icons.check_circle : Icons.cancel,
-        color: widget.verified ? Colors.green : Colors.red,
+        // widget.verified ? Icons.check_circle : Icons.cancel,
+        // color: widget.verified ? Colors.green : Colors.red,
+        isUploaded
+            ? Icons.check_circle // If uploaded, show check mark
+            : (widget.verified
+            ? Icons.check_circle // If verified, show check mark
+            : (widget.documentUrl != null && widget.documentUrl!.isNotEmpty
+            ? Icons.cloud_sync_outlined // If documentUrl is not empty, show check mark
+            : Icons.cancel_outlined // Otherwise, show cancel icon
+        )
+        ),
+        color: isUploaded // Set color based on upload status
+            ? Colors.green
+            : (widget.verified // If not uploaded, set color based on verification status
+            ? Colors.green
+            : (widget.documentUrl != null && widget.documentUrl!.isNotEmpty
+            ? Colors.green // If documentUrl is not empty, set color to green
+            : Colors.red // Otherwise, set color to red
+        )
+        ),
+
       ),
       title: Row(
         children: [
@@ -221,12 +294,13 @@ class _VerificationItemState extends State<VerificationItem> {
           ],
           if (widget.documentUrl != null && widget.documentUrl!.isNotEmpty) ...[
             SizedBox(width: 10),
-            TextButton(
-              onPressed: () {
-                // Implement logic to view/download the uploaded document
-              },
-              child: Text('View Document'),
-            ),
+            Text("Verification pending...", style: TextStyle(fontSize: 12, color: Colors.grey.withOpacity(0.7)),),
+            // TextButton(
+            //   onPressed: () {
+            //     // Implement logic to view/download the uploaded document
+            //   },
+            //   child: Text('View Document'),
+            // ),
           ],
         ],
       ),

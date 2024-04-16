@@ -44,7 +44,7 @@ class _RideTrackingPageState extends State<RideTrackingPage> {
     // Replace these lines with the actual keys from your rideData map
     GeoPoint geoPointUserPickUp = widget.rideData["pickupLocation"]["geopoint"]; // ride start
     GeoPoint geoPointUserDropOff = widget.rideData["dropoffLocation"]["geopoint"]; // ride end
-    GeoPoint geoPointRideLocation = widget.rideData["rideLocation"];
+    GeoPoint geoPointRideLocation = widget.rideData["rideLocation"]["geopoint"];
 
 
     userPickUpLocation =
@@ -170,7 +170,7 @@ class _RideTrackingPageState extends State<RideTrackingPage> {
           // Map<String, dynamic> locationData = trackingData['rideLocation'];
           // GeoPoint geoPoint = trackingData['rideLocation']['geopoint'];
           // LatLng rideLocation = LatLng(geoPoint.latitude, geoPoint.longitude);
-          GeoPoint geoPoint = trackingData['rideLocation'];
+          GeoPoint geoPoint = trackingData['rideLocation']['geopoint'];
           LatLng rideLocation = LatLng(geoPoint.latitude, geoPoint.longitude);
           updateUIWithLocation(rideLocation);
           print(
@@ -259,6 +259,58 @@ class _RideTrackingPageState extends State<RideTrackingPage> {
     super.dispose();
   }
 
+  void _showEmergencyOptions() {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Padding(
+          padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 0.0), // Adjust padding as needed
+          child: Container(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                ListTile(
+                  leading: Icon(Icons.bolt, size: 40.0,),
+                  minLeadingWidth: 0,
+                  horizontalTitleGap: 0,
+                  title: Text('Send SOS'),
+                  onTap: () {
+                    // Implement SOS functionality
+                    Navigator.pop(context);
+                  },
+                  subtitle: const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("Send SOS to your emergency contacts"),
+                    ],
+                  ),
+                ),
+                ListTile(
+                  leading: Icon(Icons.share, size: 35.0,),
+                  minLeadingWidth: 0,
+                  horizontalTitleGap: 10,
+                  title: Text('Share Ride Details'),
+                  onTap: () {
+                    // Implement share ride details functionality
+                    Navigator.pop(context);
+                  },
+                  subtitle: const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("Share ride details with your emergency contacts"),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     print(
@@ -267,6 +319,12 @@ class _RideTrackingPageState extends State<RideTrackingPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Track Ride Location"),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.warning),
+            onPressed: _showEmergencyOptions,
+          ),
+        ],
       ),
       body: Stack(
         children: [

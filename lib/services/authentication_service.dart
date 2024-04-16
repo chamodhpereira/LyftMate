@@ -9,6 +9,13 @@ import 'package:lyft_mate/models/user.dart';
 import '../models/signup_user.dart';
 import '../providers/user_provider.dart';
 
+
+class AuthException implements Exception {
+  final String message;
+
+  AuthException(this.message);
+}
+
 class AuthenticationService extends ChangeNotifier{
 
 
@@ -62,8 +69,29 @@ class AuthenticationService extends ChangeNotifier{
     }
   }
 
-  // Method to sign up with email and password
-  Future<bool> signUpWithEmailAndPassword(String email, String password) async {
+  // Method to sign up with email and password  -- return bool
+  // Future<bool> signUpWithEmailAndPassword(String email, String password) async {
+  //   try {
+  //     // Create user with email and password
+  //     final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+  //       email: email,
+  //       password: password,
+  //     );
+  //
+  //     // Create user document based on signup data
+  //     await createUserDocument(userCredential.user!.uid);
+  //
+  //     // Reset SignupUserData after successful signup
+  //     _signupUserData.reset();
+  //
+  //     return true;
+  //   } catch (e) {
+  //     print(e);
+  //     // Handle signup failure
+  //     return false;
+  //   }
+  // }
+  Future<void> signUpWithEmailAndPassword(String email, String password) async {
     try {
       // Create user with email and password
       final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
@@ -77,19 +105,32 @@ class AuthenticationService extends ChangeNotifier{
       // Reset SignupUserData after successful signup
       _signupUserData.reset();
 
-      return true;
+      return null; // Return null to indicate success
     } catch (e) {
-      print(e);
-      // Handle signup failure
-      return false;
+      print("errrrrrrrrrorrrrr in method: $e");
+
+
+      // Return the error message to be handled in the calling code
+      // return e.toString();
+
+      // If the exception is FirebaseAuthException, throw a custom AuthException
+      if (e is FirebaseAuthException) {
+        final errorMessage = e.message ?? 'An unexpected error occurred';
+        throw AuthException(errorMessage);
+      } else {
+        // Throw other types of exceptions as they are
+        throw e;
+      }
     }
   }
+
+
 
   // Method to create user document in Firestore
   Future<void> createUserDocument(String userId) async {
     try {
 
-      Map<String, String> emergencyContacts = {};
+      Map<String, String> emergencyContacts = {_signupUserData.emergencyContactName : _signupUserData.emergencyContactPhoneNumber};
 
       await _firestore.collection('users').doc(userId).set({
         'firstName': _signupUserData.firstName,
@@ -99,11 +140,17 @@ class AuthenticationService extends ChangeNotifier{
         'dob': _signupUserData.dob.toIso8601String(),
         'bio': "",
         'phoneNumber': _signupUserData.phoneNumber,
-        'vehicle': [],
+        'notificationToken': _signupUserData.notificationToken,
+        'vehicles': [],
         'emergencyContacts' : emergencyContacts,
         'ridesPublished': [],
         'ridesBooked': [],
         'preferences': [],
+        'governmentIdVerified': false,
+        'governmentIdDocumentUrl' : "",
+        'driversLicenseVerified': false,
+        'driversLicenseDocumentUrl' : ""
+
         // Add more fields as needed
       });
     } catch (e) {

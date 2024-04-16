@@ -19,6 +19,10 @@ class SignupUserData {
   late String email;
   DateTime dob = DateTime.now();
   late String phoneNumber;
+  late String notificationToken;
+  late String emergencyContactName;
+  late String emergencyContactPhoneNumber;
+  // late Map<String, String> emergencyContacts;
 
   void reset() {
     // Reset all properties
@@ -28,13 +32,32 @@ class SignupUserData {
     email = '';
     dob = DateTime.now();
     phoneNumber = '';
+    notificationToken = '';
+    // emergencyContacts = {};
+    emergencyContactName = '';
+    emergencyContactPhoneNumber = '';
     print("UserData reset");
+  }
+
+  void updateEmergencyContactName(String name){
+    emergencyContactName = name;
+    print("EM NAME UPDATED: $emergencyContactName");
+  }
+
+  void updateEmergencyContactPhoneNumber(String phoneNumber){
+    emergencyContactPhoneNumber = phoneNumber;
+    print("EM NUMBER UPDATED: $emergencyContactPhoneNumber");
   }
 
   // Methods to update properties
   void updatePhoneNumber(String newPhoneNumber) {
     phoneNumber = "+94$newPhoneNumber";
     print("Phone number updated: $phoneNumber");
+  }
+
+  void updateNotificationToken(String fcmToken){
+    notificationToken = fcmToken;
+    print("NOTIFICTION TOKEN in userData: $notificationToken");
   }
 
   void updateFirstName(String newFirstName) {
@@ -61,4 +84,9 @@ class SignupUserData {
     dob = newDOB;
     print("Date of Birth updated: $dob");
   }
+
+  // void addEmergencyContact(String name, String phoneNumber) {
+  //   emergencyContacts[name] = phoneNumber;
+  //   print("Emergency contact added: $name - $phoneNumber");
+  // }
 }

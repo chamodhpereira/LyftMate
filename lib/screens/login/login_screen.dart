@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lyft_mate/screens/signup/screens/signup_screen.dart';
 
 import 'login_form.dart';
 
@@ -27,7 +28,13 @@ class LoginScreen extends StatelessWidget {
                   const LoginForm(),
                   const SizedBox(height: 10),
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SignupScreen(),),
+                      );
+                    },
                     child: Text.rich(
                       TextSpan(
                         text: "Don't have an Account? ",

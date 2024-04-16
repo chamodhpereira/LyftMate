@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:lyft_mate/screens/signup/screens/signup_form.dart';
 import 'package:lyft_mate/models/signup_user.dart';
@@ -18,9 +19,20 @@ class SignupScreen extends StatelessWidget {
 
   SignupScreen({super.key});
 
+  void _getToken() async {
+    String? token = await FirebaseMessaging.instance.getToken();
+    print('FCM Token: $token');
+    // return token ?? '';// Return token, or empty string if null
+
+    SignupUserData().updateNotificationToken(token ?? "");
+  }
+
   @override
   Widget build(BuildContext context) {
     // final authenticationService = Provider.of<AuthenticationService>(context);
+
+    _getToken();
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
@@ -69,8 +81,8 @@ class SignupScreen extends StatelessWidget {
                     ),
                     onPressed: () {
                       String phoneNumber = phoneController.text;
-                      SignupUserData().updatePhoneNumber(phoneNumber);
-                      // authenticationService.phoneAuthentication(phoneNumber);
+                      SignupUserData().updatePhoneNumber(phoneNumber);   // update user phone number
+
                       Navigator.push(
                         context,
                         // MaterialPageRoute(

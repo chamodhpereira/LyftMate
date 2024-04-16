@@ -31,9 +31,9 @@ class _NavigationScreenState extends State<NavigationScreen> {
     const UserList(), // should be user chat list
     // InteractedUsersPage(),
     // ChatScreen(),
-    // UserProfileScreen()
+    UserProfileScreen()
     // StartRideScreen()
-    UserProfilePage()
+    // UserProfilePage()
   ];
 
   void onTap() {
