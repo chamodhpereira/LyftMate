@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 // import 'package:lyft_mate/screens/signup/signup_form.dart';
 // import 'package:lyft_mate/src/screens/dummyhome.dart';
@@ -6,17 +7,21 @@ import 'package:flutter/material.dart';
 import 'package:lyft_mate/userprofile_screen.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
+import 'package:lottie/lottie.dart';
 
 import '../../services/authentication_service.dart';
+import '../../services/otp/otp_service.dart';
+import '../signup/screens/signup_form.dart';
 
 
 class OTPScreen extends StatefulWidget {
   final String? phonenumber;
-  final String fromScreen;
+  // final String fromScreen;
 
 
 
-  const OTPScreen({super.key, this.phonenumber, required this.fromScreen});
+
+  const OTPScreen({super.key, this.phonenumber, required phoneNumber,});
 
   @override
   _OTPScreenState createState() => _OTPScreenState();
@@ -34,6 +39,9 @@ class _OTPScreenState extends State<OTPScreen> {
   bool hasError = false;
   bool isResendButtonEnabled = true;
   int countdownSeconds = 60;
+  bool isLoading = false;
+  String errorMessage = '';
+  String otp = '';
 
   String? phoneNumber;
   late final String fromScreen;
@@ -42,7 +50,7 @@ class _OTPScreenState extends State<OTPScreen> {
   void initState() {
     super.initState();
     phoneNumber = widget.phonenumber ?? "+94123456789";
-    fromScreen = widget.fromScreen;
+    // fromScreen = widget.fromScreen;
   }
 
   @override
@@ -77,9 +85,12 @@ class _OTPScreenState extends State<OTPScreen> {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            // mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              Container(
+                child: Lottie.asset("assets/images/otp-animation.json", height: 300.0),
+              ),
               const Text(
                 "Verification Code",
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
@@ -114,8 +125,14 @@ class _OTPScreenState extends State<OTPScreen> {
                   selectedFillColor: Colors.black.withOpacity(0.1),
                 ),
                 controller: otpController,
-                onChanged: (code) {
-                  print(code);
+                // onChanged: (code) {
+                //   print(code);
+                // },
+                onChanged: (value) {
+                  debugPrint(value);
+                  setState(() {
+                    otp = value;
+                  });
                 },
                 // onCompleted: (value) {
                 //   if (value != "123456") {
@@ -149,6 +166,15 @@ class _OTPScreenState extends State<OTPScreen> {
 
                 errorAnimationController: errorController,
               ),
+              Center(
+                  child: Text(
+                      errorMessage,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red
+                      )
+                  )
+              ),
               const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
@@ -158,17 +184,37 @@ class _OTPScreenState extends State<OTPScreen> {
                     MaterialStateProperty.all<Color>(Colors.green),
                   ),
                   onPressed: () async{
-                    // Verify OTP or handle submission
-                    String enteredOTP = otpController.text;
-                    bool isOTPVerified = await authenticationService.verifyOTP(enteredOTP); // Call verifyOTP method from AuthenticationService
-                    if(isOTPVerified) {
-                      print("OPTOOOOO VERIFIED WTTOOOO");
-                    }else {
-                      print("SOMETHING IS WRONGGGGGGGGG OTPPPPPPPPP");
+                    setState(() {
+                      isLoading = true;
+                    });
+                    String result = await TwilioVerification.instance.verifyCode('+' + phoneNumber!, otp);
+                    setState(() {
+                      isLoading = false;
+                    });
+                    if (result == 'Successful'){
+                      Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (context) => const SignUpForm()),
+                              (route) => false
+                      );
                     }
+                    else{
+                      setState(() {
+                        errorController.add(ErrorAnimationType.shake);
+                        errorMessage = result;
+                      });
+                    }
+                    // Verify OTP or handle submission
+                    // String enteredOTP = otpController.text;
+                    // bool isOTPVerified = await authenticationService.verifyOTP(enteredOTP); // Call verifyOTP method from AuthenticationService
+                    // if(isOTPVerified) {
+                    //   print("OPTOOOOO VERIFIED WTTOOOO");
+                    // }else {
+                    //   print("SOMETHING IS WRONGGGGGGGGG OTPPPPPPPPP");
+                    // }
 
                   },
-                  child: const Text("Submit"),
+                  child: Text(isLoading? 'Verifying...' : 'Submit'),
                 ),
               ),
               const SizedBox(height: 30),
@@ -212,6 +258,7 @@ class _OTPScreenState extends State<OTPScreen> {
     setState(() {
       isResendButtonEnabled = false;
       countdownSeconds = 60;
+      isLoading = false;
     });
 
     // Start the countdown timer
