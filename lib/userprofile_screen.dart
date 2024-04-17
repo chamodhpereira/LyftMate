@@ -5,6 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lyft_mate/editprofile_screen.dart';
+import 'package:lyft_mate/screens/profile/settings_screen.dart';
 import 'package:lyft_mate/services/authentication_service.dart';
 import 'models/user_profile.dart';
 
@@ -48,12 +49,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         title: Text('User Profile'),
         actions: [
           IconButton(
-            icon: Icon(Icons.edit),
+            icon: Icon(Icons.settings_outlined),
             onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ProfileEditScreen(),
+                  builder: (context) => UserProfileSettingsScreen(),
                 ),
               ).then((_) {
                 setState(() {

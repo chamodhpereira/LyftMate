@@ -1,9 +1,12 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+
+import '../../services/emergency/emergency_service.dart';
 
 
 class RideTrackingPage extends StatefulWidget {
@@ -132,8 +135,43 @@ class _RideTrackingPageState extends State<RideTrackingPage> {
     });
   }
 
+  User? _user;
+  String? userFirstName;
+
+
+
+  Future<void> _getCurrentUser() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      setState(() {
+        _user = user;
+      });
+
+      // Access Firestore to get user document
+      try {
+        DocumentSnapshot<Map<String, dynamic>> userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+        if (userDoc.exists) {
+          // Get firstName field from user document
+          userFirstName = userDoc.get('firstName');
+          print('UserRRRRRRRR NAMAAAAAAAAAPAGOTTTTTTTTT firstName: $userFirstName');
+          // Now you can use the firstName as needed
+        } else {
+          print('User document does not exist');
+        }
+      } catch (error) {
+        print('Error fetching user document: $error');
+      }
+    } else {
+      print('No user logged in');
+    }
+  }
+
   @override
   void initState() {
+    _getCurrentUser();
     ridesCollection = firestore.collection('rides');
 
     extractRideData();
@@ -276,6 +314,7 @@ class _RideTrackingPageState extends State<RideTrackingPage> {
                   title: Text('Send SOS'),
                   onTap: () {
                     // Implement SOS functionality
+                    EmergencyService.sendSOS(userFirstName!);
                     Navigator.pop(context);
                   },
                   subtitle: const Column(
@@ -292,6 +331,7 @@ class _RideTrackingPageState extends State<RideTrackingPage> {
                   title: Text('Share Ride Details'),
                   onTap: () {
                     // Implement share ride details functionality
+                    EmergencyService.shareRideDetails(widget.rideId);
                     Navigator.pop(context);
                   },
                   subtitle: const Column(
@@ -313,6 +353,7 @@ class _RideTrackingPageState extends State<RideTrackingPage> {
 
   @override
   Widget build(BuildContext context) {
+    print("THIS IS THE USERRRR: $_user");
     print(
         "Thisssssssssi ssss the paseeddd ride id for trackingggg ${widget.rideId}");
 

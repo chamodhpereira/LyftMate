@@ -19,10 +19,12 @@ import 'package:lyft_mate/screens/offer_ride/ui/offer_ride_screen.dart';
 import 'package:lyft_mate/screens/login/login_screen.dart';
 import 'package:lyft_mate/screens/navigation/navigation_screen.dart';
 import 'package:lyft_mate/screens/onboarding/onboarding_screen.dart';
+import 'package:lyft_mate/screens/otp/otp_screen.dart';
 import 'package:lyft_mate/screens/payment/payment_screen.dart';
 // import 'package:lyft_mate/screens/payment/card_form_screen.dart';
 import 'package:lyft_mate/screens/profile/initial_setup.dart';
 import 'package:lyft_mate/screens/profile/user_profile_screen.dart';
+import 'package:lyft_mate/screens/ride/ride_options_screen.dart';
 import 'package:lyft_mate/screens/signup/screens/signup_emergency_contacts_page.dart';
 import 'package:lyft_mate/screens/signup/screens/signup_screen.dart';
 
@@ -80,9 +82,10 @@ class MyApp extends StatelessWidget {
         darkTheme: LyftMateAppTheme.darkTheme,
         themeMode: ThemeMode.system,
         // home: LocationPickScreen(),
-        // home: NavigationScreen(),
-        home: LoginScreen(),
-        // home: AddEmergencyContactScreen(),
+        home: NavigationScreen(),
+        // home: LoginScreen(),
+        // home: OTPScreen(phoneNumber: "1234567890",),
+        // home: RideOptions(),
         // home: SignupScreen(),
         // home: FindRides(),
         // home: HomePage(),

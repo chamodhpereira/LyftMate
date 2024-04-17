@@ -7,36 +7,27 @@ class ChatService extends ChangeNotifier {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // //send message
-  // Future<void> sendMessage(String receiverId, String message) async {
-  //   //get current user info
-  //   final String currentUserId = _firebaseAuth.currentUser!.uid;
-  //   final String currentUserEmail = _firebaseAuth.currentUser!.email.toString();
-  //   final Timestamp timestamp = Timestamp.now();
-  //
-  //
-  //   //create a new message
-  //
-  //   Message newMessage = Message(senderId: currentUserId, senderEmail: currentUserEmail, receiverId: receiverId, message: message, timestamp: timestamp);
-  //
-  //   //construct chat room id from current user id and receiver id(sorted to ensure uniquness
-  //
-  //   List<String> ids = [currentUserId, receiverId];
-  //   ids.sort();
-  //   String chatRoomId = ids.join("_"); //combine ids into single string to use as chatroom id
-  //
-  //   //add new message to db
-  //   await _firestore.collection('chatrooms').doc(chatRoomId).collection('messages').add(newMessage.toMap());
-  //
-  //
-  // }
-
   Future<void> sendMessage(String receiverId, String message) async {
     try {
       // Get current user info
       final String currentUserId = _firebaseAuth.currentUser!.uid;
       final String currentUserEmail = _firebaseAuth.currentUser!.email.toString();
       final Timestamp timestamp = Timestamp.now();
+
+      // Construct chat room id from current user id and receiver id (sorted to ensure uniqueness)
+      List<String> ids = [currentUserId, receiverId];
+      ids.sort();
+      String chatRoomId = ids.join("_"); // Combine ids into single string to use as chat room id
+
+      // Check if the chat room already exists
+      bool chatRoomExists = await _firestore.collection('chat_rooms').doc(chatRoomId).get().then((doc) => doc.exists);
+
+      if (!chatRoomExists) {
+        // Create the chat room if it doesn't exist
+        await _firestore.collection('chat_rooms').doc(chatRoomId).set({
+          'users': [currentUserId, receiverId], // Store user IDs in the chat room document
+        });
+      }
 
       // Create a new message
       Message newMessage = Message(
@@ -47,12 +38,7 @@ class ChatService extends ChangeNotifier {
         timestamp: timestamp,
       );
 
-      // Construct chat room id from current user id and receiver id (sorted to ensure uniqueness)
-      List<String> ids = [currentUserId, receiverId];
-      ids.sort();
-      String chatRoomId = ids.join("_"); // Combine ids into single string to use as chat room id
-
-      // Add new message to db
+      // Add new message to the chat room
       await _firestore
           .collection('chat_rooms')
           .doc(chatRoomId)
@@ -65,6 +51,44 @@ class ChatService extends ChangeNotifier {
       // Handle any errors that occur during message sending
     }
   }
+
+
+  // below is working   --------
+
+  // Future<void> sendMessage(String receiverId, String message) async {
+  //   try {
+  //     // Get current user info
+  //     final String currentUserId = _firebaseAuth.currentUser!.uid;
+  //     final String currentUserEmail = _firebaseAuth.currentUser!.email.toString();
+  //     final Timestamp timestamp = Timestamp.now();
+  //
+  //     // Create a new message
+  //     Message newMessage = Message(
+  //       senderId: currentUserId,
+  //       senderEmail: currentUserEmail,
+  //       receiverId: receiverId,
+  //       message: message,
+  //       timestamp: timestamp,
+  //     );
+  //
+  //     // Construct chat room id from current user id and receiver id (sorted to ensure uniqueness)
+  //     List<String> ids = [currentUserId, receiverId];
+  //     ids.sort();
+  //     String chatRoomId = ids.join("_"); // Combine ids into single string to use as chat room id
+  //
+  //     // Add new message to db
+  //     await _firestore
+  //         .collection('chat_rooms')
+  //         .doc(chatRoomId)
+  //         .collection('messages')
+  //         .add(newMessage.toMap());
+  //
+  //     print('Message sent successfully!');
+  //   } catch (e) {
+  //     print('Error sending message: $e');
+  //     // Handle any errors that occur during message sending
+  //   }
+  // }
 
 
 //get messgaes --------- working everything commenteed for dashcaht checking

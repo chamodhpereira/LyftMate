@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geoflutterfire2/geoflutterfire2.dart';
+import 'package:lottie/lottie.dart';
 
 import '../../models/offer_ride.dart';
 // import 'package:lyft_mate/src/screens/home_screen.dart';
@@ -129,19 +130,21 @@ class _RideOptionsState extends State<RideOptions> {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Center(
+            Center(
               child: Column(
+                // mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.check_circle,
-                    size: 100,
-                    color: Colors.green,
+                  Container(
+                    height: 250,
+                      padding: EdgeInsets.zero,
+                      margin: EdgeInsets.zero,
+                      child: Lottie.asset("assets/images/right-animation.json", height: 500, fit: BoxFit.fill )
                   ),
-                  SizedBox(height: 10),
+                  // SizedBox(height: 10),
                   Text(
                     'Your ride is created',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -149,6 +152,11 @@ class _RideOptionsState extends State<RideOptions> {
                 ],
               ),
             ),
+            // Center(
+            //   child: Container(
+            //     child: Lottie.asset("assets/images/otp-animation.json", height: 300.0),
+            //   ),
+            // ),
             const SizedBox(height: 20),
             const Text(
               'Got anything to add about the ride?',

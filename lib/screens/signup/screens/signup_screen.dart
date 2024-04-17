@@ -1,23 +1,34 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:lyft_mate/screens/otp/otp_screen.dart';
 import 'package:lyft_mate/screens/signup/screens/signup_form.dart';
 import 'package:lyft_mate/models/signup_user.dart';
 
 
 import 'package:provider/provider.dart';
 
+import '../../../constants/colors.dart';
+import '../../../constants/sizes.dart';
+import '../../../services/otp/otp_service.dart';
 
 
 
 
-class SignupScreen extends StatelessWidget {
 
+class SignupScreen extends StatefulWidget {
 
+  const SignupScreen({super.key});
 
+  @override
+  State<SignupScreen> createState() => _SignupScreenState();
+}
+
+class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController phoneController = TextEditingController();
 
-  SignupScreen({super.key});
+  String errorMessage = '';
+  String countryCode = "+94";
 
   void _getToken() async {
     String? token = await FirebaseMessaging.instance.getToken();
@@ -65,39 +76,87 @@ class SignupScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(vertical: 30.0),
                   child: TextField(
+                    onTap: () {
+                      setState(() {
+                        errorMessage = "";
+                      });
+                    },
                     controller: phoneController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Enter your phone number',
+                      prefixText: countryCode + " ",
+                      // prefixStyle: TextStyle(wordSpacing: 10),
                     ),
+                    keyboardType: TextInputType.phone, // Set keyboard type to phone
+                    onChanged: (value) {
+                      // Update the controller's text when the value changes
+                      phoneController.text = value;
+                      // phoneController.selection = TextSelection.fromPosition(
+                      //   TextPosition(offset: phoneController.text.length),
+                      // );
+                    },
                   ),
                 ),
                 const SizedBox(height: 10),
+                Center(
+                    child: Text(
+                        errorMessage,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red
+                        )
+                    )
+                ),
                 SizedBox(
                   height: 50.0,
                   width: double.infinity,
                   child: ElevatedButton(
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
+                    // style: ButtonStyle(
+                    //   backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
+                    // ),
+                    style: ElevatedButton.styleFrom(
+                      shape: const RoundedRectangleBorder(),
+                      foregroundColor: kWhiteColor,
+                      backgroundColor: Colors.green,
+                      side: const BorderSide(color: kSecondaryColor),
+                      // padding: const EdgeInsets.symmetric(vertical: 10.0),
                     ),
-                    onPressed: () {
+                    onPressed: () async {
                       String phoneNumber = phoneController.text;
-                      SignupUserData().updatePhoneNumber(phoneNumber);   // update user phone number
+                      SignupUserData().updatePhoneNumber(phoneNumber);// update user phone number
 
-                      Navigator.push(
-                        context,
-                        // MaterialPageRoute(
-                        //   builder: (context) => OTPScreen(
-                        //     phonenumber: phoneNumber,
-                        //     fromScreen: 'signup',
-                        //   ),
-                        // ),
-                        MaterialPageRoute(
-                          builder: (context) => SignUpForm(),
-                        ),
-                      );
+                      String result = await TwilioVerification.instance.sendCode('+94' + phoneController.text);
+
+                      // String result = "Successful";
+
+                      if (result == 'Successful'){
+                        print("HEEEEEEEEEEEE HEEEEEEEEEEEEEE HEEEEEEEEEE HEEEEEEEEEE");
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => OTPScreen(phoneNumber: phoneNumber,))
+                        );
+                      }
+                      else{
+                        setState(() {
+                          errorMessage = result;
+                        });
+                      }
+
+                      // Navigator.push(
+                      //   context,
+                      //   // MaterialPageRoute(
+                      //   //   builder: (context) => OTPScreen(
+                      //   //     phonenumber: phoneNumber,
+                      //   //     fromScreen: 'signup',
+                      //   //   ),
+                      //   // ),
+                      //   MaterialPageRoute(
+                      //     builder: (context) => SignUpForm(),
+                      //   ),
+                      // );
                     },
 
-                    child: const Text("Proceed"),
+                    child: Text("Proceed".toUpperCase(), style: kBoldTextStyle,),
                   ),
                 ),
               ],
