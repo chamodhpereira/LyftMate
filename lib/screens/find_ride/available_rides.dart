@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_maps_flutter_platform_interface/src/types/location.dart';
 import 'package:lyft_mate/screens/find_ride/ride_route.dart';
 import '../../services/ride_matching_service.dart';
 import 'carpool_ride_card_widget.dart';
@@ -12,7 +13,7 @@ class RideMatchingScreen extends StatelessWidget {
   final GeoPoint userDropoffLocation;
 
   RideMatchingScreen(
-      {required this.userPickupLocation, required this.userDropoffLocation});
+      {required this.userPickupLocation, required this.userDropoffLocation, });
 
   @override
   Widget build(BuildContext context) {
@@ -21,9 +22,17 @@ class RideMatchingScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Filtered Rides'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.filter_list),
+            onPressed: () {
+              _showFilterOptions(context);
+            },
+          ),
+        ],
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: rideMatching.findRidesWithDistances(userPickupLocation, userDropoffLocation),
+        future: rideMatching.findRidesWithDistances(LatLng(userPickupLocation.latitude, userPickupLocation.longitude), LatLng(userDropoffLocation.latitude, userDropoffLocation.longitude)),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
@@ -37,10 +46,30 @@ class RideMatchingScreen extends StatelessWidget {
               itemBuilder: (context, index) {
                 var rideData = snapshot.data![index];
                 var ride = rideData['ride'];
-                double pickupDistance = rideData['pickupDistance'];
-                double dropoffDistance = rideData['dropoffDistance'];
-                GeoPoint closestCoordinateToPickup =
-                rideData['closestCoordinateToPickup'];
+                // double pickupDistance = rideData['pickupDistance'];
+                String pickupDistance = rideData['pickupDistanceText'];
+                String dropoffDistance = rideData['dropoffDistanceText'];
+
+                // double dropoffDistance = rideData['dropoffDistance'];
+                // GeoPoint closestCoordinateToPickup =
+                // rideData['closestCoordinateToPickup'];
+                // GeoPoint closestCoordinateToDropoff =
+                // rideData['closestCoordinateToDropoff'];
+
+                LatLng closestCoordinateToPickupLatLng =
+                rideData['closestSnappedPickupCoordinate'];
+                LatLng closestCoordinateToDropoffLatLng =
+                rideData['closestSnappedDropoffCoordinate'];
+
+                GeoPoint closestCoordinateToPickup = GeoPoint(
+                  rideData['closestSnappedPickupCoordinate'].latitude,
+                  rideData['closestSnappedPickupCoordinate'].longitude,
+                );
+
+                GeoPoint closestCoordinateToDropoff = GeoPoint(
+                  rideData['closestSnappedDropoffCoordinate'].latitude,
+                  rideData['closestSnappedDropoffCoordinate'].longitude,
+                );
 
                 // Get the driver ID from the ride
                 String driverId = ride['driverId'];
@@ -70,7 +99,9 @@ class RideMatchingScreen extends StatelessWidget {
                                 pickupDistance: pickupDistance,
                                 dropoffDistance: dropoffDistance,
                                 closestCoordinateToPickup: closestCoordinateToPickup,
-                                userLocation: userPickupLocation,
+                                closestCoordinateToDropoff: closestCoordinateToDropoff,
+                                userPickupLocation: userPickupLocation,
+                                userDropoffLocation: userDropoffLocation,
                                 driverDetails: driverData,
                               ),
                             ),
@@ -94,6 +125,130 @@ class RideMatchingScreen extends StatelessWidget {
       ),
     );
   }
+  // void _showFilterOptions(BuildContext context) {
+  //   showModalBottomSheet(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return Container(
+  //         padding: EdgeInsets.all(16.0),
+  //         child: Column(
+  //           crossAxisAlignment: CrossAxisAlignment.start,
+  //           // mainAxisSize: MainAxisSize.min,
+  //           children: <Widget>[
+  //             Text(
+  //               'Filter Options',
+  //               style: TextStyle(
+  //                 fontSize: 20,
+  //                 fontWeight: FontWeight.bold,
+  //               ),
+  //             ),
+  //             SizedBox(height: 16),
+  //             // Add your filter options widgets here
+  //             // For example, DropdownButton, SwitchListTile, etc.
+  //             ElevatedButton(
+  //               onPressed: () {
+  //                 // Close the bottom sheet and trigger the method to reload rides with new filters
+  //                 Navigator.pop(context);
+  //                 // _loadRides();
+  //               },
+  //               child: Text('Apply Filters'),
+  //             ),
+  //           ],
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
+
+  void _showFilterOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          padding: EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text(
+                'Filter Options',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 16),
+              // Filter by Date
+              Text(
+                'Date:',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              // Add your date filter widget here
+              // For example, a DatePicker
+              ElevatedButton(
+                onPressed: () {
+                  // Show date picker
+                },
+                child: Text('Select Date'),
+              ),
+              SizedBox(height: 16),
+              // Filter by Time
+              Text(
+                'Time:',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              // Add your time filter widget here
+              // For example, a TimePicker
+              ElevatedButton(
+                onPressed: () {
+                  // Show time picker
+                },
+                child: Text('Select Time'),
+              ),
+              SizedBox(height: 16),
+              // Filter by Price Per Seat
+              Text(
+                'Price Per Seat:',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              // Add your price per seat filter widget here
+              // For example, a Slider or TextFormField
+              TextFormField(
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Enter Price',
+                ),
+              ),
+              SizedBox(height: 16),
+              // Filter by Maximum Walking Distance
+              Text(
+                'Maximum Walking Distance:',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              // Add your maximum walking distance filter widget here
+              // For example, a Slider or TextFormField
+              TextFormField(
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Enter Maximum Distance',
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+
 }
 
 
@@ -208,10 +363,14 @@ class RideMatchingScreen extends StatelessWidget {
 
 class RideDetailsScreen extends StatelessWidget {
   final DocumentSnapshot ride;
-  final double pickupDistance;
-  final double dropoffDistance;
+  // final double pickupDistance;
+  final String pickupDistance;
+  final String dropoffDistance;
+  // final double dropoffDistance;
   final GeoPoint closestCoordinateToPickup;
-  final GeoPoint userLocation;
+  final GeoPoint closestCoordinateToDropoff;
+  final GeoPoint userPickupLocation;
+  final GeoPoint userDropoffLocation;
   final Object driverDetails;
 
   RideDetailsScreen({super.key,
@@ -219,7 +378,7 @@ class RideDetailsScreen extends StatelessWidget {
     required this.pickupDistance,
     required this.dropoffDistance,
     required this.closestCoordinateToPickup,
-    required this.userLocation, required this.driverDetails,
+    required this.driverDetails, required this.closestCoordinateToDropoff, required this.userPickupLocation, required this.userDropoffLocation,
   });
 
   @override
@@ -300,7 +459,9 @@ class RideDetailsScreen extends StatelessWidget {
                                     ride: ride,
                                     closestCoordinateToPickup:
                                         closestCoordinateToPickup,
-                                    userLocation: userLocation,
+                                    closestCoordinateToDropoff: closestCoordinateToDropoff,
+                                    userPickupLocation: userPickupLocation,
+                                    userDropoffLocation: userDropoffLocation,
                                   ),
                                 ),
                               );
@@ -432,7 +593,7 @@ class RideDetailsScreen extends StatelessWidget {
                                     size: 18.0,
                                   ), // Human walking icon
                                   Text(
-                                    '- 6 km from your dropoff location',
+                                    '- $dropoffDistance from your dropoff location',
                                     style: TextStyle(fontSize: 12.0),
                                   ), // Distance
                                 ],
@@ -606,9 +767,17 @@ class RideDetailsScreen extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: BottomSeatSelectionContainer(availableSeats: ride['seats'] ?? 4, ride: ride,),
+      // bottomNavigationBar: BottomSeatSelectionContainer(availableSeats: ride['seats'] ?? 4, ride: ride,),
+      bottomNavigationBar: BottomSeatSelectionContainer(
+        availableSeats: int.parse(ride['seats'] ?? '4'),
+        ride: ride,
+      ),
     );
   }
+
+
+
+
 }
 
 class VerticalDashedLinePainter extends CustomPainter {

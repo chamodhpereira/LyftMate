@@ -105,7 +105,7 @@ class OfferRideBloc extends Bloc<OfferRideEvent, OfferRideState> {
   }
 
   FutureOr<void> offerRideNavBtnClicked(OfferRideBtnNavigateEvent event, Emitter<OfferRideState> emit) {
-    print("proceed button clicked");
+    print("proceed herhe button clicked");
     emit(OfferRideNavToConfirmRoutePageActionState());
   }
 }

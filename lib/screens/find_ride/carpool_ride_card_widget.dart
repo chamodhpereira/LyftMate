@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 
 class CarpoolRideCard extends StatelessWidget {
   final DocumentSnapshot ride;
-  final double pickupDistance;
-  final double dropoffDistance;
+  // final double pickupDistance;
+  final String pickupDistance;
+  final String dropoffDistance;
+  // final double dropoffDistance;
   final GeoPoint closestCoordinateToPickup;
   final DocumentSnapshot driver;
 
@@ -30,11 +32,12 @@ class CarpoolRideCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           // Top of the card: Starting location, arrow, drop-off location, and price per seat
-          const Padding(
+          Padding(
             padding: EdgeInsets.all(8.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                Text("${ride.id}"),
                 Text('Starting Location'),
                 Icon(Icons.arrow_forward, size: 15),
                 Text('Drop-off Location'),
@@ -60,12 +63,14 @@ class CarpoolRideCard extends StatelessWidget {
           Row(
             children: [
               Icon(Icons.directions_walk, color: Colors.green), // Human walking icon
-              Text('${pickupDistance.toStringAsFixed(1)} km'), // Distance
+              // Text('${pickupDistance.toStringAsFixed(1)} km'), // Distance
+              Text('${pickupDistance} km'),
               Icon(Icons.arrow_forward_ios, size: 15), // Arrow icon
               Icon(Icons.directions_car),
               Icon(Icons.arrow_forward_ios, size: 15),
               Icon(Icons.directions_walk, color: Colors.red), // Red human walking icon
-              Text('${dropoffDistance.toStringAsFixed(1)} km'), // Distance
+              // Text('${dropoffDistance.toStringAsFixed(1)} km'), // Distance
+              Text('${dropoffDistance} km'),
             ],
           ),
           // Divider
