@@ -44,66 +44,72 @@ class _SignupPasswordPageState extends State<SignupPasswordPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.only(bottom: 40.0, left: 40.0, right: 40.0, top: 80.0),
-      child: Column(
-        children: [
-          const Text(
-            "Create your password",
-            style: TextStyle(fontSize: 20.0),
-          ),
-          PasswordField(
-            label: widget.labelOne,
-            controller: widget.controllerOne,
-            obscureText: obscureTextOne,
-            onPressed: togglePasswordVisibilityOne,
-          ),
-          PasswordField(
-            label: widget.labelTwo,
-            controller: widget.controllerTwo,
-            obscureText: obscureTextTwo,
-            onPressed: togglePasswordVisibilityTwo,
-            validator: _validatePassword,
-          ),
-          const SizedBox(height: 35.0),
-          const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return ListView(
+      physics: NeverScrollableScrollPhysics(),
+      children: [
+        Container(
+          padding: const EdgeInsets.only(bottom: 40.0, left: 40.0, right: 40.0, top: 80.0),
+          child: Column(
             children: [
-              Text(
-                "In order to protect your account, make sure your password:",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
+              const Text(
+                "Create your password",
+                style: TextStyle(fontSize: 20.0),
               ),
-              SizedBox(height: 20.0),
-              Text(
-                "- Includes a minimum of 8 characters",
-                style: TextStyle(
-                  color: Colors.black87,
-                ),
+              PasswordField(
+                label: widget.labelOne,
+                controller: widget.controllerOne,
+                obscureText: obscureTextOne,
+                onPressed: togglePasswordVisibilityOne,
               ),
-              Text(
-                "- Contains at least one uppercase letter",
-                style: TextStyle(
-                  color: Colors.black87,
-                ),
+              PasswordField(
+                label: widget.labelTwo,
+                controller: widget.controllerTwo,
+                obscureText: obscureTextTwo,
+                onPressed: togglePasswordVisibilityTwo,
+                validator: _validatePassword,
               ),
-              Text(
-                "- Contains at least one lowercase letter",
-                style: TextStyle(
-                  color: Colors.black87,
-                ),
-              ),
-              Text(
-                "- Includes at least one digit (0-9)",
-                style: TextStyle(
-                  color: Colors.black87,
-                ),
-              ),
+              const SizedBox(height: 35.0),
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "In order to protect your account, make sure your password:",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 20.0),
+                  Text(
+                    "- Includes a minimum of 8 characters",
+                    style: TextStyle(
+                      color: Colors.black87,
+                    ),
+                  ),
+                  Text(
+                    "- Contains at least one uppercase letter",
+                    style: TextStyle(
+                      color: Colors.black87,
+                    ),
+                  ),
+                  Text(
+                    "- Contains at least one lowercase letter",
+                    style: TextStyle(
+                      color: Colors.black87,
+                    ),
+                  ),
+                  Text(
+                    "- Includes at least one digit (0-9)",
+                    style: TextStyle(
+                      color: Colors.black87,
+                    ),
+                  ),
+                ],
+              )
             ],
-          )
-        ],
-      ),
+          ),
+        ),
+      ],
+
     );
   }
 }

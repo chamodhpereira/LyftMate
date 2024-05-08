@@ -1,18 +1,37 @@
 import 'package:flutter/material.dart';
-import 'package:lyft_mate/screens/navigation/navigation_screen.dart';
+import 'package:lyft_mate/models/user_profile.dart';
 
-class UserProfileSettingsScreen extends StatelessWidget {
-  const UserProfileSettingsScreen({super.key});
+import '../../editprofile_screen.dart';
+import '../../services/authentication_service.dart';
+
+class UserProfileSettingsScreen extends StatefulWidget {
+  final UserProfile userProfile;
+
+  const UserProfileSettingsScreen({super.key, required this.userProfile});
+
+  @override
+  State<UserProfileSettingsScreen> createState() => _UserProfileSettingsScreenState();
+}
+
+class _UserProfileSettingsScreenState extends State<UserProfileSettingsScreen> {
+  final AuthenticationService authService = AuthenticationService();
 
   @override
   Widget build(BuildContext context) {
+
+
+    debugPrint("HELLOOOOOO ${widget.userProfile.firstName}");
+
     return Scaffold(
       appBar: AppBar(
-        title: Text("Settings"),
+        title: const Text("Settings"),
+        backgroundColor: Colors.green,
+        foregroundColor: Colors.white,
+        elevation: 0.5,
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 8.0),
+          padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 8.0),
           child: Column(
             children: [
               SizedBox(
@@ -20,12 +39,12 @@ class UserProfileSettingsScreen extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const CircleAvatar(
-                      maxRadius: 50.0,
-                      child: Icon(
-                        Icons.person,
-                        size: 55.0,
-                      ),
+                    CircleAvatar(
+                      radius: 50,
+                      backgroundImage: widget.userProfile.profileImageUrl != null
+                          ? NetworkImage(widget.userProfile.profileImageUrl!)
+                          : null, // Provide path to default user icon
+                      child: widget.userProfile.profileImageUrl == null ? const Icon(Icons.person, size: 50.0) : null,
                     ),
                     const SizedBox(
                       width: 15.0,
@@ -37,16 +56,23 @@ class UserProfileSettingsScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
-                            "John Doe",
-                            style: TextStyle(fontSize: 20.0),
+                            "${widget.userProfile.firstName} ${widget.userProfile.lastName}",
+                            style: const TextStyle(fontSize: 20.0),
                           ),
                           Text(
-                            "johndoe@doe.com",
-                            style: TextStyle(fontSize: 15.0),
+                            widget.userProfile.email,
+                            style: const TextStyle(fontSize: 15.0),
                           ),
                           TextButton(
-                            onPressed: () {},
-                            child: Row(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ProfileEditScreen(userProfile: widget.userProfile,),
+                                ),
+                              );
+                            },
+                            child: const Row(
                               children: [
                                 Text("Edit Profile"),
                                 SizedBox(
@@ -71,55 +97,68 @@ class UserProfileSettingsScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 8.0),
-                child: const Divider(),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 0, horizontal: 8.0),
+                child: Divider(),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 20.0,
               ),
               Expanded(
                 child: ListView(
                   children: [
                     ListTile(
-                      leading: Icon(
+                      leading: const Icon(
                         Icons.settings,
                         size: 32.0,
                       ),
-                      title: Text("Account Settings"),
-                      subtitle: Text("Notifications, passwords and more"),
-                      trailing: Icon(Icons.arrow_forward_ios),
+                      title: const Text("Account Settings"),
+                      subtitle: const Text("Notifications, passwords and more"),
+                      trailing: const Icon(Icons.arrow_forward_ios),
                       onTap: () {
                         print("Account settings");
                       },
                     ),
-                    SizedBox(height: 5,),
+                    const SizedBox(height: 5,),
                     ListTile(
-                      leading: Icon(
+                      leading: const Icon(
+                        Icons.directions_car_outlined,
+                        size: 32.0,
+                      ),
+                      title: const Text("Vehicles"),
+                      subtitle: const Text("Manage your vehicles, add or remove vehicles, and more"),
+                      trailing: const Icon(Icons.arrow_forward_ios),
+                      onTap: () {
+                        print("Account settings");
+                      },
+                    ),
+                    const SizedBox(height: 5,),
+                    ListTile(
+                      leading: const Icon(
                         Icons.payment,
                         size: 32.0,
                       ),
-                      title: Text("Payments"),
-                      subtitle: Text("Payment methods, bank details and more"),
-                      trailing: Icon(Icons.arrow_forward_ios),
+                      title: const Text("Payments"),
+                      subtitle: const Text("Payment methods, bank details and more"),
+                      trailing: const Icon(Icons.arrow_forward_ios),
                       onTap: () {
                         print("My vehciles");
                       },
                     ),
-                    SizedBox(height: 5,),
+                    const SizedBox(height: 5,),
                     ListTile(
-                      leading: Icon(
+                      leading: const Icon(
                         Icons.bar_chart,
                         size: 30.0,
                       ),
-                      title: Text("Ride statistics"),
-                      subtitle: Text("Ratings, reviews and more"),
-                      trailing: Icon(Icons.arrow_forward_ios),
+                      title: const Text("Ride statistics"),
+                      subtitle: const Text("Ratings, reviews and more"),
+                      trailing: const Icon(Icons.arrow_forward_ios),
                       onTap: () {
                         print("My vehciles");
                       },
                     ),
-                    SizedBox(height: 5,),
+                    const SizedBox(height: 5,),
                     ListTile(
                       leading: const Icon(
                         Icons.language,
@@ -127,28 +166,33 @@ class UserProfileSettingsScreen extends StatelessWidget {
                       ),
                       title: const Text("Accessibility"),
                       subtitle: const Text("Language, text size and more"),
-                      trailing: Icon(Icons.arrow_forward_ios),
+                      trailing: const Icon(Icons.arrow_forward_ios),
                       onTap: () {
                         print("My vehciles");
                       },
                     ),
-                    SizedBox(height: 5,),
+                    const SizedBox(height: 5,),
                     ListTile(
-                      leading: Icon(
+                      leading: const Icon(
                         Icons.support_agent,
                         size: 30.0,
                       ),
-                      title: Text("Customer Support"),
-                      subtitle: Text("Contact one of our agents"),
-                      trailing: Icon(Icons.arrow_forward_ios),
+                      title: const Text("Customer Support"),
+                      subtitle: const Text("Contact one of our agents"),
+                      trailing: const Icon(Icons.arrow_forward_ios),
                       onTap: () {
                         print("My vehciles");
                       },
                     ),
-                    SizedBox(height: 10,),
+                    const SizedBox(height: 10,),
                     TextButton(
-                      onPressed: () {},
-                      child: Row(
+                      onPressed: () async {
+                        await authService.signOut();
+                        if(context.mounted) {
+                          Navigator.pushNamedAndRemoveUntil(context, '/loginScreen', (route) => false,);
+                        }
+                      },
+                      child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text("Logout", style: TextStyle(color: Colors.red, fontSize: 15.0),),

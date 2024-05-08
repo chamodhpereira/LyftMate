@@ -113,12 +113,37 @@ class _UserListState extends State<UserList> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Messages"),
+        backgroundColor: Colors.green,
+        foregroundColor: Colors.white,
+        elevation: 0.5,
       ),
       body: SafeArea(
         child: _buildUserList(),
       ),
     );
   }
+
+  // // build a list of users that the current user has messaged with
+  // Widget _buildUserList() {
+  //   return FutureBuilder<List<String>>(
+  //     future: _chatService.getUsersWithMessages(),
+  //     builder: (context, snapshot) {
+  //       if (snapshot.connectionState == ConnectionState.waiting) {
+  //         return Center(child: CircularProgressIndicator());
+  //       } else if (snapshot.hasError) {
+  //         return Center(child: Text('Error: ${snapshot.error}'));
+  //       } else {
+  //         List<String> receiverIds = snapshot.data ?? [];
+  //         return ListView.builder(
+  //           itemCount: receiverIds.length,
+  //           itemBuilder: (context, index) {
+  //             return _buildUserListItem(receiverIds[index]);
+  //           },
+  //         );
+  //       }
+  //     },
+  //   );
+  // }
 
   // build a list of users that the current user has messaged with
   Widget _buildUserList() {
@@ -131,12 +156,42 @@ class _UserListState extends State<UserList> {
           return Center(child: Text('Error: ${snapshot.error}'));
         } else {
           List<String> receiverIds = snapshot.data ?? [];
-          return ListView.builder(
-            itemCount: receiverIds.length,
-            itemBuilder: (context, index) {
-              return _buildUserListItem(receiverIds[index]);
-            },
-          );
+          if (receiverIds.isEmpty) {
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Join the carpooling community!',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      'Start messaging other members to arrange rides and share the journey!',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    // You can add a button or any other UI element here to encourage users to join the community
+                  ],
+                ),
+              ),
+            );
+          } else {
+            return ListView.builder(
+              itemCount: receiverIds.length,
+              itemBuilder: (context, index) {
+                return _buildUserListItem(receiverIds[index]);
+              },
+            );
+          }
         }
       },
     );

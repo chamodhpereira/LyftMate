@@ -1,13 +1,26 @@
+import 'dart:convert';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:intl/intl.dart';
+import 'package:http/http.dart';
+import 'package:lyft_mate/screens/find_ride/ride_booked_screen.dart';
+import 'package:lyft_mate/screens/payment/payment_screen.dart';
+import 'package:lyft_mate/services/payment/payment_service.dart';
+import 'package:geocoding/geocoding.dart';
 
 class ConfirmBookingPage extends StatefulWidget {
   final DocumentSnapshot ride;
+  final DocumentSnapshot driverDetails;
   final int selectedSeats;
+  final GeoPoint userPickupCoordinate;
+  final GeoPoint userDropoffCoordinate;
 
   ConfirmBookingPage({
     required this.ride,
-    required this.selectedSeats,
+    required this.selectedSeats, required this.userPickupCoordinate, required this.userDropoffCoordinate, required this.driverDetails,
   });
 
   @override
@@ -15,173 +28,487 @@ class ConfirmBookingPage extends StatefulWidget {
 }
 
 class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
-  String? _paymentMethod; // Variable to store the selected payment method
+  String? _paymentMethod;
+  bool _isButtonDisabled = true;
+  String _pickupLocationName = "";
+  String _dropoffLocationName = "";
+  User? currentUser = FirebaseAuth.instance.currentUser;
+  String userEmail = '';
+  String userFirstName = '';
+  String userLastName = '';
+
+  final client = Client();
+
+
+  String _getApiKey() {
+    return dotenv.env['GOOGLE_MAPS_API_KEY'] ?? 'YOUR_DEFAULT_API_KEY';
+  }
+
+
+  Future<String> getLocationName(GeoPoint coordinates) async {
+    final apiKey = _getApiKey();
+    String baseUrl = 'https://maps.googleapis.com/maps/api/geocode/json';
+    String url = '$baseUrl?latlng=${coordinates.latitude},${coordinates.longitude}&key=$apiKey';
+
+    try {
+      final response = await client.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        if (data['results'] != null && data['results'].isNotEmpty) {
+          // Typically, the formatted address is quite reliable
+          return data['results'][0]['formatted_address'];
+        } else {
+          return "No address available";
+        }
+      } else {
+        return "Failed to fetch address";
+      }
+    } catch (e) {
+      return "Error occurred: $e";
+    }
+  }
+
+  Future<void> fetchUserData() async {
+    if (currentUser != null) {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(currentUser!.uid).get();
+      setState(() {
+        userEmail = userDoc.get('email');
+        userFirstName = userDoc.get('firstName');
+        userLastName = userDoc.get('lastName');
+      });
+    }
+  }
+
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUserData();
+    fetchLocationNames();
+  }
+
+  void fetchLocationNames() async {
+    String pickupLocationName = await getLocationName(widget.userPickupCoordinate);
+    String dropoffLocationName = await getLocationName(widget.userDropoffCoordinate);
+
+    setState(() {
+      // Update your UI with these location names
+      _pickupLocationName = pickupLocationName;
+      _dropoffLocationName = dropoffLocationName;
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
+    Timestamp rideDate = widget.ride['date'];
+    DateTime dateTime = rideDate.toDate();
+    String formattedDate = DateFormat('EEEE, dd MMMM yyyy').format(dateTime); // Format as in the image
+    String formattedTime = DateFormat('HH:mm a').format(dateTime); // Time formatting
+
+    debugPrint("User email: $userEmail");
+    debugPrint("User Names: $userFirstName $userLastName");
+
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Confirm Booking'),
+        title: const Text('Confirm Ride Booking'),
         backgroundColor: Colors.green,
+        foregroundColor: Colors.white,
+        elevation: 0.5,
+        // iconTheme: IconThemeData(color: Colors.black),
+
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Ride Details',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18.0,
-              ),
+            const SizedBox(height: 20),
+            Text(
+              '$formattedDate at $formattedTime', // Show formatted date and time
+              style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 16.0),
-            _buildRideDetailsCard(),
-            const SizedBox(height: 16.0),
-            const Text(
-              'Selected Seats',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18.0,
-              ),
+            const SizedBox(height: 20),
+        Text(
+              'Ride ID: ${widget.ride.id}',
+              style: const TextStyle(fontSize: 14.0,fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 16.0),
-            _buildSelectedSeatsCard(),
-            const SizedBox(height: 16.0),
-            const Text(
-              'Payment Method',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18.0,
-              ),
+            const SizedBox(height: 8.0),
+            // Text(
+            //   'From: ${widget.ride['pickupLocationName']}',
+            //   style: TextStyle(fontSize: 14.0),
+            // ),
+            Text(
+              'From: $_pickupLocationName',
+              style: const TextStyle(fontSize: 14.0),
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 8.0),
+            Text(
+              'To: $_dropoffLocationName',
+              style: const TextStyle(fontSize: 14.0),
+            ),
+            // Text(
+            //   'Gurgaon to Meerut', // Static route example, replace with dynamic as needed
+            //   style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
+            // ),
+            const Divider(height: 30),
+            ListTile(
+              title: Text('${widget.driverDetails['firstName']} ${widget.driverDetails['lastName']}', style: const TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Text('${widget.driverDetails['ratings']} - ${widget.driverDetails['reviews'].length } Reviews', style: const TextStyle(color: Colors.grey)),
+              leading: CircleAvatar(
+                radius: 30.0,
+                backgroundImage: widget.driverDetails != null &&
+                    widget.driverDetails['profileImageUrl'] != null &&
+                    widget.driverDetails['profileImageUrl'].isNotEmpty
+                    ? NetworkImage(widget.driverDetails['profileImageUrl'])
+                    : null,
+                child: widget.driverDetails == null ||
+                    widget.driverDetails['profileImageUrl'] == null ||
+                    widget.driverDetails['profileImageUrl'].isEmpty
+                    ? const Icon(
+                  Icons.person,
+                  size: 20.0,
+                )
+                    : null,
+              ),
+              // leading: CircleAvatar(
+              //   // You may want to load the driver's image dynamically
+              //   backgroundImage: NetworkImage('https://via.placeholder.com/150'),
+              // ),
+              // trailing: Icon(Icons.arrow_forward_ios),
+            ),
+            const Divider(height: 30),
+            Text(
+              'Booked seats: ${widget.selectedSeats}',
+              style: const TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Total amount: LKR ${widget.ride['pricePerSeat'] * widget.selectedSeats}',
+              style: const TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold),
+            ),
+            const Divider(height: 30),
+            const SizedBox(height: 10),
             _buildPaymentMethodSelection(),
-            SizedBox(height: 32.0),
-            ElevatedButton(
-              onPressed: () {
-                // Implement book ride functionality
-                if (_paymentMethod != null) {
-                  // Proceed with booking using selected payment method
-                  print('Selected Payment Method: $_paymentMethod');
-                  _bookRide();
-                } else {
-                  // Show error message or prevent booking without selecting payment method
-                  print('Please select a payment method.');
+            const SizedBox(height: 20),
+
+          ],
+        ),
+
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.only(left: 12.0, top: 0, right: 12.0, bottom: 30.0),
+        child: ElevatedButton(  // This is now directly in the Column, outside of the SingleChildScrollView
+          onPressed: _isButtonDisabled ? null : () async {
+
+            if (_paymentMethod != null) {
+              double amountToBePaid = widget.ride['pricePerSeat'] * widget.selectedSeats;
+              if (_paymentMethod == 'cash') {
+                bool result = await _bookRide();
+                if (result) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => RideBookedPage(),
+                    ),
+                  );
                 }
-              },
-              child: Text('Book Ride'),
-            ),
-          ],
+              } else if (_paymentMethod == 'card') {
+                String? paymentId = await PaymentService.makePayment(amountToBePaid, userEmail, '$userFirstName $userLastName');
+
+                debugPrint("THE PAYEMENT IDDDDDDDDDDDD ------- $paymentId");
+
+                if (paymentId != null) {
+                  bool result = await _bookRide(paymentId: paymentId);
+                  if (result) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => RideBookedPage(),
+                      ),
+                    );
+                  }
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Payment failed. Please try again.')),
+                  );
+                }
+              }
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Please select a payment method.')),
+              );
+            }
+
+
+
+
+
+
+            // Implement book ride functionality
+            // if (_paymentMethod != null) {
+            //   double amountToBePaid = widget.ride['pricePerSeat'] * widget.selectedSeats;
+            //   if (_paymentMethod == 'cash') {
+            //     bool result = await _bookRide();
+            //     // bool result = true;
+            //     if (result) {
+            //       if(context.mounted){
+            //         Navigator.push(
+            //           context,
+            //           MaterialPageRoute(
+            //             builder: (context) => RideBookedPage(),
+            //           ),
+            //         );
+            //       }
+            //     }
+            //   } else if (_paymentMethod == 'card') {
+            //     // Call payment service
+            //     double amountToBePaid = widget.ride['pricePerSeat'] * widget.selectedSeats;
+            //     bool paymentSuccessful = await PaymentService.makePayment(amountToBePaid, userEmail, '${userFirstName} ${userLastName}');
+            //
+            //     debugPrint("----------------------------------------------");
+            //     debugPrint("IS PAYEMENT SUCCESSSS FULLLL: $paymentSuccessful");
+            //     debugPrint("----------------------------------------------");
+            //
+            //     if (paymentSuccessful) {
+            //       // Redirect user after payment
+            //       debugPrint("----------------------------------------------");
+            //       debugPrint("PAYEMENT ISSSSSSS SUCCESSSS FULLLL: $paymentSuccessful");
+            //       debugPrint("----------------------------------------------");
+            //       bool result = await _bookRide();
+            //       if (result) {
+            //         if(context.mounted){
+            //           Navigator.push(
+            //             context,
+            //             MaterialPageRoute(
+            //               builder: (context) => RideBookedPage(),
+            //             ),
+            //           );
+            //         }
+            //       }
+            //     } else {
+            //       ScaffoldMessenger.of(context).showSnackBar(
+            //         SnackBar(
+            //           content: Text('Payment failed. Please try again.'),
+            //         ),
+            //       );
+            //     }
+            //   }
+            // } else {
+            //   // Show error message or prevent booking without selecting payment method
+            //   ScaffoldMessenger.of(context).showSnackBar(
+            //     SnackBar(
+            //       content: Text('Please select a payment method.'),
+            //     ),
+            //   );
+            //   print('Please select a payment method.');
+            // }
+          },
+          style: ElevatedButton.styleFrom(
+              foregroundColor: Colors.white, backgroundColor: Colors.green, // Text color
+              minimumSize: Size(double.infinity, 50)  // Set the button to take the full width and 50 height
+          ),
+          child: Text(
+            "Book Ride",
+            style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildRideDetailsCard() {
-    return Card(
-      elevation: 2.0,
-      child: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'From: ${widget.ride.id}',
-              style: TextStyle(fontSize: 16.0),
-            ),
-            SizedBox(height: 8.0),
-            Text(
-              'From: ${widget.ride['pickupCityName']}',
-              style: TextStyle(fontSize: 16.0),
-            ),
-            SizedBox(height: 8.0),
-            Text(
-              'To: ${widget.ride['dropoffCityName']}',
-              style: TextStyle(fontSize: 16.0),
-            ),
-            SizedBox(height: 8.0),
-            Text(
-              'Date: Saturday, 15 May 2024',
-              style: TextStyle(fontSize: 16.0),
-            ),
-            SizedBox(height: 8.0),
-            Text(
-              'Price per Seat: LKR 300',
-              style: TextStyle(fontSize: 16.0),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSelectedSeatsCard() {
-    return Card(
-      elevation: 2.0,
-      child: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Selected Seats: ${widget.selectedSeats}',
-              style: TextStyle(fontSize: 16.0),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // Widget _buildPaymentMethodSelection() {
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       Text('Payment method', style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold)),
+  //       ListTile(
+  //         title: Text('VISA x7655'),
+  //         leading: Radio<String>(
+  //           value: 'card',
+  //           groupValue: _paymentMethod,
+  //           onChanged: (value) {
+  //             setState(() {
+  //               _paymentMethod = value;
+  //               _isButtonDisabled = false;
+  //             });
+  //           },
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
 
   Widget _buildPaymentMethodSelection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Radio<String>(
-              value: 'cash',
-              groupValue: _paymentMethod,
-              onChanged: (value) {
-                setState(() {
-                  _paymentMethod = value;
-                });
-              },
-            ),
-            Text('Cash'),
-          ],
-        ),
-        Row(
-          children: [
-            Radio<String>(
-              value: 'card',
-              groupValue: _paymentMethod,
-              onChanged: (value) {
-                setState(() {
-                  _paymentMethod = value;
-                });
-              },
-            ),
-            Text('Card'),
-          ],
-        ),
-      ],
-    );
-  }
+    String paymentMode = widget.ride['paymentMode']; // Assuming 'paymentMode' is the field containing payment mode
 
-  void _bookRide() async {
-    try {
-      // Update ride document with new passenger
-      await FirebaseFirestore.instance.collection('rides').doc(widget.ride.id).update({
-        'passengers': FieldValue.arrayUnion(['namaaal-baba-gay']), // Replace 'passengerID' with actual passenger ID
-      });
-      print('Booking successful');
-    } catch (e) {
-      print('Error booking ride: $e');
+
+    if (paymentMode == 'Cash') {
+      return Row(
+        children: [
+          const Text('Payment method', style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold)),
+          Radio<String>(
+            value: 'cash',
+            groupValue: _paymentMethod,
+            onChanged: (value) {
+              setState(() {
+                _paymentMethod = value;
+                _isButtonDisabled = false;
+              });
+            },
+          ),
+          const Text('Cash'),
+          const SizedBox(width: 10,),
+          const Icon(Icons.money),
+        ],
+      );
+    } else if (paymentMode == 'Card') {
+      return Row(
+        children: [
+          const Text('Payment method', style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold)),
+          Radio<String>(
+            value: 'card',
+            groupValue: _paymentMethod,
+            onChanged: (value) {
+              setState(() {
+                _paymentMethod = value;
+                _isButtonDisabled = false;
+              });
+            },
+          ),
+          const Text('Card'),
+          const SizedBox(width: 10,),
+          const Icon(Icons.credit_card),
+        ],
+      );
+    } else {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Payment method', style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold)),
+          Row(
+            children: [
+              Radio<String>(
+                value: 'cash',
+                groupValue: _paymentMethod,
+                onChanged: (value) {
+                  setState(() {
+                    _paymentMethod = value;
+                    _isButtonDisabled = false;
+                  });
+                },
+              ),
+              const Text('Cash'),
+              const SizedBox(width: 10,),
+              const Icon(Icons.money),
+            ],
+          ),
+          Row(
+            children: [
+              Radio<String>(
+                value: 'card',
+                groupValue: _paymentMethod,
+                onChanged: (value) {
+                  setState(() {
+                    _paymentMethod = value;
+                    _isButtonDisabled = false;
+                  });
+                },
+              ),
+              const Text('Card'),
+              const SizedBox(width: 10,),
+              const Icon(Icons.credit_card),
+            ],
+          ),
+        ],
+      );
     }
   }
+
+
+  Future<bool> _bookRide({String? paymentId}) async {
+    try {
+      int selectedSeats = widget.selectedSeats;
+      double amountToBePaid = widget.ride['pricePerSeat'] * selectedSeats;
+
+      // Get current user ID
+      String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
+      print('Current User ID: $currentUserId');
+
+      // Create a passenger object
+      Map<String, dynamic> passenger = {
+        'userId': currentUserId, // Use current user ID
+        'seats': selectedSeats,
+        'pickupCoordinate': widget.userPickupCoordinate,
+        'dropoffCoordinate': widget.userDropoffCoordinate,
+        'amount': amountToBePaid, // Store the amount
+        'paidStatus': _paymentMethod == 'cash' ? false : true, // Set paid status based on payment method
+      };
+
+      // Add the payment ID if it exists (when payment method is card)
+      if (paymentId != null) {
+        passenger['paymentId'] = paymentId;
+      }
+
+      // Update ride document with new passenger, reduced available seats, amount, and paid status
+      await FirebaseFirestore.instance.collection('rides').doc(widget.ride.id).update({
+        'passengers': FieldValue.arrayUnion([passenger]),
+        'seats': FieldValue.increment(-selectedSeats), // Reduce available seats
+      });
+
+      // Add booked ride to the user's ridesBooked array
+      await FirebaseFirestore.instance.collection('users').doc(currentUserId).update({
+        'ridesBooked': FieldValue.arrayUnion([widget.ride.id]),
+      });
+
+      print('Booking successful');
+      return true; // Booking successful
+    } catch (e) {
+      print('Error booking ride: $e');
+      return false; // Booking failed
+    }
+  }
+
+
+// Future<bool> _bookRide() async {
+  //   try {
+  //     int selectedSeats = widget.selectedSeats;
+  //     double amountToBePaid = widget.ride['pricePerSeat'] * selectedSeats;
+  //
+  //     // Get current user ID
+  //     String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
+  //     print('Current User ID: $currentUserId');
+  //
+  //     // Update ride document with new passenger, reduced available seats, amount, and paid status
+  //     await FirebaseFirestore.instance.collection('rides').doc(widget.ride.id).update({
+  //       'passengers': FieldValue.arrayUnion([
+  //         {
+  //           // TODO: Store the paymenet id here, if payment type is card
+  //           'userId': currentUserId, // Use current user ID
+  //           'seats': selectedSeats,
+  //           'pickupCoordinate': widget.userPickupCoordinate,
+  //           'dropoffCoordinate': widget.userDropoffCoordinate,
+  //           'amount': amountToBePaid, // Store the amount
+  //           'paidStatus': _paymentMethod == 'cash' ? false : true, // Set paid status based on payment method
+  //         }
+  //       ]),
+  //       'seats': FieldValue.increment(-selectedSeats), // Reduce available seats
+  //
+  //     });
+  //
+  //     // Add booked ride to the user's ridesBooked array
+  //     await FirebaseFirestore.instance.collection('users').doc(currentUserId).update({
+  //       'ridesBooked': FieldValue.arrayUnion([widget.ride.id]),
+  //     });
+  //
+  //     print('Booking successful');
+  //     return true; // Booking successful
+  //   } catch (e) {
+  //     print('Error booking ride: $e');
+  //     return false; // Booking failed
+  //   }
+  // }
 }
 
 
@@ -189,68 +516,438 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:flutter/material.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:intl/intl.dart';
+// import 'package:lyft_mate/screens/find_ride/ride_booked_screen.dart';
+// import 'package:lyft_mate/screens/payment/payment_screen.dart';
+// import 'package:lyft_mate/services/payment/payment_service.dart';
 //
-// class ConfirmBookingPage extends StatelessWidget {
+// class ConfirmBookingPage extends StatefulWidget {
 //   final DocumentSnapshot ride;
 //   final int selectedSeats;
+//   final GeoPoint userPickupCoordinate;
+//   final GeoPoint userDropoffCoordinate;
 //
 //   ConfirmBookingPage({
 //     required this.ride,
-//     required this.selectedSeats,
+//     required this.selectedSeats, required this.userPickupCoordinate, required this.userDropoffCoordinate,
 //   });
 //
 //   @override
+//   _ConfirmBookingPageState createState() => _ConfirmBookingPageState();
+// }
+//
+// class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
+//   String? _paymentMethod; // Variable to store the selected payment method
+//   bool _isButtonDisabled = true;
+//
+//
+//
+//   @override
 //   Widget build(BuildContext context) {
-//     // Build UI for confirm booking page
+//     Timestamp rideDate = widget.ride['date'];
+//
+// // Convert the timestamp to a DateTime object
+//     DateTime dateTime = rideDate.toDate();
+//
+// // Format the DateTime object into a human-readable date string
+//     String formattedDate = DateFormat('yyyy-MM-dd').format(dateTime);
+//
+// // Print the formatted date
+//     print('Formatted Date: $formattedDate');
+//
 //     return Scaffold(
 //       appBar: AppBar(
 //         title: Text('Confirm Booking'),
 //         backgroundColor: Colors.green,
 //       ),
-//       body: SingleChildScrollView(
-//         child: Padding(
-//           padding: EdgeInsets.all(16.0),
-//           child: Column(
-//             crossAxisAlignment: CrossAxisAlignment.stretch,
-//             children: [
-//               // Display ride details
-//               Text('Ride ID: ${ride.id}'),
-//               Text('Seats: $selectedSeats'),
-//               // Add more ride details as needed
-//               // Payment method selection
-//               // Book Ride button
-//               ElevatedButton(
-//                 onPressed: () {
-//                   // Implement book ride functionality
-//                 },
-//                 child: Text('Book Ride'),
+//       body: Column(  // Changed from SingleChildScrollView to Column
+//         children: [
+//           Expanded(  // This will take all available space
+//             child: SingleChildScrollView(  // Now SingleChildScrollView is the child of Expanded
+//               padding: EdgeInsets.all(16.0),
+//               child: Column(
+//                 crossAxisAlignment: CrossAxisAlignment.stretch,
+//                 children: [
+//                   Text(
+//                           'Ride Details',
+//                           style: TextStyle(
+//                             fontWeight: FontWeight.bold,
+//                             fontSize: 18.0,
+//                           ),
+//                         ),
+//                         SizedBox(height: 16.0),
+//                         _buildRideDetailsCard(),
+//                         SizedBox(height: 16.0),
+//                         Text("Booking Details", style: TextStyle(
+//                           fontWeight: FontWeight.bold,
+//                           fontSize: 18.0,
+//                         ),),
+//                         SizedBox(height: 16.0),
+//                         _buildBookingDetailsCard(),
+//
+//                         SizedBox(height: 16.0),
+//                         Text(
+//                           'Payment Method',
+//                           style: TextStyle(
+//                             fontWeight: FontWeight.bold,
+//                             fontSize: 18.0,
+//                           ),
+//                         ),
+//                   const SizedBox(height: 16.0),
+//                   _buildPaymentMethodSelection(),
+//                   SizedBox(height: 32.0), // Give some spacing at the end of the scroll view
+//                 ],
 //               ),
-//             ],
+//             ),
 //           ),
+//           Padding(
+//             padding: const EdgeInsets.only(left: 12.0, top: 0, right: 12.0, bottom: 12.0),
+//             child: ElevatedButton(  // This is now directly in the Column, outside of the SingleChildScrollView
+//               onPressed: _isButtonDisabled ? null : () async {
+//             // Implement book ride functionality
+//             if (_paymentMethod != null) {
+//               double amountToBePaid = widget.ride['pricePerSeat'] * widget.selectedSeats;
+//               if (_paymentMethod == 'cash') {
+//                 bool result = await _bookRide();
+//                 // bool result = true;
+//                 if (result) {
+//                   if(context.mounted){
+//                     Navigator.push(
+//                       context,
+//                       MaterialPageRoute(
+//                         builder: (context) => RideBookedPage(),
+//                         // builder: (context) => const PaymentScreen(),
+//                       ),
+//                     );
+//                   }
+//                 }
+//                 print("HEEEEEHEEEEEEE CASHHH");
+//               } else if (_paymentMethod == 'card') {
+//                 // Call payment service
+//                 // _callPaymentService();
+//                 double amountToBePaid = widget.ride['pricePerSeat'] * widget.selectedSeats;
+//                 bool paymentSuccessful = await PaymentService.makePayment(amountToBePaid, "hppppp@mail.com", "hpotter");
+//
+//                 debugPrint("----------------------------------------------");
+//                 debugPrint("IS PAYEMENT SUCCESSSS FULLLL: $paymentSuccessful");
+//                 debugPrint("----------------------------------------------");
+//
+//                 if (paymentSuccessful) {
+//                   // Redirect user after payment
+//                   debugPrint("----------------------------------------------");
+//                   debugPrint("PAYEMENT ISSSSSSS SUCCESSSS FULLLL: $paymentSuccessful");
+//                   debugPrint("----------------------------------------------");
+//                   bool result = await _bookRide();
+//                   if (result) {
+//                    if(context.mounted){
+//                      Navigator.push(
+//                        context,
+//                        MaterialPageRoute(
+//                          builder: (context) => const PaymentScreen(),
+//                        ),
+//                      );
+//                    }
+//                   }
+//                 } else {
+//                   ScaffoldMessenger.of(context).showSnackBar(
+//                     SnackBar(
+//                       content: Text('Payment failed. Please try again.'),
+//                     ),
+//                   );
+//                 }
+//               }
+//             } else {
+//               // Show error message or prevent booking without selecting payment method
+//               ScaffoldMessenger.of(context).showSnackBar(
+//                 SnackBar(
+//                   content: Text('Please select a payment method.'),
+//                 ),
+//               );
+//               print('Please select a payment method.');
+//             }
+//           },
+//               style: ElevatedButton.styleFrom(
+//                   foregroundColor: Colors.white, backgroundColor: Colors.green, // Text color
+//                   minimumSize: Size(double.infinity, 50)  // Set the button to take the full width and 50 height
+//               ),
+//               child: Text(
+//                 "Book Ride",
+//                 style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold),
+//               ),
+//             ),
+//           ),
+//         ],
+//       ),
+//       );
+//
+//   }
+//
+//   Widget _buildRideDetailsCard() {
+//     Timestamp rideDate = widget.ride['date'];
+//
+// // Convert the timestamp to a DateTime object
+//     DateTime dateTime = rideDate.toDate();
+//
+// // Format the DateTime object into a human-readable date string
+//     String formattedDate = DateFormat('yyyy-MM-dd').format(dateTime);
+//
+// // Print the formatted date
+//     print('Formatted Date: $formattedDate');
+//
+//     return Card(
+//       elevation: 2.0,
+//       child: Padding(
+//         padding: EdgeInsets.all(16.0),
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             Text(
+//               'Ride ID: ${widget.ride.id}',
+//               style: TextStyle(fontSize: 14.0,fontWeight: FontWeight.bold),
+//             ),
+//             SizedBox(height: 8.0),
+//             Text(
+//               'From: ${widget.ride['pickupLocationName']}',
+//               style: TextStyle(fontSize: 14.0),
+//             ),
+//             SizedBox(height: 8.0),
+//             Text(
+//               'To: ${widget.ride['dropoffLocationName']}',
+//               style: TextStyle(fontSize: 14.0),
+//             ),
+//             SizedBox(height: 8.0),
+//             Text(
+//               'Date: $formattedDate',
+//               style: TextStyle(fontSize: 14.0),
+//             ),
+//             SizedBox(height: 8.0),
+//             Text(
+//               'Price per Seat: LKR ${widget.ride['pricePerSeat']}',
+//               style: TextStyle(fontSize: 14.0),
+//             ),
+//           ],
 //         ),
 //       ),
 //     );
 //   }
+//
+//   Widget _buildBookingDetailsCard() {
+//     Timestamp rideDate = widget.ride['date'];
+//
+// // Convert the timestamp to a DateTime object
+//     DateTime dateTime = rideDate.toDate();
+//
+// // Format the DateTime object into a human-readable date string
+//     String formattedDate = DateFormat('yyyy-MM-dd').format(dateTime);
+//
+// // Print the formatted date
+//     print('Formatted Date: $formattedDate');
+//
+//     return Card(
+//       elevation: 2.0,
+//       child: Padding(
+//         padding: EdgeInsets.all(16.0),
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             // Text(
+//             //   'Ride ID: ${widget.ride.id}',
+//             //   style: TextStyle(fontSize: 14.0,fontWeight: FontWeight.bold),
+//             // ),
+//             // SizedBox(height: 8.0),
+//             Text(
+//               'From: ${widget.ride['pickupLocationName']}',
+//               style: TextStyle(fontSize: 14.0),
+//             ),
+//             SizedBox(height: 8.0),
+//             Text(
+//               'To: ${widget.ride['dropoffLocationName']}',
+//               style: TextStyle(fontSize: 14.0),
+//             ),
+//             SizedBox(height: 8.0),
+//             Text(
+//               'Date: $formattedDate',
+//               style: TextStyle(fontSize: 14.0),
+//             ),
+//             SizedBox(height: 8.0),
+//             Text(
+//               'Price per Seat: LKR ${widget.ride['pricePerSeat']}',
+//               style: TextStyle(fontSize: 14.0),
+//             ),
+//             SizedBox(height: 8.0),
+//             Text(
+//                 'Seats: ${widget.selectedSeats}',
+//               style: TextStyle(fontSize: 14.0),
+//             ),
+//
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+//
+//
+//   Widget _buildPaymentMethodSelection() {
+//     String paymentMode = widget.ride[
+//         'paymentMode']; // Assuming 'paymentMode' is the field containing payment mode
+//
+//     if (paymentMode == 'Cash') {
+//       return Row(
+//         children: [
+//           Radio<String>(
+//             value: 'cash',
+//             groupValue: _paymentMethod,
+//             onChanged: (value) {
+//               setState(() {
+//                 _paymentMethod = value;
+//                 _isButtonDisabled = false;
+//               });
+//             },
+//           ),
+//           Text('Cash'),
+//           Icon(Icons.money),
+//         ],
+//       );
+//     } else if (paymentMode == 'Card') {
+//       return Row(
+//         children: [
+//           Radio<String>(
+//             value: 'card',
+//             groupValue: _paymentMethod,
+//             onChanged: (value) {
+//               setState(() {
+//                 _paymentMethod = value;
+//                 _isButtonDisabled = false;
+//               });
+//             },
+//           ),
+//           Text('Card'),
+//           Icon(Icons.credit_card),
+//         ],
+//       );
+//     } else {
+//       return Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Row(
+//             children: [
+//               Radio<String>(
+//                 value: 'cash',
+//                 groupValue: _paymentMethod,
+//                 onChanged: (value) {
+//                   setState(() {
+//                     _paymentMethod = value;
+//                     _isButtonDisabled = false;
+//                   });
+//                 },
+//               ),
+//               Text('Cash'),
+//               Icon(Icons.money),
+//             ],
+//           ),
+//           Row(
+//             children: [
+//               Radio<String>(
+//                 value: 'card',
+//                 groupValue: _paymentMethod,
+//                 onChanged: (value) {
+//                   setState(() {
+//                     _paymentMethod = value;
+//                     _isButtonDisabled = false;
+//                   });
+//                 },
+//               ),
+//               Text('Card'),
+//               Icon(Icons.credit_card),
+//             ],
+//           ),
+//         ],
+//       );
+//     }
+//   }
+//   // Future<bool> _bookRide() async {
+//   //   try {
+//   //     int selectedSeats = widget.selectedSeats;
+//   //
+//   //     // Get current user ID
+//   //     String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
+//   //     print('Current User ID: $currentUserId');
+//   //
+//   //     // Update ride document with new passenger and reduced available seats
+//   //     await FirebaseFirestore.instance.collection('rides').doc(widget.ride.id).update({
+//   //       'passengers': FieldValue.arrayUnion([
+//   //         {
+//   //           'userId': currentUserId, // Use current user ID
+//   //           'pickupCoordinate': widget.userPickupCoordinate,
+//   //           'dropoffCoordinate': widget.userDropoffCoordinate,
+//   //         }
+//   //       ]),
+//   //       'seats': FieldValue.increment(-selectedSeats), // Reduce available seats
+//   //     });
+//   //
+//   //     // Add booked ride to the user's ridesBooked array
+//   //     // await FirebaseFirestore.instance.collection('users').doc(currentUserId).update({
+//   //     //   'ridesBooked': FieldValue.arrayUnion([
+//   //     //     {
+//   //     //       'rideId': widget.ride.id,
+//   //     //       'pickupCoordinate': widget.userPickupCoordinate,
+//   //     //       'dropoffCoordinate': widget.userDropoffCoordinate,
+//   //     //       'seatsBooked': selectedSeats,
+//   //     //     }
+//   //     //   ]),
+//   //     // });
+//   //     await FirebaseFirestore.instance.collection('users').doc(currentUserId).update({
+//   //       'ridesBooked': FieldValue.arrayUnion([widget.ride.id]),
+//   //     });
+//   //
+//   //     print('Booking successful');
+//   //     return true; // Booking successful
+//   //   } catch (e) {
+//   //     print('Error booking ride: $e');
+//   //     return false; // Booking failed
+//   //   }
+//   // }
+//
+//   Future<bool> _bookRide() async {
+//     try {
+//       int selectedSeats = widget.selectedSeats;
+//       double amountToBePaid = widget.ride['pricePerSeat'] * selectedSeats;
+//
+//       // Get current user ID
+//       String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
+//       print('Current User ID: $currentUserId');
+//
+//       // Update ride document with new passenger, reduced available seats, amount, and paid status
+//       await FirebaseFirestore.instance.collection('rides').doc(widget.ride.id).update({
+//         'passengers': FieldValue.arrayUnion([
+//           {
+//             'userId': currentUserId, // Use current user ID
+//             'seats': selectedSeats,
+//             'pickupCoordinate': widget.userPickupCoordinate,
+//             'dropoffCoordinate': widget.userDropoffCoordinate,
+//             'amount': amountToBePaid, // Store the amount
+//             'paidStatus': _paymentMethod == 'cash' ? false : true, // Set paid status based on payment method
+//           }
+//         ]),
+//         'seats': FieldValue.increment(-selectedSeats), // Reduce available seats
+//
+//       });
+//
+//       // Add booked ride to the user's ridesBooked array
+//       await FirebaseFirestore.instance.collection('users').doc(currentUserId).update({
+//         'ridesBooked': FieldValue.arrayUnion([widget.ride.id]),
+//       });
+//
+//       print('Booking successful');
+//       return true; // Booking successful
+//     } catch (e) {
+//       print('Error booking ride: $e');
+//       return false; // Booking failed
+//     }
+//   }
+//
+//
 // }

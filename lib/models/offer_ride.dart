@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geoflutterfire2/geoflutterfire2.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class OfferRide {
@@ -15,7 +16,7 @@ class OfferRide {
   LatLng? rideLocation;
   LatLng? pickupLocation; // LatLng object representing pickup location
   LatLng? dropoffLocation; // LatLng object representing dropoff location
-  String? seats;
+  int? seats;
   String? vehicle;
   String? rideDistance;
   String? pickupCityName;
@@ -33,7 +34,9 @@ class OfferRide {
   List<String> ridePreferences = [];
   List<String> passengers = []; // List of passenger user IDs
   List<LatLng> polylinePoints = []; // List to store polyline points
-  String rideStatus = "pending";
+  String rideStatus = "Pending";
+  String? encodedRidePolyline = "";
+  Map<String, List<Map<String, double>>> geohashGroups = {};
 
 
 
@@ -57,12 +60,16 @@ class OfferRide {
     passengers.clear();
     ridePreferences.clear();
     polylinePoints.clear();
+    encodedRidePolyline = "";
+    geohashGroups = {};
   }
 
-  void updateRideDetails(String distance, String duration, List<LatLng> polylinePoints) {
+void updateRideDetails(String distance, String duration, List<LatLng> polylinePoints) {
     rideDistance = distance;
     rideDuration = duration;
     this.polylinePoints = polylinePoints;
+    generatePolylineGeohashes();
+
 
     print("this is the pickup city: $pickupLocationName");
     print("this is the drop city: $dropoffLocation");
@@ -71,8 +78,30 @@ class OfferRide {
     print("this is ride Duration: $rideDuration");
     print("this is ploylinesss: $polylinePoints");
 
+    // print("THISSS ENCODEEEDD $encodedRidePolyline");
+    print("THISSS GEOHASHEDDDD POLYLOINESSSS------------------- $geohashGroups");
+
     // this.polylinePoints = polylinePoints;
   }
+
+  void generatePolylineGeohashes() {
+    GeoFlutterFire geo = GeoFlutterFire();
+    Map<String, List<Map<String, double>>> tempGroups = {};
+
+    for (LatLng point in polylinePoints) {
+      GeoFirePoint geoPoint = geo.point(latitude: point.latitude, longitude: point.longitude);
+      // Truncate the geohash to 5 characters
+      String hash = geoPoint.hash.substring(0, 5);
+
+      if (!tempGroups.containsKey(hash)) {
+        tempGroups[hash] = [];
+      }
+      tempGroups[hash]?.add({'latitude': point.latitude, 'longitude': point.longitude});
+    }
+
+    geohashGroups = tempGroups;
+  }
+
 
   // Update method to set pickup location details
   void setPickupLocation(double lat, double lng, String locationName, String cityName) {
@@ -112,7 +141,7 @@ class OfferRide {
   }
 
   // Setter method to update seats
-  void setSeats(String newSeats) {
+  void setSeats(int newSeats) {
     seats = newSeats;
     print("seatssss: $seats");
   }

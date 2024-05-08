@@ -3,8 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geoflutterfire2/geoflutterfire2.dart';
 import 'package:lottie/lottie.dart';
+import 'package:lyft_mate/screens/offer_ride/ui/ride_offered_screen.dart';
 
 import '../../models/offer_ride.dart';
+import '../find_ride/ride_booked_screen.dart';
 // import 'package:lyft_mate/src/screens/home_screen.dart';
 
 class RideOptions extends StatefulWidget {
@@ -31,32 +33,35 @@ class _RideOptionsState extends State<RideOptions> {
       context: context,
       builder: (BuildContext context) {
         return SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 10.0, bottom: 20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              Column(
-                children: options.map((option) {
-                  return ListTile(
-                    title: Text(option),
-                    onTap: () {
-                      Navigator.pop(context);
-                      onSelect(option);
-                    },
-                  );
-                }).toList(),
-              ),
-            ],
+                const SizedBox(height: 10),
+                Column(
+                  children: options.map((option) {
+                    return ListTile(
+                      title: Text(option),
+                      onTap: () {
+                        Navigator.pop(context);
+                        onSelect(option);
+                      },
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -70,41 +75,44 @@ class _RideOptionsState extends State<RideOptions> {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             return SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text(
-                      'Select Preferences',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+              child: Padding(
+                padding: const  EdgeInsets.only(top: 10.0, bottom: 20.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text(
+                        'Select Preferences',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  Column(
-                    children:
-                        ['Non-smoking', 'Music', 'Pet-friendly'].map((option) {
-                      bool isSelected = _selectedPreferences.contains(option);
-                      return CheckboxListTile(
-                        title: Text(option),
-                        value: isSelected,
-                        onChanged: (value) {
-                          setState(() {
-                            if (value != null && value) {
-                              _selectedPreferences.add(option);
-                            } else {
-                              _selectedPreferences.remove(option);
-                            }
-                          });
-                        },
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 10),
-                ],
+                    const SizedBox(height: 10),
+                    Column(
+                      children:
+                          ['Instant Approval','Smoking is Allowed','Music is Allowed','Smoking is Not-Allowed', 'Pets are Allowed'].map((option) {
+                        bool isSelected = _selectedPreferences.contains(option);
+                        return CheckboxListTile(
+                          title: Text(option),
+                          value: isSelected,
+                          onChanged: (value) {
+                            setState(() {
+                              if (value != null && value) {
+                                _selectedPreferences.add(option);
+                              } else {
+                                _selectedPreferences.remove(option);
+                              }
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 10),
+                  ],
+                ),
               ),
             );
           },
@@ -122,12 +130,12 @@ class _RideOptionsState extends State<RideOptions> {
         foregroundColor: Colors.white,
         elevation: 0.5,
         // leadingWidth: 50.0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios), // Back button icon
-          onPressed: () {
-            Navigator.pop(context); // Handle back navigation
-          },
-        ),
+        // leading: IconButton(
+        //   icon: const Icon(Icons.arrow_back_ios), // Back button icon
+        //   onPressed: () {
+        //     Navigator.pop(context); // Handle back navigation
+        //   },
+        // ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -140,7 +148,7 @@ class _RideOptionsState extends State<RideOptions> {
                 children: [
                   Container(
                     height: 250,
-                      padding: EdgeInsets.zero,
+                      // padding: EdgeInsets.all(20.0),
                       margin: EdgeInsets.zero,
                       child: Lottie.asset("assets/images/right-animation.json", height: 500, fit: BoxFit.fill )
                   ),
@@ -152,22 +160,19 @@ class _RideOptionsState extends State<RideOptions> {
                 ],
               ),
             ),
-            // Center(
-            //   child: Container(
-            //     child: Lottie.asset("assets/images/otp-animation.json", height: 300.0),
-            //   ),
-            // ),
             const SizedBox(height: 20),
             const Text(
               'Got anything to add about the ride?',
               style: TextStyle(fontSize: 16),
             ),
+            const SizedBox(height: 5),
             const Text(
               'eg: Flexible about when and where to meet/ got limited space in the boot/ need passengers to be punctual/ etc.',
               style: TextStyle(fontSize: 12),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             TextField(
+              style: TextStyle(fontSize: 13.5),
               controller: _notesController,
               decoration: const InputDecoration(
                 hintText: 'Enter your additional notes (max 100 characters)',
@@ -212,7 +217,7 @@ class _RideOptionsState extends State<RideOptions> {
                 _showBottomSheet(
                   context,
                   'Select Payment',
-                  ['Cash', 'Card'],
+                  ['Cash', 'Card', 'No Preference'],
                   (option) {
                     setState(() {
                       _selectedPaymentOption = option;
@@ -259,6 +264,7 @@ class _RideOptionsState extends State<RideOptions> {
             child: ElevatedButton(
               style: ButtonStyle(
                 backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
+                foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
               ),
               onPressed: () {
                 User? user = FirebaseAuth.instance.currentUser;
@@ -285,6 +291,13 @@ class _RideOptionsState extends State<RideOptions> {
                 //   ),
                 //       (route) => false,
                 // );
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => RidePublishedPage(),
+                    // builder: (context) => const PaymentScreen(),
+                  ),
+                );
               },
               child: const Text(
                 "Publish Ride",
@@ -321,6 +334,12 @@ Future<void> addRideToFirestore(OfferRide ride) async {
     longitude: ride.dropoffLocation!.longitude,
   );
 
+  // Convert TimeOfDay to DateTime
+  DateTime rideDateTime = DateTime(ride.date!.year, ride.date!.month, ride.date!.day, ride.time!.hour, ride.time!.minute);
+
+  // Convert DateTime to Timestamp
+  Timestamp rideTimestamp = Timestamp.fromDate(rideDateTime);
+
   List<Map<String, double>> polylineCoordinates =
       ride.polylinePoints.map((latLng) {
     return {
@@ -335,17 +354,18 @@ Future<void> addRideToFirestore(OfferRide ride) async {
     if (user != null) {
       // Create a map containing ride data
       Map<String, dynamic> rideData = {
-        'userId': user.uid,
+        'driverId': user.uid,
         'rideLocation': geoPickupPoint.data,
         'pickupLocation': geoPickupPoint.data,
         'dropoffLocation': geoDropoffPoint.data,
         "seats": ride.seats,
         "vehicle": ride.vehicle,
         "date": ride.date,
-        // "time": ride.time,
+        "time": rideTimestamp,
         "pricePerSeat": ride.pricePerSeat,
         "passengers": [], // List of passenger user IDs
         "polylinePoints": polylineCoordinates, // Store polyline points as List<List<double>>
+        "polylinePointsGeohashes": ride.geohashGroups,
         "rideDistance": ride.rideDistance,
         "pickupCityName": ride.pickupCityName,
         "pickupLocationName": ride.pickupLocationName,
@@ -356,6 +376,10 @@ Future<void> addRideToFirestore(OfferRide ride) async {
         "paymentMode": ride.paymentMode ?? "",
         "rideApproval": ride.rideApproval ?? "",
         "rideStatus" : ride.rideStatus,
+        "ridePreferences": ride.ridePreferences,
+        "rideInstructions": ride.rideNotes,
+        "pickedUpPassengers": [],
+        "droppedOffPassengers": [],
       };
 
       // Add the ride data to Firestore
@@ -381,6 +405,7 @@ Future<void> addRideToFirestore(OfferRide ride) async {
       print('Error: No user is currently signed in.');
     }
   } catch (error) {
-    print(error.toString());
+    print("This is the error: ${error.toString()}");
+
   }
 }

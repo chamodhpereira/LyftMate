@@ -8,16 +8,9 @@ import 'package:lyft_mate/screens/signup/screens/signup_emergency_contacts_page.
 import 'package:lyft_mate/screens/signup/screens/signup_password_page.dart';
 import 'package:lyft_mate/screens/signup/screens/signup_name_page.dart';
 import 'package:lyft_mate/screens/signup/screens/signup_title_page.dart';
-import 'package:lyft_mate/screens/welcome/welcome_screen.dart';
 import 'package:lyft_mate/widgets/custom_bottom_buttom.dart';
 
 import '../../../services/authentication_service.dart';
-import '../../home/ui/home.dart';
-
-// import 'package:lyft_mate/src/screens/login_screen.dart';
-// import 'package:lyft_mate/src/screens/welcome_screen.dart';
-
-// enum Gender { Mr, Mrs }
 
 class SignUpForm extends StatefulWidget {
   const SignUpForm({super.key});
@@ -31,16 +24,18 @@ class _SignUpFormState extends State<SignUpForm> {
   int currentPage = 0;
   DateTime? dob;
   Gender? character;
+  bool _signingUp = false;
 
   final PageController _progressController = PageController(initialPage: 0);
   TextEditingController firstNameController = TextEditingController();
   TextEditingController secondNameController = TextEditingController();
-  TextEditingController emailController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
-  TextEditingController reEnterPasswordController = TextEditingController();
-  TextEditingController emergencyContactNameController =
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController reEnterPasswordController =
       TextEditingController();
-  TextEditingController emergencyContactPhoneNumberController =
+  final TextEditingController emergencyContactNameController =
+      TextEditingController();
+  final TextEditingController emergencyContactPhoneNumberController =
       TextEditingController();
 
   @override
@@ -51,18 +46,16 @@ class _SignUpFormState extends State<SignUpForm> {
 
   AuthenticationService authService = AuthenticationService();
 
-  // late DatabaseService _databaseService;
-
   @override
   void dispose() {
-    _progressController.dispose();
-    firstNameController.dispose();
-    secondNameController.dispose();
-    emailController.dispose();
-    passwordController.dispose();
-    reEnterPasswordController.dispose();
-    emergencyContactNameController.dispose();
-    emergencyContactPhoneNumberController.dispose();
+    // _progressController.dispose();
+    // firstNameController.dispose();
+    // secondNameController.dispose();
+    // emailController.dispose();
+    // passwordController.dispose();
+    // reEnterPasswordController.dispose();
+    // emergencyContactNameController.dispose();
+    // emergencyContactPhoneNumberController.dispose();
 
     super.dispose();
   }
@@ -105,13 +98,11 @@ class _SignUpFormState extends State<SignUpForm> {
 
   // Update method to store selected date of birth
   void updateSelectedDOB(DateTime? dob) {
-    // Change parameter type to DateTime?
     setState(() {
-      this.dob = dob; // Assign the parameter value to the instance variable
+      this.dob = dob;
+      debugPrint("Date of Birth: ${this.dob}");
     });
   }
-
-  bool _signingUp = false;
 
   @override
   Widget build(BuildContext context) {
@@ -119,7 +110,6 @@ class _SignUpFormState extends State<SignUpForm> {
       appBar: AppBar(
         backgroundColor:
             _signingUp ? Colors.black.withOpacity(0.5) : Colors.green,
-
         leading: IconButton(
           onPressed: () {
             if (_progressController.page == 0) {
@@ -130,14 +120,14 @@ class _SignUpFormState extends State<SignUpForm> {
               if (_progressController.hasClients) {
                 // Check if the controller has clients
                 _progressController.previousPage(
-                  duration: Duration(milliseconds: 300),
+                  duration: const Duration(milliseconds: 300),
                   curve: Curves.easeInOut,
                 );
               }
             }
           },
           icon: Icon(
-            Icons.arrow_back_ios,
+            Icons.arrow_back,
             color: _signingUp ? Colors.black.withOpacity(0.5) : Colors.white,
           ),
         ),
@@ -152,7 +142,6 @@ class _SignUpFormState extends State<SignUpForm> {
               : kBoldTextStyle,
         ),
         centerTitle: true,
-        // backgroundColor: Colors.green,
         foregroundColor: Colors.white,
         elevation: 0.5,
       ),
@@ -161,8 +150,7 @@ class _SignUpFormState extends State<SignUpForm> {
           children: [
             if (_signingUp)
               Container(
-                color:
-                    Colors.black.withOpacity(0.5), // Adjust opacity as needed
+                color: Colors.black.withOpacity(0.5),
               ),
             Padding(
               padding: const EdgeInsets.only(top: 25.0),
@@ -170,10 +158,6 @@ class _SignUpFormState extends State<SignUpForm> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 // mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // if (_signingUp)
-                  //   Container(
-                  //     color: Colors.black.withOpacity(0.5), // Adjust opacity as needed
-                  //   ),
                   Padding(
                     padding: const EdgeInsets.only(left: 18.0, right: 18.0),
                     child: Text("Step ${currentPage + 1} of 6"),
@@ -190,7 +174,6 @@ class _SignUpFormState extends State<SignUpForm> {
                           ? Colors.black.withOpacity(0.5)
                           : Colors.green,
                       backgroundColor: Colors.grey[300],
-                      //  backgroundColor: _signingUp ? Colors.black.withOpacity(0.5) : Colors.green,
                     ),
                   ),
                   Expanded(
@@ -198,8 +181,7 @@ class _SignUpFormState extends State<SignUpForm> {
                       children: [
                         PageView(
                           controller: _progressController,
-                          physics: NeverScrollableScrollPhysics(),
-                          // physics: ,
+                          physics: const NeverScrollableScrollPhysics(),
                           onPageChanged: (int page) {
                             setState(() {
                               currentPage = page;
@@ -214,7 +196,6 @@ class _SignUpFormState extends State<SignUpForm> {
                               controllerOne: firstNameController,
                               controllerTwo: secondNameController,
                             ),
-                            // Pass formKey here
                             SignupEmailPage(
                                 label: "What's your email",
                                 controller: emailController),
@@ -223,7 +204,6 @@ class _SignUpFormState extends State<SignUpForm> {
                               updateSelectedDOB: updateSelectedDOB,
                             ),
                             SignupGenderPage(
-                              // Pass method to update selected gender
                               updateSelectedGender: updateSelectedGender,
                             ),
                             SignupEmergencyContactsPage(
@@ -237,14 +217,11 @@ class _SignUpFormState extends State<SignUpForm> {
                                 labelTwo: "Re-enter password",
                                 controllerOne: passwordController,
                                 controllerTwo: reEnterPasswordController),
-                            // _passwordPage("Enter password", "Re-enter password",
-                            //     passwordController, reEnterPasswordController),
-                            // _buildPage("Page 3 Content"),
-                          ], // uper page
+                          ],
                         ),
                         // Circular progress indicator
                         if (_signingUp)
-                          Center(
+                          const Center(
                             child: CircularProgressIndicator(
                               valueColor:
                                   AlwaysStoppedAnimation<Color>(Colors.green),
@@ -276,64 +253,33 @@ class _SignUpFormState extends State<SignUpForm> {
                         });
 
                         SignupUserData userData = SignupUserData();
-                        print('First Name: ${userData.firstName}');
-                        print('Last Name: ${userData.lastName}');
-                        print('Email: ${userData.email}');
-                        print('Date of Birth: ${userData.dob}');
-                        print('Title: ${userData.selectedGender}');
-                        print(
+                        debugPrint('First Name: ${userData.firstName}');
+                        debugPrint('Last Name: ${userData.lastName}');
+                        debugPrint('Email: ${userData.email}');
+                        debugPrint('Date of Birth: ${userData.dob}');
+                        debugPrint('Title: ${userData.selectedGender}');
+                        debugPrint(
                             'Emergency Contacts: ${userData.emergencyContactPhoneNumber} ${userData.emergencyContactName}');
 
                         String? passwordError = validatePassword();
                         if (passwordError != null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(passwordError),
-                            ),
-                          );
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(passwordError),
+                              ),
+                            );
+                            setState(() {
+                              debugPrint("Password error setState Triggered");
+                              _signingUp = false;
+                            });
+                          }
+
                           return;
                         } else {
-                          print(
+                          debugPrint(
                               "${emailController.text}, ${passwordController.text}");
 
-                          // Retrieve the BuildContext
-                          BuildContext currentContext = context;
-                          // UserM newUser = UserM(
-                          //   userID: '', // The ID will be assigned automatically after signup
-                          //   email: emailController.text,
-                          //   firstName: firstNameController.text,
-                          //   lastName: secondNameController.text,
-                          // );
-                          // authService.signUpWithEmailAndPassword(emailController.text, passwordController.text);
-
-                          // Future<bool> simulateDelayedSignUp() async {
-                          //   // Delay for 3 seconds
-                          //   await Future.delayed(Duration(seconds: 3));
-                          //   return true; // Return true after the delay
-                          // }
-
-                          // bool signUpSuccess = await simulateDelayedSignUp();
-
-                          //     bool signUpSuccess =
-                          //         await authService.signUpWithEmailAndPassword(
-                          //             emailController.text, passwordController.text);
-                          //
-                          //     // Check if sign-up was successful
-                          //     if (signUpSuccess) {
-                          //       setState(() {
-                          //         _signingUp = false;
-                          //       });
-                          //       if (context.mounted) {
-                          //         Navigator.pushReplacement(
-                          //           context,
-                          //           MaterialPageRoute(
-                          //               builder: (context) =>
-                          //                   LoginScreen()), // Replace HomePage() with your actual home page widget
-                          //         );
-                          //       }
-                          //     } else {
-                          //       // Handle sign-up failure (e.g., show error message)
-                          //     }
                           late String? signUpError;
                           try {
                             // Call the signUpWithEmailAndPassword method
@@ -363,131 +309,55 @@ class _SignUpFormState extends State<SignUpForm> {
                               signUpError = 'An unexpected error occurred';
                             }
 
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  title: Text("Sign-Up Failed"),
-                                  content: Text(
-                                      "An error occurred during sign-up: ${signUpError.toString()}"),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () {
-                                        SignupUserData().reset();
-                                        Navigator.pop(
-                                            context); // Close the dialog
-                                        // Navigator.pushReplacement(
-                                        //   context,
-                                        //   MaterialPageRoute(
-                                        //     builder: (context) => WelcomeScreen(),
-                                        //   ),
-                                        // );
-                                        setState(() {
-                                          _signingUp = false;
-                                        });
-                                      },
-                                      child: Text("OK"),
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
+                            if(context.mounted) {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: const Text("Sign-Up Failed"),
+                                    content: Text(
+                                        "An error occurred during signup: ${signUpError.toString()}"),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          SignupUserData().reset();
+                                          Navigator.pop(
+                                              context); // Close the dialog
 
-                            print(
-                                "EERRRRRRRRRRRRRRRRRRRRRRRORRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRQQQQQQQQ: $signUpError");
-                            // Show dialog or handle the error in another way
+                                          setState(() {
+                                            _signingUp = false;
+                                          });
+                                        },
+                                        child: const Text("OK"),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            }
+                            debugPrint("Error in signup: $signUpError");
                           }
-
-                          // late String? signUpError;
-                          // // Call the signUpWithEmailAndPassword method
-                          // signUpError = await authService.signUpWithEmailAndPassword(
-                          //   emailController.text,
-                          //   passwordController.text,
-                          // );
-                          //
-                          // // Check if signUpError is not null, indicating an error occurred
-                          // if (signUpError != null) {
-                          //   // Handle the error by showing a dialog
-                          //   showDialog(
-                          //     context: context,
-                          //     builder: (BuildContext context) {
-                          //       return AlertDialog(
-                          //         title: Text("Sign-Up Failed"),
-                          //         content: Text(
-                          //             "An error occurred during sign-up: ${signUpError.toString()}"),
-                          //         actions: [
-                          //           TextButton(
-                          //             onPressed: () {
-                          //               Navigator.pop(context); // Close the dialog
-                          //               setState(() {
-                          //                 _signingUp = false;
-                          //               });
-                          //             },
-                          //             child: Text("OK"),
-                          //           ),
-                          //         ],
-                          //       );
-                          //     },
-                          //   );
-                          // }
-
-                          // // Check if sign-up was successful
-                          // if (signUpError == null) {
-                          //   setState(() {
-                          //     _signingUp = false;
-                          //   });
-                          //   if (context.mounted) {
-                          //     Navigator.pushReplacement(
-                          //       context,
-                          //       MaterialPageRoute(
-                          //         builder: (context) => LoginScreen(),
-                          //       ),
-                          //     );
-                          //   }
-                          // }
-                          // } else {
-                          //   // Handle sign-up failure (e.g., show error message)
-                          //   showDialog(
-                          //     context: context,
-                          //     builder: (BuildContext context) {
-                          //       return AlertDialog(
-                          //         title: Text("Sign-Up Failed"),
-                          //         content: Text("An unknown error occurred during sign-up."),
-                          //         actions: [
-                          //           TextButton(
-                          //             onPressed: () {
-                          //               Navigator.pop(context); // Close the dialog
-                          //             },
-                          //             child: Text("OK"),
-                          //           ),
-                          //         ],
-                          //       );
-                          //     },
-                          //   );
-                          // }
                         }
                       },
                     )
                   : CustomBottomButton(
                       text: "Proceed",
                       onPressed: () {
-                        // _progressController.nextPage(
-                        //   duration: Duration(milliseconds: 300),
-                        //   curve: Curves.easeInOut,
-                        // );
 
                         if (areFieldsFilledForPage(currentPage)) {
                           _progressController.nextPage(
-                            duration: Duration(milliseconds: 300),
+                            duration: const Duration(milliseconds: 300),
                             curve: Curves.easeInOut,
                           );
                         } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                  "Please fill in all the fields on this page."),
-                            ),
-                          );
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                    "Please fill in all the fields on this page."),
+                              ),
+                            );
+                          }
                         }
                       },
                     ),

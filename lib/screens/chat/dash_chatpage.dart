@@ -57,6 +57,10 @@ class _DashChatPageState extends State<DashChatPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.receiverUserEmail),
+        backgroundColor: Colors.green,
+        foregroundColor: Colors.white,
+        elevation: 0.5,
+        leadingWidth: 50.0,
       ),
       body: _buildUI(),
     );
@@ -68,7 +72,10 @@ class _DashChatPageState extends State<DashChatPage> {
           widget.receiverUserID, _firebaseAuth.currentUser!.uid),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Text("Loading...");
+          // return Text("Loadingggggg...");
+          return Center(
+            child: CircularProgressIndicator(),
+          );
         }
         if (snapshot.hasError) {
           return Text("Error: ${snapshot.error}");
@@ -76,8 +83,38 @@ class _DashChatPageState extends State<DashChatPage> {
 
         QuerySnapshot? querySnapshot = snapshot.data;
         if (querySnapshot == null || querySnapshot.docs.isEmpty) {
-          return Center(
-            child: Text("No messages yet."),
+        //   return Column(
+        //     children: [
+        //       // Center(
+        //       //   child: Text("No messages yet."),
+        //       // ),
+        //       DashChat(
+        //       messageOptions:
+        //       const MessageOptions(showOtherUsersAvatar: true, showTime: true),
+        // inputOptions: InputOptions(
+        // alwaysShowSend: true,
+        // trailing: [
+        // _mediaMessageButton(),
+        // ],
+        // ),
+        // currentUser: currentUser!,
+        // onSend: _sendMessage,
+        // messages: [],
+        // ),
+        //     ],
+        //   );
+          return DashChat(
+            messageOptions:
+            const MessageOptions(showOtherUsersAvatar: true, showTime: true),
+            inputOptions: InputOptions(
+              alwaysShowSend: true,
+              trailing: [
+                _mediaMessageButton(),
+              ],
+            ),
+            currentUser: currentUser!,
+            onSend: _sendMessage,
+            messages: [],
           );
         }
 

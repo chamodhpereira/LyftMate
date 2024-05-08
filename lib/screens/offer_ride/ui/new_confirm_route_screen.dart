@@ -65,6 +65,7 @@ class _NewConfirmRouteState extends State<NewConfirmRoute> {
     // _initializeRideDistance();
 
     DirectionsService directionsService = DirectionsService();
+    DateTime departureTime = DateTime.now();
 
     directionsService.getDirections(_kPickupLocation, _kDropLocation);
 

@@ -8,20 +8,22 @@ class OnBoardingScreen extends StatefulWidget {
   @override
   State<OnBoardingScreen> createState() => _OnBoardingScreenState();
 }
-
 class _OnBoardingScreenState extends State<OnBoardingScreen> {
   late PageController _pageController;
 
   int _pageIndex = 0;
+
   @override
   void initState() {
-    _pageController = PageController(initialPage: 0);
     super.initState();
+    _pageController = PageController(initialPage: 0);
+    debugPrint('OnBoardingScreen initialized with PageController at index $_pageIndex');
   }
 
   @override
   void dispose() {
     _pageController.dispose();
+    debugPrint('OnBoardingScreen disposed and PageController disposed');
     super.dispose();
   }
 
@@ -41,8 +43,9 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => WelcomeScreen()),
+                                builder: (context) => const WelcomeScreen()),
                           );
+                          debugPrint('Skipping to WelcomeScreen');
                         },
                         child: const Text(
                           "SKIP",
@@ -61,6 +64,7 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                     onPageChanged: (index) {
                       setState(() {
                         _pageIndex = index;
+                        debugPrint('Page changed to index $_pageIndex');
                       });
                     },
                     itemBuilder: (context, index) => OnBoardContent(
@@ -86,27 +90,28 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                       height: 60,
                       width: 60,
                       child: ElevatedButton(
+                        key: const Key("forward_button"),
                         onPressed: () {
-                          _pageController.nextPage(
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.ease,
-                          );
-                          _pageIndex == demoData.length - 1
-                              ? Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => WelcomeScreen()),
-                          )
-                              : null;
+                          if (_pageIndex < demoData.length - 1) {
+                            _pageController.nextPage(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.ease,
+                            );
+                          } else {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const WelcomeScreen()),
+                            );
+                            debugPrint('Navigating to WelcomeScreen as last page reached');
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           shape: const CircleBorder(),
-                          // side: const BorderSide(color: Colors.black),
                           backgroundColor: Colors.green,
+                          padding: EdgeInsets.zero
                         ),
-                        child: const Icon(
-                          Icons.arrow_forward_ios,
-                        ),
+                        child: const Icon(Icons.arrow_forward_outlined, color: Colors.black,),
                       ),
                     ),
                   ],
@@ -125,8 +130,8 @@ class DotIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
-      height: isActive ? 12 : 4,
-      width: 4,
+      height: isActive ? 16 : 8,
+      width: 6,
       decoration: BoxDecoration(
         color: isActive ? Colors.green : Colors.green.withOpacity(0.4),
         borderRadius: const BorderRadius.all(
@@ -199,7 +204,7 @@ class OnBoardContent extends StatelessWidget {
         Text(
           title,
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 25.0, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 30.0, fontWeight: FontWeight.bold, letterSpacing: 1.5),
         ),
         const SizedBox(height: 8),
         Padding(
@@ -207,7 +212,7 @@ class OnBoardContent extends StatelessWidget {
           child: Text(
             description,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 13),
+            style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w500),
           ),
         ),
         const Spacer(),

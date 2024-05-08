@@ -1,12 +1,16 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart';
 
 import '../../services/emergency/emergency_service.dart';
+import '../reviews/reviews_screen.dart';
 
 
 class RideTrackingPage extends StatefulWidget {
@@ -24,40 +28,155 @@ class _RideTrackingPageState extends State<RideTrackingPage> {
   // LatLng destination = LatLng(37.4220604, -122.0852343);
   // LatLng deliBoyLocation = LatLng(37.4220604, -122.0852343);
 
-  late LatLng userPickUpLocation;
-  late LatLng userDropOffLocation;
-  late LatLng rideLocation;
-  List<LatLng> _polylinePoints = [];
-
-  List<Polyline> _polylines = [];
-
-  GoogleMapController? mapController;
-  BitmapDescriptor markerIcon =
-      BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueViolet);
-
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
   late CollectionReference ridesCollection;
-
+  late bool isPickedUp = false;
+  late bool isDroppedOff = false;
   late double remainingDistance = 0;
-
+  late String eta = "";
   late Timer timer;
 
-  void extractRideData() {
-    // Assuming rideData contains necessary information such as pickup and dropoff locations
-    // Replace these lines with the actual keys from your rideData map
-    GeoPoint geoPointUserPickUp = widget.rideData["pickupLocation"]["geopoint"]; // ride start
-    GeoPoint geoPointUserDropOff = widget.rideData["dropoffLocation"]["geopoint"]; // ride end
-    GeoPoint geoPointRideLocation = widget.rideData["rideLocation"]["geopoint"];
+  LatLng userPickUpLocation = const LatLng(0.0, 0.0);
+  LatLng userDropOffLocation = const LatLng(0.0, 0.0);
+  LatLng rideLocation = const LatLng(7.631710245699606, 80.60172363425474);
+  List<LatLng> _polylinePoints = [];
+  List<Polyline> _polylines = [];
+
+  User? _user;
+  String? userFirstName;
+
+  GoogleMapController? mapController;
+  BitmapDescriptor driverMarkerIcon = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueViolet);
+  BitmapDescriptor userMarkerIcon = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen);
 
 
-    userPickUpLocation =
-        LatLng(geoPointUserPickUp.latitude, geoPointUserPickUp.longitude); // ride data
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-    userDropOffLocation =
-        LatLng(geoPointUserDropOff.latitude, geoPointUserDropOff.longitude);
+  StreamSubscription<DocumentSnapshot>? rideStreamSubscription;
 
-    rideLocation =
-        LatLng(geoPointRideLocation.latitude, geoPointRideLocation.longitude);
+  String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
+
+  final client = Client();
+
+  String _getApiKey() {
+    return dotenv.env['GOOGLE_MAPS_API_KEY'] ?? 'YOUR_DEFAULT_API_KEY';
+  }
+
+  @override
+  void initState() {
+    _getCurrentUser();
+    ridesCollection = firestore.collection('rides');
+    startTracking(widget.rideId);
+    extractPolylinePoints();
+    drawPolyline();
+
+    //subscribe to locatin changes
+    // Geolocator.getPositionStream(
+    //   locationSettings:
+    //       LocationSettings(accuracy: LocationAccuracy.best, distanceFilter: 10),
+    // ).listen((Position position) {
+    //   updateCurrentLocation(position);
+    // });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    rideStreamSubscription?.cancel();
+    super.dispose();
+  }
+
+
+
+  Future<void> startTracking(String rideId) async {
+    debugPrint("start tracking ride with ride id: $rideId");
+
+    rideStreamSubscription =
+        ridesCollection.doc(rideId).snapshots().listen((snapshot) {
+          if (snapshot.exists) {
+            // var trackingData = snapshot.data();
+            Map<String, dynamic>? trackingData =
+            snapshot.data() as Map<String, dynamic>?;
+            if (trackingData != null) {
+
+              extractRideData(trackingData);
+
+              GeoPoint geoPoint = trackingData['rideLocation'];
+              LatLng rideLocation = LatLng(geoPoint.latitude, geoPoint.longitude);
+              updateUIWithLocation(rideLocation);
+              debugPrint("THISSS THE CURRENT RIDE UPDATE BY STREANNNMMMM LOCATION: $rideLocation");
+            } else {
+              debugPrint("No tracking data available");
+            }
+          }
+        });
+  }
+
+  void extractRideData(Map<String, dynamic> trackingData) {
+    debugPrint("THIS IS RIDE DATA: $trackingData");
+
+    // GeoPoint geoPointUserPickUp = widget.rideData["pickupLocation"]["geopoint"]; // ride start
+    // GeoPoint geoPointUserDropOff = widget.rideData["dropoffLocation"]["geopoint"]; // ride end
+
+    // Find the index of the current user within the passengers array
+    int userIndex = trackingData['passengers'].indexWhere((passenger) => passenger['userId'] == currentUserId);
+
+    // If the user is found in the passengers array
+    if (userIndex != -1) {
+
+      // Extract pickupCoordinate and dropoffCoordinate for the user
+      GeoPoint pickupGeoPoint = trackingData['passengers'][userIndex]['pickupCoordinate'];
+      GeoPoint dropoffGeoPoint = trackingData['passengers'][userIndex]['dropoffCoordinate'];
+
+      // Convert GeoPoint to LatLng
+      userPickUpLocation = LatLng(pickupGeoPoint.latitude, pickupGeoPoint.longitude);
+      userDropOffLocation = LatLng(dropoffGeoPoint.latitude, dropoffGeoPoint.longitude);
+
+    } else {
+      debugPrint('Current user not found in passengers array');
+    }
+
+
+
+    GeoPoint geoPointRideLocation = trackingData["rideLocation"];
+
+    isPickedUp = trackingData['pickedUpPassengers'].contains(currentUserId);
+    isDroppedOff = trackingData['droppedOffPassengers'].contains(currentUserId);
+    debugPrint("Is user picked up: $isPickedUp");
+    debugPrint("Is user dropped off: $isDroppedOff");
+
+    // Show a dialog if the passenger has been dropped off
+    if (isDroppedOff) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Ride Ended"),
+            content: const Text("Your ride has ended. Thank you for using our LyftMate!"),
+            actions: [
+              TextButton(
+                child: const Text("OK"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ReviewsScreen(rideId: widget.rideId,)),
+                  );
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    // userPickUpLocation = LatLng(geoPointUserPickUp.latitude, geoPointUserPickUp.longitude);
+    // userDropOffLocation = LatLng(geoPointUserDropOff.latitude, geoPointUserDropOff.longitude);
+
+    // rideLocation = LatLng(0, 0);
+    setState(() {
+      rideLocation = LatLng(geoPointRideLocation.latitude, geoPointRideLocation.longitude);
+    });
+
 
   }
 
@@ -72,7 +191,7 @@ class _RideTrackingPageState extends State<RideTrackingPage> {
 
   void drawPolyline() {
     Polyline polyline = Polyline(
-      polylineId: PolylineId('polyline'),
+      polylineId: const PolylineId('polyline'),
       color: Colors.blue,
       width: 3,
       points: _polylinePoints,
@@ -84,49 +203,36 @@ class _RideTrackingPageState extends State<RideTrackingPage> {
   }
 
   void addCustomMarker() {
-    ImageConfiguration configuration =
-        ImageConfiguration(size: Size(0, 0), devicePixelRatio: 5);
+    ImageConfiguration configuration = const ImageConfiguration(size: Size(0, 0), devicePixelRatio: 5);
 
     BitmapDescriptor.fromAssetImage(configuration, 'assets/images/your-image')
         .then((value) {
       setState(() {
-        markerIcon = value;
+        driverMarkerIcon = value;
       });
     });
   }
 
-  //func to update the current location - user location
-  // void updateCurrentLocation(Position position) {
-  //   setState(() {
-  //     destination = LatLng(position.latitude, position.longitude);
-  //   });
-  // }
-
-  // void updateDeliBoyLocation(Position position) {
-  //   setState(() {
-  //     deliBoyLocation = LatLng(position.latitude, position.longitude);
-  //   });
-  //
-  //   mapController?.animateCamera(CameraUpdate.newLatLng(deliBoyLocation));
-  //
-  //   //calcuate remaining distance
-  //   calculateRemainingDistance();
-  // }
-
-  //func to calculate remaining distance
   void calculateRemainingDistance() {
-    double distance = Geolocator.distanceBetween(
-      // deliBoyLocation.latitude,
-      // deliBoyLocation.longitude,
-      // destination.latitude,
-      // destination.longitude,
+    double distance = 0.0;
 
-      rideLocation.latitude,
-      rideLocation.longitude,
-      userDropOffLocation.latitude,
-      userDropOffLocation.longitude,
-
-    );
+    if (isPickedUp) {
+      // If the passenger is picked up, calculate distance from ride location to dropoff location
+      distance = Geolocator.distanceBetween(
+        rideLocation.latitude,
+        rideLocation.longitude,
+        userDropOffLocation.latitude,
+        userDropOffLocation.longitude,
+      );
+    } else {
+      // If the passenger is not picked up yet, calculate distance from ride location to pickup location
+      distance = Geolocator.distanceBetween(
+        rideLocation.latitude,
+        rideLocation.longitude,
+        userPickUpLocation.latitude,
+        userPickUpLocation.longitude,
+      );
+    }
 
     double distanceInKm = distance / 1000;
 
@@ -135,9 +241,30 @@ class _RideTrackingPageState extends State<RideTrackingPage> {
     });
   }
 
-  User? _user;
-  String? userFirstName;
+  Future<void> calculateETA() async {
 
+    String url;
+    final apiKey = _getApiKey();
+
+    if (isPickedUp){
+      url = "https://maps.googleapis.com/maps/api/directions/json?origin=${rideLocation.latitude},${rideLocation.longitude}&destination=${userDropOffLocation.latitude},${userDropOffLocation.longitude}&key=$apiKey";
+    } else {
+      url =
+      "https://maps.googleapis.com/maps/api/directions/json?origin=${rideLocation.latitude},${rideLocation.longitude}&destination=${userPickUpLocation.latitude},${userPickUpLocation.longitude}&key=$apiKey";
+    }
+
+    var response = await client.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      var data = json.decode(response.body);
+      String duration = data["routes"][0]["legs"][0]["duration"]["text"];
+      setState(() {
+        eta = duration;
+      });
+    } else {
+      debugPrint("Error occurred when calculating ETA");
+    }
+  }
 
 
   Future<void> _getCurrentUser() async {
@@ -156,69 +283,20 @@ class _RideTrackingPageState extends State<RideTrackingPage> {
         if (userDoc.exists) {
           // Get firstName field from user document
           userFirstName = userDoc.get('firstName');
-          print('UserRRRRRRRR NAMAAAAAAAAAPAGOTTTTTTTTT firstName: $userFirstName');
+          debugPrint('User firstName from Firestore: $userFirstName');
           // Now you can use the firstName as needed
         } else {
-          print('User document does not exist');
+          debugPrint('User document does not exist');
         }
       } catch (error) {
-        print('Error fetching user document: $error');
+        debugPrint('Error fetching user document: $error');
       }
     } else {
-      print('No user logged in');
+      debugPrint('No user logged in');
     }
   }
 
-  @override
-  void initState() {
-    _getCurrentUser();
-    ridesCollection = firestore.collection('rides');
 
-    extractRideData();
-    // addCustomMarker();
-    // startTracking("12345");
-    startTracking(widget.rideId);
-    // startTracking("l8fYgKPy10HoxjuAdwnO");
-
-    extractPolylinePoints(); // Call extractPolylinePoints() here
-    drawPolyline(); // Call drawPolyline() here
-
-    //subscribe to locatin changes
-    // Geolocator.getPositionStream(
-    //   locationSettings:
-    //       LocationSettings(accuracy: LocationAccuracy.best, distanceFilter: 10),
-    // ).listen((Position position) {
-    //   updateCurrentLocation(position);
-    // });
-    super.initState();
-  }
-
-  StreamSubscription<DocumentSnapshot>? rideStreamSubscription;
-
-  Future<void> startTracking(String rideId) async {
-    print("start tracking beforeeee awaaaait calleddddd $rideId");
-
-    rideStreamSubscription =
-        ridesCollection.doc(rideId).snapshots().listen((snapshot) {
-      if (snapshot.exists) {
-        // var trackingData = snapshot.data();
-        Map<String, dynamic>? trackingData =
-            snapshot.data() as Map<String, dynamic>?;
-        if (trackingData != null) {
-          // Map<String, dynamic> locationData = trackingData['rideLocation'];
-          // GeoPoint geoPoint = trackingData['rideLocation']['geopoint'];
-          // LatLng rideLocation = LatLng(geoPoint.latitude, geoPoint.longitude);
-          GeoPoint geoPoint = trackingData['rideLocation']['geopoint'];
-          LatLng rideLocation = LatLng(geoPoint.latitude, geoPoint.longitude);
-          updateUIWithLocation(rideLocation);
-          print(
-              "THISSS IT THE CURRENT RIDE UPDATE BY STREANNNMMMM LOCATION: $rideLocation");
-        } else {
-          print("No tracking data available");
-        }
-      }
-    });
-  }
 
 // Stop listening for updates when no longer needed
   void stopTracking() {
@@ -235,47 +313,44 @@ class _RideTrackingPageState extends State<RideTrackingPage> {
         return null;
       }
     } catch (e) {
-      print("Error retrieving order tracking info: $e");
+      debugPrint("Error retrieving tracking info: $e");
       return null;
     }
   }
 
-  void showArrivalPopup() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Delivery/Ride Arrival"),
-          content: Text("Your delivery/ride is here!"),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text("OK"),
-            ),
-          ],
-        );
-      },
-    );
-  }
+  // void showArrivalPopup() {
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: Text("Delivery/Ride Arrival"),
+  //         content: Text("Your delivery/ride is here!"),
+  //         actions: [
+  //           TextButton(
+  //             onPressed: () {
+  //               Navigator.of(context).pop();
+  //             },
+  //             child: Text("OK"),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 
   void updateUIWithLocation(LatLng driverLocation) {
     setState(() {
-      // deliBoyLocation = LatLng(latitude, longitude);
       rideLocation = driverLocation;
     });
 
     mapController?.animateCamera(CameraUpdate.newLatLng(rideLocation));
 
     calculateRemainingDistance();
+    calculateETA();
 
-    // Check if delivery boy is near user's location
+
+    // Check if ride is near user's location
     double distanceToUser = Geolocator.distanceBetween(
-      // deliBoyLocation.latitude,
-      // deliBoyLocation.longitude,
-      // destination.latitude,
-      // destination.longitude,
         rideLocation.latitude,
         rideLocation.longitude,
         userDropOffLocation.latitude,
@@ -283,66 +358,56 @@ class _RideTrackingPageState extends State<RideTrackingPage> {
     );
 
     // Assuming a threshold of 100 meters for arrival
-    if (distanceToUser <= 1000) {
-      showArrivalPopup();
-    }
+    // if (distanceToUser <= 1000) {   // TODO: Arrival popup fix
+    //   showArrivalPopup();
+    // }
   }
 
-  ////// dispose as well
-
-  @override
-  void dispose() {
-    // Cancel the timer when the widget is disposed
-    // timer.cancel();
-    super.dispose();
-  }
 
   void _showEmergencyOptions() {
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
         return Padding(
-          padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 0.0), // Adjust padding as needed
-          child: Container(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                ListTile(
-                  leading: Icon(Icons.bolt, size: 40.0,),
-                  minLeadingWidth: 0,
-                  horizontalTitleGap: 0,
-                  title: Text('Send SOS'),
-                  onTap: () {
-                    // Implement SOS functionality
-                    EmergencyService.sendSOS(userFirstName!);
-                    Navigator.pop(context);
-                  },
-                  subtitle: const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Send SOS to your emergency contacts"),
-                    ],
-                  ),
+          padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 0.0), // Adjust padding as needed
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.bolt, size: 40.0,),
+                minLeadingWidth: 0,
+                horizontalTitleGap: 0,
+                title: const Text('Send SOS'),
+                onTap: () {
+                  // Implement SOS functionality
+                  EmergencyService.sendSOS(userFirstName!);
+                  Navigator.pop(context);
+                },
+                subtitle: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Send SOS to your emergency contacts"),
+                  ],
                 ),
-                ListTile(
-                  leading: Icon(Icons.share, size: 35.0,),
-                  minLeadingWidth: 0,
-                  horizontalTitleGap: 10,
-                  title: Text('Share Ride Details'),
-                  onTap: () {
-                    // Implement share ride details functionality
-                    EmergencyService.shareRideDetails(widget.rideId);
-                    Navigator.pop(context);
-                  },
-                  subtitle: const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Share ride details with your emergency contacts"),
-                    ],
-                  ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.share, size: 35.0,),
+                minLeadingWidth: 0,
+                horizontalTitleGap: 10,
+                title: const Text('Share Ride Details'),
+                onTap: () {
+                  // Implement share ride details functionality
+                  EmergencyService.shareRideDetails(widget.rideId);
+                  Navigator.pop(context);
+                },
+                subtitle: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Share ride details with your emergency contacts"),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
@@ -353,74 +418,116 @@ class _RideTrackingPageState extends State<RideTrackingPage> {
 
   @override
   Widget build(BuildContext context) {
-    print("THIS IS THE USERRRR: $_user");
-    print(
-        "Thisssssssssi ssss the paseeddd ride id for trackingggg ${widget.rideId}");
+    double screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Track Ride Location"),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.warning),
-            onPressed: _showEmergencyOptions,
-          ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          GoogleMap(
-            initialCameraPosition: CameraPosition(
-              target: rideLocation,
-              zoom: 15.0,
+        appBar: AppBar(
+          title: const Text("Track Ride Location"),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.warning),
+              onPressed: _showEmergencyOptions,
             ),
-            onMapCreated: (controller) {
-              mapController = controller;
-            },
-            markers: {
-              Marker(
-                  markerId: MarkerId('destination'),
-                  position: userDropOffLocation,
-                  icon: BitmapDescriptor.defaultMarkerWithHue(
-                      BitmapDescriptor.hueBlue),
-                  infoWindow: InfoWindow(
-                    title: "destination",
-                    snippet: 'LatLng - $userDropOffLocation',
-                  )),
-              Marker(
-                  markerId: const MarkerId('driver'),
-                  position: rideLocation,
-                  icon: BitmapDescriptor.defaultMarkerWithHue(
-                      BitmapDescriptor.hueOrange),
-                  // icon: markerIcon  to add custom marker
-                  infoWindow: InfoWindow(
-                    title: "ride",
-                    snippet: 'LatLng - $rideLocation',
-                  )),
-            },
-            polylines: Set<Polyline>.of(_polylines),
-          ),
-          Positioned(
-            top: 16.0,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Container(
-                padding: EdgeInsets.all(8.0),
-                decoration: BoxDecoration(
-                  color: Colors.yellow,
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                // child: Text("ETA"),
-                child: Text(
-                  "Remaining Distance: ${remainingDistance.toStringAsFixed(2)} kilometers",
-                  style: TextStyle(fontSize: 16.0),
+          ],
+        ),
+        body: Stack(
+          children: [
+            GoogleMap(
+              initialCameraPosition: CameraPosition(
+                target: rideLocation,
+                zoom: 15.0,
+              ),
+              onMapCreated: (controller) {
+                mapController = controller;
+              },
+              markers: {
+                Marker(
+                    markerId: const MarkerId('my-destination'),
+                    position: userDropOffLocation,
+                    icon: BitmapDescriptor.defaultMarkerWithHue(
+                        BitmapDescriptor.hueBlue),
+                    infoWindow: const InfoWindow(
+                      title: "My Drop-off Location ",
+                      // snippet: 'LatLng - $userDropOffLocation',
+                    )),
+                Marker(
+                    markerId: const MarkerId('my-pickup'),
+                    position: userPickUpLocation,
+                    icon: BitmapDescriptor.defaultMarkerWithHue(
+                        BitmapDescriptor.hueBlue),
+                    infoWindow: const InfoWindow(
+                      title: "My Pickup Location",
+                      // snippet: 'LatLng - $userPickUpLocation',
+                    )),
+                Marker(
+                    markerId: const MarkerId('driver'),
+                    position: rideLocation,
+                    icon: BitmapDescriptor.defaultMarkerWithHue(
+                        BitmapDescriptor.hueOrange),
+                    // icon: markerIcon  to add custom marker
+                    infoWindow: const InfoWindow(
+                      title: "Driver Location",
+                      // snippet: 'LatLng - $rideLocation',
+                    )),
+              },
+              polylines: Set<Polyline>.of(_polylines),
+              padding: const EdgeInsets.only(bottom: 250.0),
+            ),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: SizedBox(
+                height: 180,
+                child: Container(
+                  // padding: EdgeInsets.symmetric(vertical: 30.0, horizontal: 16.0),
+                  padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+                  color: Colors.white,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 30.0),
+                      Container(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          "Remaining Distance ${isPickedUp ? 'to destination' : 'to pickup'}: ${remainingDistance.toStringAsFixed(2)} km",
+                          style: const TextStyle(fontSize: 16.0),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          "Estimated Time of Arrival: $eta",
+                          style: const TextStyle(fontSize: 16.0),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
-    );
+            Positioned(
+              // top: 580,
+              bottom: screenHeight * 0.15,
+              right: 10,
+              child: Container(
+                width: 80,
+                height: 60,
+                decoration: const BoxDecoration(
+                  color: Colors.green,
+                  shape: BoxShape.circle,
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.navigation_sharp,
+                    color: Colors.white,
+                    size: 35,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
   }
 }

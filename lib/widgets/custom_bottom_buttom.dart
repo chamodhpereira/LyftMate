@@ -16,6 +16,7 @@ class CustomBottomButton extends StatelessWidget {
     return ElevatedButton(
       style: ButtonStyle(
         backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
+        foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
       ),
       onPressed: onPressed,
       child: Text(

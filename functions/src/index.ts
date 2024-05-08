@@ -89,6 +89,67 @@ exports.notifyPassengersOnRideProgress = v1.firestore
     return null;
   });
 
+export const triggerNotification = v2.https.onRequest(async (req, res) => {
+  try {
+    const rideId = req.body.rideId;
+    const passengerId = req.body.passengerId;
+    if (!rideId || !passengerId) {
+      res.status(400).send("Missing ride ID or passenger ID");
+      return;
+    }
+
+    // Fetch ride details from Firestore
+    const rideSnapshot = await admin.firestore().doc(`rides/${rideId}`).get();
+    if (!rideSnapshot.exists) {
+      res.status(404).send("Ride not found");
+      return;
+    }
+
+    const rideData = rideSnapshot.data();
+    if (!rideData) {
+      res.status(500).send("Error fetching ride data");
+      return;
+    }
+
+    // Fetch passenger details and send notification
+    const passengerSnapshot = await admin
+      .firestore()
+      .doc(`users/${passengerId}`)
+      .get();
+    if (passengerSnapshot.exists) {
+      const passengerData = passengerSnapshot.data();
+      if (passengerData) {
+        const notificationToken = passengerData.notificationToken;
+        if (notificationToken) {
+          await admin.messaging().send({
+            token: notificationToken,
+            notification: {
+              title: "Ride Status Update",
+              body: "Your ride is within 1km. Please be ready for pickup.",
+            },
+          });
+          console.log("Notification sent successfully");
+          res.status(200).send("Notification sent successfully");
+          return;
+        } else {
+          console.error(
+            `Notification token not found for passenger ${passengerId}`
+          );
+          res.status(404).send("Notification token not found");
+          return;
+        }
+      }
+    } else {
+      console.error(`Passenger ${passengerId} not found`);
+      res.status(404).send("Passenger not found");
+      return;
+    }
+  } catch (error) {
+    console.error("Error triggering notification:", error);
+    res.status(500).send("Internal server error");
+  }
+});
+
 // exports.notifyPassengersOnRideProgress = v1.firestore
 //   .document("rides/{rideId}")
 //   .onUpdate(async (change, context) => {

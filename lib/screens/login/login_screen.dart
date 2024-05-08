@@ -8,7 +8,7 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false, // Prevent resizing when keyboard appears
+      // resizeToAvoidBottomInset: false, // Prevent resizing when keyboard appears
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView( // Wrap with SingleChildScrollView
@@ -28,18 +28,20 @@ class LoginScreen extends StatelessWidget {
                   const LoginForm(),
                   const SizedBox(height: 10),
                   TextButton(
+                    key: const Key('signup_button'),
                     onPressed: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => SignupScreen(),),
+                          builder: (context) => const SignupScreen(),),
                       );
                     },
-                    child: Text.rich(
+                    child: const Text.rich(
                       TextSpan(
                         text: "Don't have an Account? ",
-                        style: Theme.of(context).textTheme.bodyText1,
-                        children: const [
+                        // style: Theme.of(context).textTheme.bodyText1,
+                        style: TextStyle(fontSize: 14.0, color: Colors.black),
+                        children: [
                           TextSpan(
                             text: "Signup",
                             style: TextStyle(color: Colors.blue),

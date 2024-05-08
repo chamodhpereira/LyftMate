@@ -11,6 +11,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 
+import '../../../constants/colors.dart';
 import '../../../models/offer_ride.dart';
 import '../../../services/directions/directions_service.dart';
 import '../../ride/ride_options_screen.dart';
@@ -18,14 +19,18 @@ import '../../ride/ride_options_screen.dart';
 class RouteInfo {
   final String distance;
   final String duration;
+  final String description;
   // final String summary;
+  // final String encodedPolyline;
   final List<LatLng> polylineCoordinates;
 
   RouteInfo({
     // required this.summary,
+    required this.description,
     required this.distance,
     required this.duration,
     required this.polylineCoordinates,
+    // required this.encodedPolyline,
   });
 }
 
@@ -66,8 +71,40 @@ class _NewMapsRouteState extends State<NewMapsRoute> {
     ride.resetPolylinePoints();
     super.dispose();
   }
+  /// ----------------------- workingggg commented to get encoded polyline ----------------
+  // Future<void> _fetchDirectionsAndPolylines() async {
+  //   List<Map<String, dynamic>> results = await DirectionsService().getDirections(
+  //     _kPickupLocation,
+  //     _kDropLocation,
+  //   );
+  //
+  //   for (var i = 0; i < results.length; i++) {
+  //     List<LatLng> polylineCoordinates = decodePolyline(results[i]['polyline']);
+  //     String distance = results[i]['distance'].toString(); // Convert int to String
+  //     String duration = results[i]['duration'].toString(); // Convert int to String
+  //     // String summary = results[i]['summary'];
+  //     // print("SUMAAAAAARRRRYYYYYYY: $summary");
+  //     generatePolylineFromPoints(
+  //       polylineCoordinates,
+  //       i.toString(),
+  //       distance,
+  //       duration,
+  //       // summary,
+  //     );
+  //     print("Start coordinate of Polyline $i: ${polylineCoordinates.first}");
+  //     print("End coordinate of Polyline $i: ${polylineCoordinates.last}");
+  //     // print("Number of polylines stored: ${polylines.length}");
+  //     // print("Polylines $i: $polylines[i]");
+  //   }
+  // }
 
   Future<void> _fetchDirectionsAndPolylines() async {
+
+    // List<Map<String, dynamic>> results = await DirectionsService().getRouteDirections(
+    //   _kPickupLocation,
+    //   _kDropLocation,
+    // );
+
     List<Map<String, dynamic>> results = await DirectionsService().getDirections(
       _kPickupLocation,
       _kDropLocation,
@@ -75,21 +112,29 @@ class _NewMapsRouteState extends State<NewMapsRoute> {
 
     for (var i = 0; i < results.length; i++) {
       List<LatLng> polylineCoordinates = decodePolyline(results[i]['polyline']);
-      String distance = results[i]['distance'].toString(); // Convert int to String
-      String duration = results[i]['duration'].toString(); // Convert int to String
-      // String summary = results[i]['summary'];
-      // print("SUMAAAAAARRRRYYYYYYY: $summary");
+      String encodedPolyline = results[i]['polyline']; // Get the encoded polyline
+      String distance = results[i]['distance'].toString();
+      String duration = results[i]['duration'].toString();
+      String description = results[i]['description']; // Make sure description is being fetched
       generatePolylineFromPoints(
         polylineCoordinates,
         i.toString(),
         distance,
         duration,
-        // summary,
+        description,
+        // encodedPolyline,
       );
+
+      // // Store both encoded and decoded polylines in routeInfo map
+      // routeInfo[PolylineId(i.toString())] = RouteInfo(
+      //   distance: distance,
+      //   duration: duration,
+      //   polylineCoordinates: polylineCoordinates,
+      //   encodedPolyline: encodedPolyline,
+      // );
+
       print("Start coordinate of Polyline $i: ${polylineCoordinates.first}");
       print("End coordinate of Polyline $i: ${polylineCoordinates.last}");
-      // print("Number of polylines stored: ${polylines.length}");
-      // print("Polylines $i: $polylines[i]");
     }
   }
 
@@ -130,6 +175,9 @@ class _NewMapsRouteState extends State<NewMapsRoute> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Select Route"),
+        backgroundColor: Colors.green,
+        foregroundColor: Colors.white,
+        elevation: 0.5,
       ),
       body: SafeArea(
         child: Stack(
@@ -138,7 +186,7 @@ class _NewMapsRouteState extends State<NewMapsRoute> {
               onMapCreated: ((GoogleMapController controller) => _mapController.complete(controller)),
               initialCameraPosition: CameraPosition(
                 target: _kPickupLocation,
-                zoom: 10.8,
+                zoom: 11.8,
               ),
               markers: {
                 Marker(
@@ -154,6 +202,7 @@ class _NewMapsRouteState extends State<NewMapsRoute> {
               },
               polylines: Set<Polyline>.of(polylines.values),
               gestureRecognizers: Set()..add(Factory<OneSequenceGestureRecognizer>(() => EagerGestureRecognizer())),
+              padding: EdgeInsets.symmetric(vertical: 275.0),
             ),
           ],
         ),
@@ -199,9 +248,9 @@ class _NewMapsRouteState extends State<NewMapsRoute> {
                         // _showRouteInfo(polylineId); // Show route information
                       },
                       title: Text(
-                        'Route ${1}',
+                        'Route: ${route.description}',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 14,
                           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                           color: isSelected ? Colors.green : Colors.black,
                         ),
@@ -220,6 +269,13 @@ class _NewMapsRouteState extends State<NewMapsRoute> {
                 ),
               ),
               ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  // shape: const RoundedRectangleBorder(),
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.green,
+                  // side: const BorderSide(color: kSecondaryColor),
+                  // padding: const EdgeInsets.symmetric(vertical: 15.0),
+                ),
                 onPressed: () {
                   // Handle proceed action here
                   // Get the selected route's details
@@ -227,12 +283,15 @@ class _NewMapsRouteState extends State<NewMapsRoute> {
                   print("SELECTEEEED ROUTE POLYLINE ID: $selectedPolylineId");
                   RouteInfo selectedRoute = routeInfo[selectedPolylineId]!; // Assuming you have a map of route info
 
+                  // print("ENCODEDDD POLY LINEEEEEE: ${selectedRoute.encodedPolyline}");
+
                   // Format distance and duration
                   String formattedDistance = _convertMetersToKilometers(selectedRoute.distance).toStringAsFixed(2);
                   String formattedDuration = _formatDuration(selectedRoute.duration);
 
                   // Update the ride details in OfferRide class
                   OfferRide().updateRideDetails(formattedDistance, formattedDuration, polylines[selectedPolylineId]!.points);
+                  // OfferRide().updateRideDetails(formattedDistance, formattedDuration, polylines[selectedPolylineId]!.points, selectedRoute.encodedPolyline);
 
                   Navigator.push(
                     context,
@@ -246,7 +305,16 @@ class _NewMapsRouteState extends State<NewMapsRoute> {
         ),
       ),
 
+      floatingActionButton:  FloatingActionButton(
+        onPressed: () {
+          // This could open a dialog or use the current map center as a new waypoint
+          // _addWaypoint(_currentMapCenter);
+        },
+        tooltip: 'Add Waypoint',
+        child: Icon(Icons.add_location),
+      ),
     );
+
   }
 
   void _showRouteInfo(PolylineId polylineId) {
@@ -277,41 +345,14 @@ class _NewMapsRouteState extends State<NewMapsRoute> {
     );
   }
 
-  // void _changePolylineColor() {
-  //   polylines.forEach((polylineId, polyline) {
-  //     if (polylineId == _selectedPolylineId) {
-  //       // If the current polyline is selected, set its color to blue
-  //       polylines[polylineId] = polyline.copyWith(colorParam: Colors.blue);
-  //     } else {
-  //       // If the current polyline is not selected, set its color back to its original color
-  //       polylines[polylineId] = polyline.copyWith(colorParam: Colors.grey.shade500);
-  //     }
-  //   });
-  //   setState(() {});
-  // }
-  // void _changePolylineColor() {
-  //   polylines.forEach((polylineId, polyline) {
-  //     if (polylineId == _selectedPolylineId) {
-  //       // If the current polyline is selected, set its color to blue
-  //       polylines[polylineId] = polyline.copyWith(colorParam: Colors.blue);
-  //     } else {
-  //       // If the current polyline is not selected, set its color back to its original color
-  //       // Only update the color if the polyline's color is not already blue
-  //       if (polyline.color != Colors.blue) {
-  //         polylines[polylineId] = polyline.copyWith(colorParam: Colors.grey.shade500);
-  //       }
-  //     }
-  //   });
-  //   setState(() {});
-  // }
   void _changePolylineColor() {
     polylines.forEach((polylineId, polyline) {
       if (polylineId == _selectedPolylineId) {
-        // If the current polyline is selected, set its color to blue
-        polylines[polylineId] = polyline.copyWith(colorParam: Colors.blue);
+        // If the current polyline is selected, set its color to blue and increase the z-index
+        polylines[polylineId] = polyline.copyWith(colorParam: Colors.blue, zIndexParam: 10);
       } else {
-        // If the current polyline is not selected, set its color back to its original color
-        polylines[polylineId] = polyline.copyWith(colorParam: Colors.grey.shade500);
+        // If the current polyline is not selected, set its color back to its original color and reset the z-index
+        polylines[polylineId] = polyline.copyWith(colorParam: Colors.grey.shade500, zIndexParam: 0);
       }
     });
     setState(() {});
@@ -323,55 +364,8 @@ class _NewMapsRouteState extends State<NewMapsRoute> {
     });
   }
 
-
-  // void _changePolylineColor() {
-  //   Map<PolylineId, Polyline> updatedPolylines = {};
-  //
-  //   polylines.forEach((polylineId, polyline) {
-  //     if (polylineId == _selectedPolylineId) {
-  //       print("selecteddd polyline id: $_selectedPolylineId");
-  //       // If the current polyline is selected, create a new Polyline instance with blue color
-  //       updatedPolylines[polylineId] = polyline.copyWith(colorParam: Colors.red);
-  //     } else {
-  //       // If the current polyline is not selected, create a new Polyline instance with original color
-  //       updatedPolylines[polylineId] = polyline.copyWith(colorParam: Colors.grey.shade500);
-  //     }
-  //   });
-  //
-  //   // Replace the existing polylines with the updated ones
-  //   setState(() {
-  //     polylines = updatedPolylines;
-  //   });
-  // }
-
-  // void _changePolylineColor() {
-  //   Map<PolylineId, Polyline> updatedPolylines = {};
-  //
-  //   polylines.forEach((polylineId, polyline) {
-  //     if (polylineId == _selectedPolylineId) {
-  //       print("Start coordinate of selected polyline: ${polyline.points.first}");
-  //       print("End coordinate of selected polyline: ${polyline.points.last}");
-  //
-  //       // If the current polyline is selected, create a new Polyline instance with red color
-  //       updatedPolylines[polylineId] = polyline.copyWith(colorParam: Colors.red);
-  //     } else {
-  //       // If the current polyline is not selected, create a new Polyline instance with original color
-  //       // updatedPolylines[polylineId] = polyline.copyWith(colorParam: Colors.grey.shade500);
-  //     }
-  //   });
-  //
-  //   // Replace the existing polylines with the updated ones
-  //   setState(() {
-  //     polylines = updatedPolylines;
-  //   });
-  //
-  //   // Print start and end coordinates after updating the color
-  //   print("Start coordinate of updated polyline: ${updatedPolylines[_selectedPolylineId]!.points.first}");
-  //   print("End coordinate of updated polyline: ${updatedPolylines[_selectedPolylineId]!.points.last}");
-  // }
-
   void generatePolylineFromPoints(
-      List<LatLng> polylineCoordinates, String idSuffix, String distance, String duration, ) async {
+      List<LatLng> polylineCoordinates, String idSuffix, String distance, String duration, String description) async {
     PolylineId polylineId = PolylineId("route_$idSuffix");
     Polyline polyline = Polyline(
       polylineId: polylineId,
@@ -383,9 +377,11 @@ class _NewMapsRouteState extends State<NewMapsRoute> {
       polylines[polylineId] = polyline;
       routeInfo[polylineId] = RouteInfo(
         // summary: summary,
+        description: description,
         distance: distance,
         duration: duration,
         polylineCoordinates: polylineCoordinates,
+        // encodedPolyline: encodedPolyline,
       );
     });
   }

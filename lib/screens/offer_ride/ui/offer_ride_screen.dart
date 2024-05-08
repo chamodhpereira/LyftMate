@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -31,44 +33,116 @@ class _OfferRideScreenState extends State<OfferRideScreen> {
   String? selectedVehicle;
   String? selectedSeats;
 
-  Future<void> _selectVehicle(BuildContext context) async {
-    final selected = await showModalBottomSheet<String>(
-      context: context,
-      builder: (BuildContext context) {
-        return Container(
-          height: 200,
-          child: Column(
-            children: [
-              ListTile(
-                title: Text('Car'),
-                onTap: () {
-                  Navigator.pop(context, 'Car');
-                },
-              ),
-              ListTile(
-                title: Text('Motorcycle'),
-                onTap: () {
-                  Navigator.pop(context, 'Motorcycle');
-                },
-              ),
-              ListTile(
-                title: Text('Bicycle'),
-                onTap: () {
-                  Navigator.pop(context, 'Bicycle');
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-    if (selected != null) {
+  List<String> vehicleList = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserVehicles();
+  }
+
+  void _loadUserVehicles() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      // Fetch the vehicles from Firestore
+      var vehiclesSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('vehicles')
+          .get();
+
+      // Extract vehicle names and update the state
       setState(() {
-        selectedVehicle = selected;
-        ride.setVehicle(selected);
+        vehicleList = vehiclesSnapshot.docs
+            .map((doc) {
+          final data = doc.data() as Map<String, dynamic>?;
+          if (data != null) {
+            final make = data['make'] as String? ?? 'Unknown make';
+            final model = data['model'] as String? ?? 'Unknown model';
+            final licensePlate = data['licensePlate'] as String? ?? 'Unknown license';
+            return '$make $model - $licensePlate';
+          }
+          return null;  // Explicitly handling null here
+        })
+            .where((vehicleDescription) => vehicleDescription != null) // Remove null entries
+            .cast<String>() // Safely cast to non-nullable String
+            .toList();
       });
     }
   }
+
+  // Method to show the bottom sheet for vehicle selection
+  void _showVehicleSelection() {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return vehicleList.isEmpty
+            ? Center(
+          child: ElevatedButton(
+            onPressed: () {
+              // Logic to add a new vehicle
+              // For example, navigate to a vehicle addition screen
+            },
+            child: Text('Add New Vehicle'),
+          ),
+        )
+            : ListView.builder(
+          itemCount: vehicleList.length,
+          itemBuilder: (BuildContext context, int index) {
+            return ListTile(
+              title: Text(vehicleList[index]),
+              onTap: () {
+                setState(() {
+                  selectedVehicle = vehicleList[index];
+                  ride.setVehicle(selectedVehicle!);
+                });
+                Navigator.pop(context);
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // Future<void> _selectVehicle(BuildContext context) async {
+  //   final selected = await showModalBottomSheet<String>(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return Container(
+  //         height: 200,
+  //         child: Column(
+  //           children: [
+  //             ListTile(
+  //               title: Text('Car'),
+  //               onTap: () {
+  //                 Navigator.pop(context, 'Car');
+  //               },
+  //             ),
+  //             ListTile(
+  //               title: Text('Motorcycle'),
+  //               onTap: () {
+  //                 Navigator.pop(context, 'Motorcycle');
+  //               },
+  //             ),
+  //             ListTile(
+  //               title: Text('Bicycle'),
+  //               onTap: () {
+  //                 Navigator.pop(context, 'Bicycle');
+  //               },
+  //             ),
+  //           ],
+  //         ),
+  //       );
+  //     },
+  //   );
+  //   if (selected != null) {
+  //     setState(() {
+  //       selectedVehicle = selected;
+  //       ride.setVehicle(selected);
+  //     });
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -201,7 +275,8 @@ class _OfferRideScreenState extends State<OfferRideScreen> {
                 children: [
                   Expanded(
                     child: GestureDetector(
-                      onTap: () => _selectVehicle(context),
+                      onTap: () => _showVehicleSelection(),
+                      // onTap: () => _selectVehicle(context),
                       child: AbsorbPointer(
                         child: TextFormField(
                           readOnly: true,
@@ -223,7 +298,7 @@ class _OfferRideScreenState extends State<OfferRideScreen> {
                       onChanged: (value) {
                         setState(() {
                           selectedSeats = value;
-                          ride.setSeats(value);
+                          ride.setSeats(int.parse(value));
                         });
                       },
                       keyboardType: TextInputType.number,
@@ -247,11 +322,32 @@ class _OfferRideScreenState extends State<OfferRideScreen> {
                     backgroundColor:
                         MaterialStateProperty.all<Color>(Colors.green),
                   ),
+                  // onPressed: () {
+                  //   // widget.homeBloc.add(HomeOfferRideBtnNavigateEvent());
+                  //   offerRideBloc.add(OfferRideBtnNavigateEvent());
+                  //
+                  //   // _handlePublishRideButtonPress();
+                  // },
                   onPressed: () {
-                    // widget.homeBloc.add(HomeOfferRideBtnNavigateEvent());
                     offerRideBloc.add(OfferRideBtnNavigateEvent());
-
-                    // _handlePublishRideButtonPress();
+                    // Check if all fields are filled
+                    if (_pickupLocationController.text.isNotEmpty &&
+                        _dropoffLocationController.text.isNotEmpty &&
+                        _dateController.text.isNotEmpty &&
+                        _timeController.text.isNotEmpty &&
+                        selectedVehicle != null &&
+                        selectedSeats != null && selectedSeats!.isNotEmpty) {
+                      // All fields are filled, proceed with navigation
+                      offerRideBloc.add(OfferRideBtnNavigateEvent());
+                    } else {
+                      // One or more fields are empty, show an error message
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Please fill in all fields before proceeding.'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
                   },
                   child: const Text(
                     'Proceed',

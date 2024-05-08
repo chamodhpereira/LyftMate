@@ -115,7 +115,7 @@ class _ConfirmRouteState extends State<ConfirmRoute> {
         foregroundColor: Colors.white,
         elevation: 0.5,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios), // Back button icon
+          icon: Icon(Icons.arrow_back), // Back button icon
           onPressed: () {
             Navigator.pop(context); // Handle back navigation
           },

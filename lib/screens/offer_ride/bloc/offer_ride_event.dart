@@ -1,7 +1,7 @@
 part of 'offer_ride_bloc.dart';
 
 @immutable
-sealed class OfferRideEvent {}
+abstract class OfferRideEvent {}
 
 class OfferRidePickupNavigateMapEvent extends OfferRideEvent{
 

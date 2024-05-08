@@ -18,6 +18,7 @@ import 'package:lyft_mate/screens/map/map_screen.dart';
 import 'package:lyft_mate/screens/offer_ride/ui/offer_ride_screen.dart';
 import 'package:lyft_mate/screens/login/login_screen.dart';
 import 'package:lyft_mate/screens/navigation/navigation_screen.dart';
+import 'package:lyft_mate/screens/offer_ride/ui/ride_offered_screen.dart';
 import 'package:lyft_mate/screens/onboarding/onboarding_screen.dart';
 import 'package:lyft_mate/screens/otp/otp_screen.dart';
 import 'package:lyft_mate/screens/payment/payment_screen.dart';
@@ -27,9 +28,13 @@ import 'package:lyft_mate/screens/profile/user_profile_screen.dart';
 import 'package:lyft_mate/screens/ride/ride_options_screen.dart';
 import 'package:lyft_mate/screens/signup/screens/signup_emergency_contacts_page.dart';
 import 'package:lyft_mate/screens/signup/screens/signup_screen.dart';
+import 'package:lyft_mate/screens/vehicles/vehicle_screen.dart';
 
 import 'package:lyft_mate/services/authentication_service.dart';
 import 'package:lyft_mate/services/notifications/notifications_service.dart';
+import 'package:lyft_mate/testing-demo/endoded_polyline.dart';
+import 'package:lyft_mate/testing-demo/map_gpx_new.dart';
+import 'package:lyft_mate/testing-demo/saved/map_gpx_nav.dart';
 import 'package:lyft_mate/userprofile_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -48,10 +53,8 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-
-
-
   await dotenv.load(fileName: ".env");
+
   Stripe.publishableKey = dotenv.env['STRIPE_PUBLISHABLE_KEY']!;
   await Stripe.instance.applySettings();
 
@@ -59,30 +62,33 @@ Future<void> main() async {
       NotificationService.initNotifications();
   }
 
-  // NotificationService.initNotifications();
-
-  runApp(MyApp());
+  runApp(LyftMate());
 }
 
-class MyApp extends StatelessWidget {
+class LyftMate extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider( // Use MultiProvider for multiple providers
       providers: [
         // ChangeNotifierProvider(create: (_) => LoggedUser()),
         // ChangeNotifierProvider(create: (_) => RideProvider()),
-        ChangeNotifierProvider(create: (_)=> NotificationProvider()),
+        // ChangeNotifierProvider(create: (_)=> NotificationProvider()),
         ChangeNotifierProvider(create: (context) => RadiusProvider()),
-        ChangeNotifierProvider(create: (_) => UserM()),
-        ChangeNotifierProvider(create: (_) => UserProvider()),
-        ChangeNotifierProvider(create: (_) => AuthenticationService()), // Provide AuthenticationService
+        // ChangeNotifierProvider(create: (_) => UserM()),
+        // ChangeNotifierProvider(create: (_) => UserProvider()),
+        // ChangeNotifierProvider(create: (_) => AuthenticationService()), // Provide AuthenticationService
       ],
       child: MaterialApp(
         theme: LyftMateAppTheme.lightTheme,
         darkTheme: LyftMateAppTheme.darkTheme,
         themeMode: ThemeMode.system,
+        home:OnBoardingScreen(),
         // home: LocationPickScreen(),
-        home: NavigationScreen(),
+        // home: NavigationScreen(),
+        // home: VehicleScreen(),
+        // home:RidePublishedPage(),
+        // home: MapGPX(),
+        // home: PolylineEncodingPage(),
         // home: LoginScreen(),
         // home: OTPScreen(phoneNumber: "1234567890",),
         // home: RideOptions(),
@@ -91,7 +97,10 @@ class MyApp extends StatelessWidget {
         // home: HomePage(),
         // home: MapPage(),
         // home: PaymentScreen(),
-        // routes: ,
+        routes: {
+          '/navigationScreen': (context) => const NavigationScreen(),
+          '/loginScreen': (context) => LoginScreen(),
+        },
       ),
     );
   }

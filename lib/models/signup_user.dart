@@ -51,7 +51,7 @@ class SignupUserData {
 
   // Methods to update properties
   void updatePhoneNumber(String newPhoneNumber) {
-    phoneNumber = "+94$newPhoneNumber";
+    phoneNumber = newPhoneNumber;
     print("Phone number updated: $phoneNumber");
   }
 

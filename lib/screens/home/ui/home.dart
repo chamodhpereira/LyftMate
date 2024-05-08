@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lyft_mate/screens/find_ride/find_ride_screen.dart';
@@ -59,13 +60,15 @@ class _HomePageState extends State<HomePage> {
     super.initState();
   }
 
+  int selectedOption = 0;
+
   final HomeBloc homeBloc = HomeBloc(); //not recommended
 
   @override
   Widget build(BuildContext context) {
-    final notificationProvider = context.watch<NotificationProvider>();
-    print(
-        "hasssNewNotification value: ${notificationProvider.hasNewNotification}");
+    // final notificationProvider = context.watch<NotificationProvider>();
+    // print(
+    //     "hasssNewNotification value: ${notificationProvider.hasNewNotification}");
 
     // _getToken();
     return Scaffold(
@@ -76,11 +79,12 @@ class _HomePageState extends State<HomePage> {
         elevation: 0.5,
         actions: [
           IconButton(
-            icon: Icon(
-              notificationProvider.hasNewNotification
-                  ? Icons
-                      .notifications_active // Change icon if new notifications are available
-                  : Icons.notifications,
+            icon: const Icon(
+              // notificationProvider.hasNewNotification
+              //     ? Icons
+              //     .notifications_active // Change icon if new notifications are available
+              //     : Icons.notifications,
+                Icons.notifications
             ),
             onPressed: () {
               homeBloc.add(HomeNotificationNavBtnNavigateEvent());
@@ -107,46 +111,66 @@ class _HomePageState extends State<HomePage> {
       ),
       body: Column(
         children: [
-          // Spacer(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              GestureDetector(
-                onTap: () {
-                  homeBloc.add(HomeDisplayFindRideScreenBtnEvent());
-                },
-                child: Container(
-                  padding: EdgeInsets.all(10),
-                  color: Colors.green,
-                  child: const Text(
+          // SizedBox(height: 90,),
+          Padding(
+            padding: const EdgeInsets.only(top: 80.0),
+            // padding: const EdgeInsets.only(top: 38.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      selectedOption = 0; // Set selected option to "Find Ride"
+                    });
+                    homeBloc.add(HomeDisplayFindRideScreenBtnEvent());
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: selectedOption == 0
+                        ? Colors.green
+                        : Colors.grey, // Change color based on selected option
+                    padding: EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: Text(
                     'Find Ride',
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  homeBloc.add(HomeDisplayOfferRideScreenBtnEvent());
-                },
-                child: Container(
-                  padding: EdgeInsets.all(10),
-                  color: Colors.blue,
-                  child: const Text(
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      selectedOption = 1; // Set selected option to "Offer Ride"
+                    });
+                    homeBloc.add(HomeDisplayOfferRideScreenBtnEvent());
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: selectedOption == 1
+                        ? Colors.green
+                        : Colors.grey, // Change color based on selected option
+                    padding: EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: Text(
                     'Offer Ride',
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           // Spacer(),
           Expanded(
             child: BlocConsumer<HomeBloc, HomeState>(
               bloc: homeBloc,
-              listenWhen: (prev, curr) =>
-                  curr is HomeActionState, //Take action if ActionState
-              buildWhen: (prev, curr) =>
-                  curr is! HomeActionState, //Build ui if not ActionState
+              listenWhen: (prev, curr) => curr is HomeActionState,
+              //Take action if ActionState
+              buildWhen: (prev, curr) => curr is! HomeActionState,
+              //Build ui if not ActionState
               listener: (context, state) {
                 if (state is HomeNavToNotificationPageActionState) {
                   Navigator.push(
@@ -181,12 +205,128 @@ class _HomePageState extends State<HomePage> {
               },
             ),
           ),
-          // const Spacer(),
         ],
       ),
     );
   }
 }
+
+
+// import 'package:flutter/material.dart';
+// import 'package:flutter_bloc/flutter_bloc.dart';
+// import 'package:provider/provider.dart';
+//
+// import '../../../providers/notification_provider.dart';
+// import '../../find_ride/find_ride_screen.dart';
+// import '../../offer_ride/ui/offer_ride_screen.dart';
+// import '../bloc/home_bloc.dart';
+// // import 'notification_provider.dart'; // Replace with the actual import
+// // import 'home_bloc.dart'; // Replace with the actual import
+// // import 'find_ride_screen.dart'; // Replace with the actual import
+// // import 'offer_ride_screen.dart'; // Replace with the actual import
+// // import 'notifications_screen.dart'; // Replace with the actual import
+//
+// class HomePage extends StatefulWidget {
+//   @override
+//   State<HomePage> createState() => _HomePageState();
+// }
+//
+// class _HomePageState extends State<HomePage> {
+//   final HomeBloc homeBloc = HomeBloc();
+//   int selectedOption = 0; // 0 for find ride, 1 for offer ride
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: Text('LyftMate'),
+//         backgroundColor: Colors.green,
+//         actions: [
+//           IconButton(
+//             icon: Icon(
+//               context.watch<NotificationProvider>().hasNewNotification
+//                   ? Icons.notifications_active
+//                   : Icons.notifications_none,
+//             ),
+//             onPressed: () => homeBloc.add(HomeNotificationNavBtnNavigateEvent()),
+//           ),
+//         ],
+//       ),
+//       body: Stack(
+//         children: [
+//           // Put your buttons in the stack to overlay them on the screen
+//           Positioned(
+//             top: MediaQuery.of(context).size.height * 0.1, // Adjust the position proportionally
+//             left: 0,
+//             right: 0,
+//             child: Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+//               children: [
+//                 _buildOptionButton('Find Ride', 0),
+//                 _buildOptionButton('Offer Ride', 1),
+//               ],
+//             ),
+//           ),
+//           // Your main content here, placed within the stack but below the buttons
+//           Positioned(
+//             // top: MediaQuery.of(context).size.height * 0.2, // Adjust the top margin
+//             top: 80,
+//             left: 0,
+//             right: 0,
+//             bottom: 0,
+//             child: BlocConsumer<HomeBloc, HomeState>(
+//               bloc: homeBloc,
+//               listener: (context, state) {
+//                 // Handle navigation based on state
+//               },
+//               builder: (context, state) {
+//                 if (state is HomeDisplayFindRideScreen) {
+//                   return FindRideScreen(homeBloc: homeBloc);
+//                 } else if (state is HomeDisplayOfferRideScreen) {
+//                   return OfferRideScreen(homeBloc: homeBloc);
+//                 }
+//                 // Return an empty container if there's no specific state
+//                 return Container();
+//               },
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+//
+//   Widget _buildOptionButton(String title, int index) {
+//     return ElevatedButton(
+//       onPressed: () {
+//         setState(() {
+//           selectedOption = index;
+//           if (index == 0) {
+//             homeBloc.add(HomeDisplayFindRideScreenBtnEvent());
+//           } else {
+//             homeBloc.add(HomeDisplayOfferRideScreenBtnEvent());
+//           }
+//         });
+//       },
+//       style: ElevatedButton.styleFrom(
+//         backgroundColor: selectedOption == index ? Colors.green : Colors.grey,
+//         // shape: RoundedRectangleBorder(
+//         //   borderRadius: BorderRadius.circular(18.0),
+//         // ),
+//         // padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 8.0),
+//       ),
+//       child: Text(
+//         title,
+//         style: TextStyle(color: Colors.white),
+//       ),
+//     );
+//   }
+// }
+
+
+
+
+
+
 
 // ---- working but deleted some code can be taken from git commit refactor ride screen
 // import 'package:flutter/material.dart';

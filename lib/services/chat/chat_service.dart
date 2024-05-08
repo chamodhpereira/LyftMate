@@ -4,8 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:lyft_mate/models/message.dart';
 
 class ChatService extends ChangeNotifier {
-  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+  FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  // Setters for test purposes
+  set firebaseAuth(FirebaseAuth auth) => _firebaseAuth = auth;
+  set firestore(FirebaseFirestore store) => _firestore = store;
 
   Future<void> sendMessage(String receiverId, String message) async {
     try {

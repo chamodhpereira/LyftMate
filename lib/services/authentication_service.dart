@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:lyft_mate/models/loggeduser.dart';
 import 'package:provider/provider.dart';
 
@@ -18,11 +19,19 @@ class AuthException implements Exception {
 
 class AuthenticationService extends ChangeNotifier{
 
-
-
-
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance; // commented for mock testing in fb_test
+  // FirebaseAuth _auth;
+  // FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  // AuthenticationService(this._auth);
+
+
+
+  // // Add this setter method
+  // set auth(FirebaseAuth firebaseAuth) {
+  //   _auth = firebaseAuth;
+  // }
 
   // Singleton instance of SignupUserData
   final SignupUserData _signupUserData = SignupUserData();
@@ -69,8 +78,8 @@ class AuthenticationService extends ChangeNotifier{
     }
   }
 
-  // Method to sign up with email and password  -- return bool
-  // Future<bool> signUpWithEmailAndPassword(String email, String password) async {
+
+  // Future<void> signUpWithEmailAndPassword(String email, String password) async {
   //   try {
   //     // Create user with email and password
   //     final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
@@ -84,13 +93,23 @@ class AuthenticationService extends ChangeNotifier{
   //     // Reset SignupUserData after successful signup
   //     _signupUserData.reset();
   //
-  //     return true;
+  //     return;
   //   } catch (e) {
-  //     print(e);
-  //     // Handle signup failure
-  //     return false;
+  //     debugPrint("error occurred when signing up: $e");
+  //
+  //     // If the exception is FirebaseAuthException, throw a custom AuthException
+  //     if (e is FirebaseAuthException) {
+  //       final errorMessage = e.message ?? 'An unexpected error occurred';
+  //       throw AuthException(errorMessage);
+  //     } else {
+  //       // Throw other types of exceptions as they are
+  //       rethrow;
+  //     }
   //   }
   // }
+
+
+
   Future<void> signUpWithEmailAndPassword(String email, String password) async {
     try {
       // Create user with email and password
@@ -105,13 +124,9 @@ class AuthenticationService extends ChangeNotifier{
       // Reset SignupUserData after successful signup
       _signupUserData.reset();
 
-      return null; // Return null to indicate success
+      return;
     } catch (e) {
-      print("errrrrrrrrrorrrrr in method: $e");
-
-
-      // Return the error message to be handled in the calling code
-      // return e.toString();
+      debugPrint("error occurred when signing up: $e");
 
       // If the exception is FirebaseAuthException, throw a custom AuthException
       if (e is FirebaseAuthException) {
@@ -119,7 +134,7 @@ class AuthenticationService extends ChangeNotifier{
         throw AuthException(errorMessage);
       } else {
         // Throw other types of exceptions as they are
-        throw e;
+        rethrow;
       }
     }
   }
@@ -139,6 +154,8 @@ class AuthenticationService extends ChangeNotifier{
         'email': _signupUserData.email,
         'dob': _signupUserData.dob.toIso8601String(),
         'bio': "",
+        "ratings": 0.0,
+        "reviews": [],
         'phoneNumber': _signupUserData.phoneNumber,
         'notificationToken': _signupUserData.notificationToken,
         'vehicles': [],
@@ -149,46 +166,15 @@ class AuthenticationService extends ChangeNotifier{
         'governmentIdVerified': false,
         'governmentIdDocumentUrl' : "",
         'driversLicenseVerified': false,
-        'driversLicenseDocumentUrl' : ""
+        'driversLicenseDocumentUrl' : "",
+        "memberSince" : DateTime.now(),
 
-        // Add more fields as needed
       });
     } catch (e) {
-      print("Failed to create user document: $e");
-      // Handle document creation failure
+      debugPrint("Failed to create user document: $e");
+      rethrow;
     }
   }
-
-// --------------worjinggggggggggg-
-  // Future<void> signUpWithEmailAndPassword(String email, String password) async {
-  //   try {
-  //     final UserCredential userCredential =
-  //         await _auth.createUserWithEmailAndPassword(
-  //       email: email,
-  //       password: password,
-  //     );
-  //     print("USERRRRRR IDDDDDDDDD: ${userCredential.user!.uid}");
-  //     // Store additional user details in Firestore
-  //     await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
-  //       'firstName': newUser.firstName,
-  //       'lastName': newUser.lastName,
-  //       // Add more user details as needed
-  //     });
-  //
-  //     // Navigate to the next screen or perform any other action after successful signup
-  //     // } on FirebaseAuthException catch (e) {
-  //     //   if (e.code == 'weak-password') {
-  //     //     print('The password provided is too weak.');
-  //     //   } else if (e.code == 'email-already-in-use') {
-  //     //     print('The account already exists for that email.');
-  //     //   }
-  //     // Show relevant error messages to the user
-  //   } catch (e) {
-  //     print(e);
-  //     // Handle other exceptions
-  //   }
-  // }
-
 
   Future<bool> signInWithEmailAndPassword(BuildContext context, String email, String password) async {
     try {
@@ -201,22 +187,22 @@ class AuthenticationService extends ChangeNotifier{
         // Fetch additional user details from Firestore
         DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).get();
 
-        // Create a User object with the fetched user data
-        LoggedUser newUser = LoggedUser(
-          userID: userDoc.id,
-          firstName: userDoc['firstName'],
-          // username: userDoc['username'],
-          // dateOfBirth: userDoc['dateOfBirth'],
-          // gender: userDoc['gender'],
-          // messages: List<String>.from(userDoc['messages'] ?? []),
-          // ridesBooked: List<String>.from(userDoc['ridesBooked'] ?? []),
-          // ridesOffered: List<String>.from(userDoc['ridesOffered'] ?? []),
-        );
-
-        // Update user data through UserProvider
-        Provider.of<UserProvider>(context, listen: false).updateUser(newUser);
-
-        print('User instance hash code after signInWithEmailAndPassword: ${newUser.hashCode}');
+        // // Create a User object with the fetched user data
+        // LoggedUser newUser = LoggedUser(
+        //   userID: userDoc.id,
+        //   firstName: userDoc['firstName'],
+        //   // username: userDoc['username'],
+        //   // dateOfBirth: userDoc['dateOfBirth'],
+        //   // gender: userDoc['gender'],
+        //   // messages: List<String>.from(userDoc['messages'] ?? []),
+        //   // ridesBooked: List<String>.from(userDoc['ridesBooked'] ?? []),
+        //   // ridesOffered: List<String>.from(userDoc['ridesOffered'] ?? []),
+        // );
+        //
+        // // Update user data through UserProvider
+        // Provider.of<UserProvider>(context, listen: false).updateUser(newUser);
+        //
+        // debugPrint('User instance hash code after signInWithEmailAndPassword: ${newUser.hashCode}');
 
         // Navigate to the next screen or perform any other action after successful login
         // Navigator.pushReplacementNamed(context, '/home');
@@ -225,134 +211,178 @@ class AuthenticationService extends ChangeNotifier{
         return false; // Return false if login fails
       }
     } catch (e) {
-      print("Failed to sign in: $e");
+      debugPrint("Failed to sign in: $e");
       return false; // Return false if login fails
     }
   }
-
-  // Future<bool> signInWithEmailAndPassword(
-  //     BuildContext context, String email, String password) async {
-  //   try {
-  //     final UserCredential userCredential =
-  //         await _auth.signInWithEmailAndPassword(
-  //       email: email,
-  //       password: password,
-  //     );
-  //
-  //     if (userCredential.user != null) {
-  //       // Update user details in LoggedUser model
-  //       UserM loggedUser = Provider.of<UserM>(context, listen: false);
-  //       print("WTFFFFFFFFFFFFFFFFFFFFFFFFFFFFQERRRR");
-  //       print(
-  //           'signin methoddddd- User instance hash code: ${loggedUser.hashCode}');
-  //       loggedUser.updateUID(userCredential.user!.uid);
-  //       loggedUser.updateEmail(userCredential.user!.email ?? "");
-  //
-  //       // Navigate to the next screen or perform any other action after successful login
-  //       return true; // Return true if login is successful
-  //     } else {
-  //       return false; // Return false if login fails
-  //     }
-  //   } catch (e) {
-  //     print("Failed to sign in: $e");
-  //     return false; // Return false if login fails
-  //   }
-  // }
 
   Future<void> signOut() async {
     try {
       await FirebaseAuth.instance.signOut();
     } catch (e) {
-      print("Failed to sign out: $e");
-      throw e; // Re-throw the exception for handling in the UI if needed
+      debugPrint("Failed to sign out: $e");
+      rethrow; // Re-throw the exception for handling in the UI if needed
     }
   }
-}
 
-// class AuthenticationService {
-//
-//   final FirebaseAuth _auth = FirebaseAuth.instance;
-//
-//   final LoggedUser _user = LoggedUser(); // Instance of your User class
-//
-//   LoggedUser get currentUser => _user;
-//
-//   Future<void> signUpWithEmailAndPassword(String email, String password) async {
-//     try {
-//       final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-//         email: email,
-//         password: password,
-//       );
-//
-//       // // Store additional user details in Firestore
-//       // await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
-//       //   'firstName': firstNameController.text,
-//       //   'lastName': secondNameController.text,
-//       //   // Add more user details as needed
-//       // });
-//
-//       // Navigate to the next screen or perform any other action after successful signup
-//     // } on FirebaseAuthException catch (e) {
-//     //   if (e.code == 'weak-password') {
-//     //     print('The password provided is too weak.');
-//     //   } else if (e.code == 'email-already-in-use') {
-//     //     print('The account already exists for that email.');
-//     //   }
-//       // Show relevant error messages to the user
-//     } catch (e) {
-//       print(e);
-//       // Handle other exceptions
-//     }
-//   }
-//
-//   Future<bool> signInWithEmailAndPassword(String email, String password) async {
-//     try {
-//       final UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-//         email: email,
-//         password: password,
-//       );
-//
-//       if (userCredential.user != null) {
-//         // Update user object with user's information
-//         _user.updateUID(userCredential.user!.uid);
-//         _user.updateEmail(userCredential.user!.email ?? "");
-//         // Add more updates as needed
-//
-//         print('signin methoddddd- User instance hash code: ${_user.hashCode}');
-//
-//         return true; // Return true if login is successful
-//       } else {
-//         return false; // Return false if login fails
-//       }
-//     } catch (e) {
-//       print("Failed to sign in: $e");
-//       return false; // Return false if login fails
-//     }
-//   }
-//
-//
-//   // Future<void> signInWithEmailAndPassword(String email, String password) async {
-//   //   try {
-//   //     final UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-//   //       email: email,
-//   //       password: password,
-//   //     );
-//   //
-//   //     // If login is successful, userCredential.user will contain the logged-in user
-//   //     // You can perform any additional actions here, such as storing user data or navigating to a new screen
-//   //   } catch (e) {
-//   //     print("Failed to sign in with email and password: $e");
-//   //     // Handle the sign-in failure, such as displaying an error message to the user
-//   //     throw e; // Re-throw the exception for handling in the UI if needed
-//   //   }
-//   // }
-//
-//   Future<void> signOut() async {
-//     try {
-//       await FirebaseAuth.instance.signOut();
-//     } catch (e) {
-//       print("Failed to sign out: $e");
-//       throw e; // Re-throw the exception for handling in the UI if needed
-//     }
-//   }
-// }
+  // Future<void> sendPasswordResetEmail(BuildContext context, String email) async {
+  //   try {
+  //     // Optional: Check user existence in Firestore or another database
+  //     final QuerySnapshot userSnapshot = await FirebaseFirestore.instance
+  //         .collection('users')
+  //         .where('email', isEqualTo: email)
+  //         .get();
+  //
+  //     // If no user documents were found, handle this scenario as "user not found."
+  //     if (userSnapshot.docs.isEmpty) {
+  //       throw FirebaseAuthException(
+  //         code: 'user-not-found',
+  //         message: 'No account found with that email address.',
+  //       );
+  //     }
+  //
+  //     // If user found, proceed with password reset email
+  //     await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(
+  //         content: Text(
+  //             'If this email is registered, you will receive a password reset email shortly.'),
+  //         duration: Duration(seconds: 3),
+  //       ),
+  //     );
+  //   } on FirebaseAuthException catch (e) {
+  //     String errorMessage = 'Something went wrong. Please try again.';
+  //
+  //     // Provide meaningful error messages
+  //     if (e.code == 'user-not-found') {
+  //       errorMessage = 'No account found with that email address.';
+  //     } else if (e.code == 'invalid-email') {
+  //       errorMessage = 'The email address is not valid.';
+  //     }
+  //
+  //     // Display error feedback
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text(errorMessage),
+  //         duration: const Duration(seconds: 3),
+  //       ),
+  //     );
+  //   } catch (e) {
+  //     // Handle unexpected errors
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(
+  //         content: Text('An unknown error occurred. Please try again.'),
+  //         duration: Duration(seconds: 3),
+  //       ),
+  //     );
+  //   }
+  // }
+
+  Future<bool> sendPasswordResetEmail(BuildContext context, String email) async {
+    try {
+      // Optionally, provide ActionCodeSettings for handling the redirect
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+
+      return true;
+    } on FirebaseAuthException catch (e) {
+      String errorMessage = 'An error occurred. Please try again.';
+
+      // Handle specific FirebaseAuthException error codes
+      switch (e.code) {
+        case 'invalid-email':
+          errorMessage = 'The email address is not valid.';
+          break;
+        case 'user-not-found':
+          errorMessage = 'No account found with that email address.';
+          break;
+        case 'missing-android-pkg-name':
+          errorMessage = 'Missing Android package name.';
+          break;
+        case 'missing-continue-uri':
+          errorMessage = 'A continue URL must be provided.';
+          break;
+        case 'missing-ios-bundle-id':
+          errorMessage = 'Missing iOS Bundle ID.';
+          break;
+        case 'invalid-continue-uri':
+          errorMessage = 'The continue URL is invalid.';
+          break;
+        case 'unauthorized-continue-uri':
+          errorMessage = 'The continue URL domain is not whitelisted.';
+          break;
+        default:
+          errorMessage = 'An unknown error occurred.';
+          break;
+      }
+
+      // Provide feedback through the UI
+      if(context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+
+      debugPrint(errorMessage);
+      return false;
+
+    } catch (e) {
+      // Handle any other exceptions
+      if(context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('An unknown error occurred. Please try again.'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+
+      return false;
+    }
+  }
+
+
+
+// Future<void> sendPasswordResetEmail(BuildContext context, String email) async {
+  //   try {
+  //     await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+  //     // Provide feedback that the reset email has been sent (success path)
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(
+  //         content: Text('If this email is registered, you will receive a password reset email shortly.'),
+  //         duration: Duration(seconds: 3),
+  //       ),
+  //     );
+  //   } on FirebaseAuthException catch (e) {
+  //     String errorMessage = 'Something went wrong. Please try again.';
+  //
+  //     // Customize error message based on Firebase exception codes
+  //     if (e.code == 'user-not-found') {
+  //       errorMessage = 'No account found with that email address.';
+  //     } else if (e.code == 'invalid-email') {
+  //       errorMessage = 'The email address is not valid bitvh.';
+  //     }
+  //
+  //     // Display an error message to the user via SnackBar
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text(errorMessage),
+  //         duration: const Duration(seconds: 3),
+  //       ),
+  //     );
+  //   } catch (e) {
+  //     // Fallback for unexpected errors
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(
+  //         content: Text('An unknown error occurred. Please try again.'),
+  //         duration: Duration(seconds: 3),
+  //       ),
+  //     );
+  //   }
+  // }
+
+
+
+}

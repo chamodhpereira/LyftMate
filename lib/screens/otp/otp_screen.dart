@@ -1,27 +1,22 @@
 import 'dart:async';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-// import 'package:lyft_mate/screens/signup/signup_form.dart';
-// import 'package:lyft_mate/src/screens/dummyhome.dart';
-// import 'package:lyft_mate/src/screens/signup/signup_name.dart';
-import 'package:lyft_mate/userprofile_screen.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
-import 'package:provider/provider.dart';
 import 'package:lottie/lottie.dart';
 
-import '../../services/authentication_service.dart';
+
+import '../../models/signup_user.dart';
 import '../../services/otp/otp_service.dart';
 import '../signup/screens/signup_form.dart';
 
 
 class OTPScreen extends StatefulWidget {
-  final String? phonenumber;
+  final String phonenumber;
   // final String fromScreen;
 
 
 
 
-  const OTPScreen({super.key, this.phonenumber, required phoneNumber,});
+  const OTPScreen({super.key, required this.phonenumber,});
 
   @override
   _OTPScreenState createState() => _OTPScreenState();
@@ -32,9 +27,6 @@ class _OTPScreenState extends State<OTPScreen> {
   StreamController<ErrorAnimationType> errorController =
   StreamController<ErrorAnimationType>();
   StreamController<int> timerController = StreamController<int>();
-
-  // final AuthenticationService _authenticationService = AuthenticationService();
-
 
   bool hasError = false;
   bool isResendButtonEnabled = true;
@@ -49,12 +41,13 @@ class _OTPScreenState extends State<OTPScreen> {
   @override
   void initState() {
     super.initState();
-    phoneNumber = widget.phonenumber ?? "+94123456789";
+    phoneNumber = widget.phonenumber;
     // fromScreen = widget.fromScreen;
   }
 
   @override
   void dispose() {
+
     otpController.dispose();
     errorController.close();
     timerController.close();
@@ -63,14 +56,13 @@ class _OTPScreenState extends State<OTPScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authenticationService = Provider.of<AuthenticationService>(context);
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
           onPressed: () {
             Navigator.pop(context);
           },
-          icon: const Icon(Icons.arrow_back_ios),
+          icon: const Icon(Icons.arrow_back),
         ),
         title: const Text(
           "Verify your number",
@@ -84,141 +76,133 @@ class _OTPScreenState extends State<OTPScreen> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Column(
-            // mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
+          child: ListView(
+            physics: const NeverScrollableScrollPhysics(),
             children: [
-              Container(
-                child: Lottie.asset("assets/images/otp-animation.json", height: 300.0),
-              ),
-              const Text(
-                "Verification Code",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              Text(
-                "Please enter the verification code sent to $phoneNumber",
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(
-                height: 30,
-              ),
-              PinCodeTextField(
-                appContext: context,
-                length: 6,
-                obscureText: false,
-                animationType: AnimationType.fade,
-                enableActiveFill: true,
-                keyboardType: TextInputType.number,
-                pinTheme: PinTheme(
-                  shape: PinCodeFieldShape.box,
-                  borderRadius: BorderRadius.circular(5),
-                  fieldHeight: 50,
-                  fieldWidth: 40,
-                  activeColor: Colors.white,
-                  inactiveColor: Colors.black.withOpacity(0.5),
-                  selectedColor: Colors.black,
-                  activeFillColor: Colors.black.withOpacity(0.1),
-                  inactiveFillColor: Colors.white,
-                  selectedFillColor: Colors.black.withOpacity(0.1),
-                ),
-                controller: otpController,
-                // onChanged: (code) {
-                //   print(code);
-                // },
-                onChanged: (value) {
-                  debugPrint(value);
-                  setState(() {
-                    otp = value;
-                  });
-                },
-                // onCompleted: (value) {
-                //   if (value != "123456") {
-                //     errorController.add(ErrorAnimationType.shake);
-                //     setState(() {
-                //       hasError = true;
-                //     });
-                //   } else {
-                //     setState(() {
-                //       hasError = false;
-                //     });
-                //     if (!hasError) {
-                //       if (fromScreen == 'signup') {
-                //         Navigator.pushReplacement(
-                //           context,
-                //           MaterialPageRoute(
-                //             builder: (context) => const SignUpForm(), // Navigate to SignupScreen
-                //           ),
-                //         );
-                //       } else {
-                //         Navigator.pushReplacement(
-                //           context,
-                //           MaterialPageRoute(
-                //             builder: (context) => UserProfileScreen(), // Navigate to HomeScreen
-                //           ),
-                //         );
-                //       }
-                //     }
-                //   }
-                // },
-
-                errorAnimationController: errorController,
-              ),
-              Center(
-                  child: Text(
-                      errorMessage,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.red
-                      )
-                  )
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ButtonStyle(
-                    backgroundColor:
-                    MaterialStateProperty.all<Color>(Colors.green),
+              Column(
+                // mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    child: Lottie.asset("assets/images/otp-animation.json", height: 300.0),
                   ),
-                  onPressed: () async{
-                    setState(() {
-                      isLoading = true;
-                    });
-                    String result = await TwilioVerification.instance.verifyCode('+' + phoneNumber!, otp);
-                    setState(() {
-                      isLoading = false;
-                    });
-                    if (result == 'Successful'){
-                      Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (context) => const SignUpForm()),
-                              (route) => false
-                      );
-                    }
-                    else{
+                  const Text(
+                    "Verification Code",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Text(
+                    "Please enter the verification code sent to $phoneNumber",
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(
+                    height: 30,
+                  ),
+                  PinCodeTextField(
+                    appContext: context,
+                    length: 6,
+                    obscureText: false,
+                    animationType: AnimationType.fade,
+                    enableActiveFill: true,
+                    keyboardType: TextInputType.number,
+                    pinTheme: PinTheme(
+                      shape: PinCodeFieldShape.box,
+                      borderRadius: BorderRadius.circular(5),
+                      fieldHeight: 50,
+                      fieldWidth: 40,
+                      activeColor: Colors.white,
+                      inactiveColor: Colors.black.withOpacity(0.5),
+                      selectedColor: Colors.black,
+                      activeFillColor: Colors.black.withOpacity(0.1),
+                      inactiveFillColor: Colors.white,
+                      selectedFillColor: Colors.black.withOpacity(0.1),
+                    ),
+                    controller: otpController,
+                    // onChanged: (code) {
+                    //   print(code);
+                    // },
+                    onChanged: (value) {
+                      debugPrint(value);
                       setState(() {
-                        errorController.add(ErrorAnimationType.shake);
-                        errorMessage = result;
+                        otp = value;
                       });
-                    }
-                    // Verify OTP or handle submission
-                    // String enteredOTP = otpController.text;
-                    // bool isOTPVerified = await authenticationService.verifyOTP(enteredOTP); // Call verifyOTP method from AuthenticationService
-                    // if(isOTPVerified) {
-                    //   print("OPTOOOOO VERIFIED WTTOOOO");
-                    // }else {
-                    //   print("SOMETHING IS WRONGGGGGGGGG OTPPPPPPPPP");
-                    // }
+                    },
+                    errorAnimationController: errorController,
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ButtonStyle(
+                        backgroundColor:
+                        MaterialStateProperty.all<Color>(Colors.green),
+                        foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+                      ),
+                      onPressed: () async{
+                        setState(() {
+                          isLoading = true;
+                        });
+                        if(phoneNumber == "+94123456789") {
+                          if(otp == "123456") {
+                            SignupUserData().updatePhoneNumber(phoneNumber!);
+                            setState(() {
+                              isLoading = false;
+                            });
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const SignUpForm()),
+                            );
+                          } else {
+                            setState(() {
+                              errorController.add(ErrorAnimationType.shake);
+                              errorMessage = "Please enter the test OTP value";
+                              isLoading = false;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(errorMessage),
+                                  duration: const Duration(seconds: 3),
+                                ),
+                              );
+                            });
+                          }
 
-                  },
-                  child: Text(isLoading? 'Verifying...' : 'Submit'),
-                ),
+                        } else {
+                          String result = await TwilioVerification.instance.verifyCode('+${phoneNumber!}', otp);
+                          setState(() {
+                            isLoading = false;
+                          });
+                          if (result == 'Successful'){
+                            SignupUserData().updatePhoneNumber(phoneNumber!);
+                            if(context.mounted) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const SignUpForm()),
+                              );
+                            }
+                          }
+                          else{
+                            setState(() {
+                              errorController.add(ErrorAnimationType.shake);
+                              errorMessage = result;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(errorMessage),
+                                  duration: const Duration(seconds: 3),
+                                ),
+                              );
+                            });
+                          }
+                        }
+                      },
+                      child: Text(isLoading? 'Verifying...' : 'Submit'),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  buildResendButton(),
+                ],
               ),
-              const SizedBox(height: 30),
-              buildResendButton(),
             ],
           ),
         ),
@@ -248,17 +232,11 @@ class _OTPScreenState extends State<OTPScreen> {
     );
   }
 
-  Future<void> verifyOTP(String enteredCode) async {
-    // Verify OTP logic with Firebase
-    // ... (same as in the previous example)
-  }
-
   void resendOTP() {
     // Disable the resend button
     setState(() {
       isResendButtonEnabled = false;
       countdownSeconds = 60;
-      isLoading = false;
     });
 
     // Start the countdown timer
@@ -267,10 +245,8 @@ class _OTPScreenState extends State<OTPScreen> {
         // Enable the resend button when the timer is up
         setState(() {
           isResendButtonEnabled = true;
+          timer.cancel(); // Stop the timer
         });
-
-        // Stop the timer
-        timer.cancel();
       } else {
         // Update the countdown and notify the stream
         setState(() {
@@ -280,7 +256,33 @@ class _OTPScreenState extends State<OTPScreen> {
       }
     });
 
-    // Call Firebase to resend OTP
-    // ...
+    // Call Twilio to resend the OTP
+    TwilioVerification.instance.sendCode(widget.phonenumber).then((result) {
+      if (result != 'Successful') {
+        setState(() {
+          isResendButtonEnabled = true;
+          errorMessage = "Failed to resend OTP: $result";
+          // Notify users via snackbar or another method
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMessage),
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        });
+      }
+    }).catchError((error) {
+      // Handle any errors here
+      setState(() {
+        isResendButtonEnabled = true;
+        errorMessage = "An error occurred: $error";
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      });
+    });
   }
 }

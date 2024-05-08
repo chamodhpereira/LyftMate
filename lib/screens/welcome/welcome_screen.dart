@@ -1,18 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:lyft_mate/constants/colors.dart';
-
-import '../../services/authentication_service.dart';
+import 'package:lyft_mate/screens/signup/screens/signup_screen.dart';
 import '../login/login_screen.dart';
-// import 'package:lyft_mate/screens/login_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-
-
-
     var height = MediaQuery.of(context).size.height;
 
     return Scaffold(
@@ -36,7 +31,7 @@ class WelcomeScreen extends StatelessWidget {
                     style: Theme.of(context).textTheme.displaySmall,
                   ),
                   Text(
-                    "join the community, and enjoy the ride",
+                    "Join the community, and enjoy the ride.",
                     style: Theme.of(context).textTheme.titleSmall,
                     textAlign: TextAlign.center,
                   ),
@@ -47,34 +42,39 @@ class WelcomeScreen extends StatelessWidget {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () {
-
+                        debugPrint("Login button pressed.");
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => LoginScreen(),),
+                            builder: (context) => LoginScreen(),
+                          ),
                         );
                       },
-
                       style: OutlinedButton.styleFrom(
-                        shape: const RoundedRectangleBorder(),
+                        // shape: const RoundedRectangleBorder(),
                         foregroundColor: kSecondaryColor,
                         side: const BorderSide(color: kSecondaryColor),
                         padding: const EdgeInsets.symmetric(vertical: 15.0),
-                        // elevation: 1
                       ),
                       child: Text(
                         "Login".toUpperCase(),
                       ),
                     ),
                   ),
-                  const SizedBox(
-                    width: 15.0,
-                  ),
+                  const SizedBox(width: 15.0),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        debugPrint("Signup button pressed.");
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => SignupScreen(),
+                          ),
+                        );
+                      },
                       style: ElevatedButton.styleFrom(
-                        shape: const RoundedRectangleBorder(),
+                        // shape: const RoundedRectangleBorder(),
                         foregroundColor: kWhiteColor,
                         backgroundColor: Colors.green,
                         side: const BorderSide(color: kSecondaryColor),

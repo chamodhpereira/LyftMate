@@ -102,12 +102,13 @@ class _FindRideScreenState extends State<FindRideScreen> {
           if (ride.pickupLocation != null && ride.dropoffLocation != null ) {
             LatLng pickupLatLng = ride.pickupLocation!;
             LatLng dropoffLatLng = ride.dropoffLocation!;
+            print("RIDDDDDEEEEEEEEEEEEEEEEEEEEE DATEEEEEEEEEEEEEEEEEEEEEE IN STATE ACTION ${ride.date}");
 
             GeoPoint pickupGeoPoint = GeoPoint(pickupLatLng.latitude, pickupLatLng.longitude);
             GeoPoint dropoffGeoPoint = GeoPoint(dropoffLatLng.latitude, dropoffLatLng.longitude);
             Navigator.push(
                 context, MaterialPageRoute(
-                builder: (context) => RideMatchingScreen(userPickupLocation: pickupGeoPoint, userDropoffLocation: dropoffGeoPoint,)));
+                builder: (context) => RideMatchingScreen(userPickupLocation: pickupGeoPoint, userDropoffLocation: dropoffGeoPoint, userPickedDate: ride.date,)));
           } else {
             print("THIS IS THE STATEEEEEEE: $state");
             ScaffoldMessenger.of(context).showSnackBar(
@@ -216,11 +217,29 @@ class _FindRideScreenState extends State<FindRideScreen> {
                     backgroundColor:
                     MaterialStateProperty.all<Color>(Colors.green),
                   ),
+                  // onPressed: () {
+                  //   // widget.homeBloc.add(HomeOfferRideBtnNavigateEvent());
+                  //   findRideBloc.add(FindRideBtnNavigateEvent());
+                  //
+                  //   // _handlePublishRideButtonPress();
+                  // },
                   onPressed: () {
-                    // widget.homeBloc.add(HomeOfferRideBtnNavigateEvent());
-                    findRideBloc.add(FindRideBtnNavigateEvent());
-
-                    // _handlePublishRideButtonPress();
+                    // Check if the text fields for pickup location, dropoff location, date, and time are not empty
+                    if (_pickupLocationController.text.isNotEmpty &&
+                        _dropoffLocationController.text.isNotEmpty &&
+                        _dateController.text.isNotEmpty &&
+                        _timeController.text.isNotEmpty) {
+                      // All fields are filled, proceed with navigation
+                      findRideBloc.add(FindRideBtnNavigateEvent());
+                    } else {
+                      // One or more fields are empty, show an error message
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Please fill in all fields before proceeding.'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
                   },
                   child: const Text(
                     'Proceed',

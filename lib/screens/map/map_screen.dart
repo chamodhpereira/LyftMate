@@ -5,6 +5,7 @@ import 'package:http/http.dart';
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:location/location.dart';
 import 'package:lyft_mate/screens/map/places_search_screen.dart';
 // import 'address_search.dart';
 // import 'place_service.dart';
@@ -24,8 +25,8 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen> {
 
-  late double pickedLongitude;
-  late double pickedLatitude;
+  late double? pickedLatitude = 0;
+  late double? pickedLongitude = 0;
   late String pickedLocation;
   late String pickedCity;
 
@@ -35,7 +36,9 @@ class _MapScreenState extends State<MapScreen> {
   final Completer<GoogleMapController> _controller = Completer();
   final _textController = TextEditingController();
 
-  static const CameraPosition _kGooglePlex = CameraPosition(target: LatLng(37.4223, -122.0848), zoom: 14);
+  // static const CameraPosition _kGooglePlex = CameraPosition(target: LatLng(37.4223, -122.0848), zoom: 14);
+  CameraPosition _kUserLocation = CameraPosition(target: LatLng(7.872090899526995, 80.79122432719277), zoom:7);
+
 
   Set<Marker> _markers = Set<Marker>();
   Set<Polygon> _polygons = Set<Polygon>();
@@ -45,15 +48,124 @@ class _MapScreenState extends State<MapScreen> {
 
   void _setMarker(LatLng point) {
     setState(() {
+      _markers.clear();
       _markers.add(Marker(markerId: const MarkerId("_currentLocation"), position: point));
     });
   }
+
+  Future<void> _getCurrentLocation() async {
+    LocationData? locationData;
+    var location = Location();
+
+    try {
+      locationData = await location.getLocation();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to retrieve your location. Please make sure location services are enabled.'),
+        ),
+      );
+      print('Failed to get location: $e');
+    }
+
+    if (locationData != null) {
+      final GoogleMapController controller = await _controller.future;
+      controller.animateCamera(CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: LatLng(locationData.latitude!, locationData.longitude!),
+          zoom: 14,
+        ),
+      ));
+    }
+  }
+
+  // Future<void> _getCurrentLocation() async {
+  //   LocationData? locationData;
+  //   var location = Location();
+  //
+  //   try {
+  //     locationData = await location.getLocation();
+  //   } catch (e) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text('Failed to retrieve your location. Please make sure location services are enabled.'),
+  //       ),
+  //     );
+  //     print('Failed to get location: $e');
+  //   }
+  //
+  //   if (locationData != null) {
+  //     final GoogleMapController controller = await _controller.future;
+  //         controller.animateCamera(CameraUpdate.newCameraPosition(
+  //           CameraPosition(
+  //             target: LatLng(locationData.latitude!, locationData.longitude!),
+  //             zoom: 14,
+  //           ),
+  //         ));
+  //     final double latitude = locationData.latitude!;
+  //     final double longitude = locationData.longitude!;
+  //
+  //
+  //     // // Clear existing markers
+  //     // setState(() {
+  //     //   _markers.clear();
+  //     // });
+  //     //
+  //     // // Set marker at current location
+  //     // _setMarker(LatLng(latitude, longitude));
+  //
+  //
+  //     final apiKey = _getApiKey();
+  //     final request = Uri.parse('https://maps.googleapis.com/maps/api/geocode/json?latlng=$latitude,$longitude&key=$apiKey');
+  //
+  //     final response = await client.get(request);
+  //
+  //     if (response.statusCode == 200) {
+  //       final jsonData = json.decode(response.body);
+  //       if (jsonData['results'] != null && jsonData['results'].isNotEmpty) {
+  //         final addressComponents = jsonData['results'][0]['address_components'];
+  //
+  //         String cityName = '';
+  //         String locationName = '';
+  //         for (var component in addressComponents) {
+  //           if (component['types'].contains('locality')) {
+  //             cityName = component['long_name'];
+  //           }
+  //           if (component['types'].contains('point_of_interest')) {
+  //             locationName = component['long_name'];
+  //           }
+  //         }
+  //
+  //         final address = jsonData['results'][0]['formatted_address'];
+  //
+  //         setState(() {
+  //           _markers.clear();
+  //           _setMarker(LatLng(latitude, longitude));
+  //           pickedLocation = address;
+  //           pickedCity = cityName;
+  //           pickedLatitude = latitude;
+  //           pickedLongitude = longitude;
+  //         });
+  //         _textController.text = address;
+  //
+  //         // Now you have pickedLatitude, pickedLongitude, pickedCity, and pickedLocation available here.
+  //         // You can use them as needed.
+  //         print('Latitude: $pickedLatitude, Longitude: $pickedLongitude');
+  //         print('Picked City: $pickedCity');
+  //         print('Picked Location: $pickedLocation');
+  //       }
+  //     } else {
+  //       print('Failed to fetch address: ${response.statusCode}');
+  //     }
+  //   }
+  // }
+
 
   late String locationType;
 
   @override
   void initState() {
-    // TODO: implement initState
+    _getCurrentLocation();
     super.initState();
     locationType = widget.locType!;
   }
@@ -76,10 +188,53 @@ class _MapScreenState extends State<MapScreen> {
             GoogleMap(
               onMapCreated: ((GoogleMapController controller) =>
                   _controller.complete(controller)),
-              initialCameraPosition: _kGooglePlex,
+              // onMapCreated: (GoogleMapController controller) {
+              //   _controller.complete(controller);
+              //   _getCurrentLocation(); // Call _getCurrentLocation here
+              // },
+              initialCameraPosition: _kUserLocation,
+              myLocationEnabled: true, // Enable my location button
+              myLocationButtonEnabled: true,
+
               markers: _markers,
-              // onTap: _handleTap,
+              padding: EdgeInsets.symmetric(vertical: 55.0),
+              onTap: _handleTap,
+              onCameraMoveStarted: () {
+                // When camera movement starts, get the camera position and perform reverse geocoding
+                // _getCurrentLocation();
+              },
             ),
+            // Positioned(
+            //   top: 65.0, // Adjust this value to position the button under the search bar
+            //   right: 10.0,
+            //   child: Opacity(
+            //     opacity: 0.7,
+            //     child: Container(
+            //       height: 40,
+            //       width: 40,
+            //       // padding: EdgeInsets.all(8.0),
+            //       decoration: BoxDecoration(
+            //         color: Colors.white,
+            //         borderRadius: BorderRadius.circular(0.0),
+            //         // boxShadow: [
+            //         //   BoxShadow(
+            //         //     color: Colors.grey.withOpacity(0.9),
+            //         //     spreadRadius: 2,
+            //         //     blurRadius: 10,
+            //         //     offset: Offset(0, 5),
+            //         //   ),
+            //         // ],
+            //       ),
+            //       child: IconButton(
+            //         icon: Icon(Icons.my_location, size: 22, color: Colors.grey.shade900,),
+            //         // onPressed: _moveToMyLocation,
+            //         onPressed: (){
+            //           _getCurrentLocation();
+            //         },
+            //       ),
+            //     ),
+            //   ),
+            // ),
             Positioned(
               top: 8.0,
               left: 8.0,
@@ -121,18 +276,39 @@ class _MapScreenState extends State<MapScreen> {
                 child: Container(
                   height: 50.0,
                   color: Colors.transparent,
-                  child: ElevatedButton(
+                  child:
+                  ElevatedButton(
                     onPressed: () {
-                      _confirmPickupLocation(pickedLatitude, pickedLongitude  , _textController.text, pickedCity);
+                      // if (widget.locType == 'dropoff') {
+                      //   // _confirmDropoffLocation(pickedLatitude, pickedLongitude, _textController.text, pickedCity);
+                      // } else {
+                      //   _confirmPickupLocation(pickedLatitude, pickedLongitude, _textController.text, pickedCity);
+                      // }
+
+                      if (pickedLatitude == 0 || pickedLongitude == 0) {
+                        debugPrint("Insideeee IFFFFFFFFFFFFFF BLOCCCCCCCCCCCCCK");
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Please choose a location on the map.'),
+                          ),
+                        );
+                      } else {
+                        debugPrint("Insideeee ELSEEEEEEEEEEE BLOCCCCCCCCCCCCCK");
+                        _confirmPickupLocation(pickedLatitude, pickedLongitude, _textController.text, pickedCity);
+                      }
+
+
                     },
                     style: ButtonStyle(
-                      foregroundColor:
-                      MaterialStateProperty.all<Color>(Colors.white),
-                      backgroundColor:
-                      MaterialStateProperty.all<Color>(Colors.green),
+                      foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+                      backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
                     ),
-                    child: Text("Confirm Pickup Location", style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold)),
+                    child: Text(
+                        widget.locType == 'dropoff' ? "Confirm Dropoff Location" : "Confirm Pickup Location",
+                        style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold)
+                    ),
                   ),
+
                 ),
               ),
             ),
@@ -157,42 +333,78 @@ class _MapScreenState extends State<MapScreen> {
     return dotenv.env['GOOGLE_MAPS_API_KEY'] ?? 'YOUR_DEFAULT_API_KEY';
   }
   //
-  // Future<void> _handleTap(LatLng tappedPoint) async {
-  //   setState(() {
-  //     _markers.clear();
-  //     _markers.add(Marker(
-  //       markerId: MarkerId(tappedPoint.toString()),
-  //       position: tappedPoint,
-  //     ));
-  //     pickedLatitude = tappedPoint.latitude;
-  //     pickedLongitude = tappedPoint.longitude;
-  //   });
-  //
-  //   // Reverse geocoding to get the address
-  //   final apiKey = _getApiKey();
-  //   final request = Uri.parse('https://maps.googleapis.com/maps/api/geocode/json?latlng=${tappedPoint.latitude},${tappedPoint.longitude}&key=$apiKey');
-  //
-  //   final response = await client.get(request);
-  //
-  //   if (response.statusCode == 200) {
-  //     final jsonData = json.decode(response.body);
-  //     if (jsonData['results'] != null && jsonData['results'].isNotEmpty) {
-  //       final address = jsonData['results'][0]['formatted_address'];
-  //       setState(() {
-  //         pickedLocation = address;
-  //       });
-  //       _textController.text = address;
-  //     }
-  //   } else {
-  //     print('Failed to fetch address: ${response.statusCode}');
-  //   }
-  // }
+  Future<void> _handleTap(LatLng tappedPoint) async {
+    setState(() {
+      _markers.clear();
+      _markers.add(Marker(
+        markerId: MarkerId(tappedPoint.toString()),
+        position: tappedPoint,
+      ));
+      pickedLatitude = tappedPoint.latitude;
+      pickedLongitude = tappedPoint.longitude;
+    });
 
-  void _confirmPickupLocation(double lat, double lng, String locationName, String cityName) {
-    Navigator.pop(context, {'lat': lat, 'lng': lng, 'locationName': locationName, 'cityName': cityName});
+    // Reverse geocoding to get the address
+    final apiKey = _getApiKey();
+    final request = Uri.parse('https://maps.googleapis.com/maps/api/geocode/json?latlng=${tappedPoint.latitude},${tappedPoint.longitude}&key=$apiKey');
+
+    final response = await client.get(request);
+
+    if (response.statusCode == 200) {
+      final jsonData = json.decode(response.body);
+      if (jsonData['results'] != null && jsonData['results'].isNotEmpty) {
+        debugPrint("this is the debuggggggggg results: ${jsonData['results'][0]["address_components"]}");
+
+        final addressComponents = jsonData['results'][0]['address_components'];
+
+        String cityName = '';
+        for (var component in addressComponents) {
+          if (component['types'].contains('locality')) {
+            cityName = component['long_name'];
+            break;
+          }
+        }
+
+        debugPrint("this is the debuggggggggg CITYYYY: $cityName");
+
+        final address = jsonData['results'][0]['formatted_address'];
+        setState(() {
+          pickedLocation = address;
+          // debugPrint("PCKEDDDDDDDDDD LOCATIOMMMMMMMMMM: $pickedLocation");
+          pickedCity = cityName;
+        });
+        _textController.text = address;
+
+        // Get the GoogleMapController from the Completer
+        final GoogleMapController controller = await _controller.future;
+
+        // Animate camera to the tapped location
+        controller.animateCamera(
+          CameraUpdate.newLatLng(tappedPoint),
+        );
+      }
+    } else {
+      print('Failed to fetch address: ${response.statusCode}');
+    }
   }
 
-  Future<void> _goToPlace(Map<String, dynamic> place) async {
+  // void _confirmPickupLocation(double lat, double lng, String locationName, String cityName) {
+  //   Navigator.pop(context, {'lat': lat, 'lng': lng, 'locationName': locationName, 'cityName': cityName});
+  // }
+
+  void _confirmPickupLocation(double? lat, double? lng, String locationName, String cityName) {
+    if (lat == null || lng == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please choose a location on the map.'),
+        ),
+      );
+    } else {
+      Navigator.pop(context, {'lat': lat, 'lng': lng, 'locationName': locationName, 'cityName': cityName});
+    }
+  }
+
+  Future<void> _goToPlace(Map<String, dynamic>? place) async {
     if (place != null &&
         place.containsKey('latitude') &&
         place.containsKey('longitude')) {
@@ -213,6 +425,13 @@ class _MapScreenState extends State<MapScreen> {
       await controller.animateCamera(
         CameraUpdate.newCameraPosition(_newCameraPosition),
       );
+
+      // setState(() {
+      //   _markers.clear();
+      //   _markers.add(Marker(
+      //     markerId: MarkerId(tappedPoint.toString()),
+      //     position: tappedPoint,
+      //   ));
 
       _setMarker(LatLng(lat, lng));
     } else {
