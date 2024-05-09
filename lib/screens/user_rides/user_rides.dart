@@ -1038,7 +1038,7 @@ class _UserRidesState extends State<UserRides>
           context,
           MaterialPageRoute(
             builder: (context) =>
-                MyPublishedRideDetailsPage(rideData: rideData, rideId: rideId),
+                MyPublishedRideDetailsPage(rideId: rideId),
           ),
         );
       },

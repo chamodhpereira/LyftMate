@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:lyft_mate/home.dart';
-import 'package:lyft_mate/map_test/map_test.dart';
+
 import 'package:lyft_mate/models/loggeduser.dart';
 import 'package:lyft_mate/models/user.dart';
 import 'package:lyft_mate/providers/notification_provider.dart';
@@ -43,7 +43,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'constants/theme.dart';
 import 'firebase_options.dart';
-import 'map_test/radius_provider.dart';
+// import 'map_test/radius_provider.dart';
 
 Future<void> main() async {
 
@@ -72,8 +72,8 @@ class LyftMate extends StatelessWidget {
       providers: [
         // ChangeNotifierProvider(create: (_) => LoggedUser()),
         // ChangeNotifierProvider(create: (_) => RideProvider()),
-        // ChangeNotifierProvider(create: (_)=> NotificationProvider()),
-        ChangeNotifierProvider(create: (context) => RadiusProvider()),
+        ChangeNotifierProvider(create: (_)=> NotificationProvider()),
+        // ChangeNotifierProvider(create: (context) => RadiusProvider()),
         // ChangeNotifierProvider(create: (_) => UserM()),
         // ChangeNotifierProvider(create: (_) => UserProvider()),
         // ChangeNotifierProvider(create: (_) => AuthenticationService()), // Provide AuthenticationService
