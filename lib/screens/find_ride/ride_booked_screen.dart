@@ -68,8 +68,11 @@ class RideBookedPage extends StatelessWidget {
                     ),
                     minimumSize: const Size(double.infinity, 50), // Full width button
                   ),
+                  // onPressed: () {
+                  //   Navigator.pop(context);
+                  // },
                   onPressed: () => Navigator.pushNamedAndRemoveUntil(context, '/navigationScreen', (route) => false,), // Dismiss the screen when button is pressed
-                  child: Text(
+                  child: const Text(
                     'OK',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,

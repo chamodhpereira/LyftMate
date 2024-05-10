@@ -2,10 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:lyft_mate/screens/find_ride/ride_request_sent_screen.dart';
 import 'package:lyft_mate/screens/find_ride/ride_route.dart';
 
 import '../../widgets/icon_preference.dart';
 import '../chat/dash_chatpage.dart';
+import '../profile/other_userprofile.dart';
 import 'confirm_booking.dart';
 
 class RideDetailsScreen extends StatelessWidget {
@@ -333,7 +335,7 @@ class RideDetailsScreen extends StatelessWidget {
                                 child: driverDetails == null ||
                                     driverDetails['profileImageUrl'] == null ||
                                     driverDetails['profileImageUrl'].isEmpty
-                                    ? Icon(
+                                    ? const Icon(
                                   Icons.person,
                                   size: 20.0,
                                 )
@@ -354,27 +356,65 @@ class RideDetailsScreen extends StatelessWidget {
 
 
                           SizedBox(width: 8.0),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('${driverDetails['firstName']} ${driverDetails['lastName']}',
-                                  style: TextStyle(fontSize: 16.0)),
-                              Row(
-                                children: [
-                                  Text('${driverDetails['ratings']}', style: TextStyle(fontSize: 12.0)),
-                                  Icon(
-                                    Icons.star,
-                                    color: Colors.orangeAccent.shade200,
-                                    size: 15.0,
-                                  ),
-                                  SizedBox(
-                                    width: 10.0,
-                                  ),
-                                  Text('${driverDetails['reviews'].length} Reviews',
-                                      style: TextStyle(fontSize: 12.0)),
-                                ],
-                              ),
-                            ],
+                          // Column(
+                          //   crossAxisAlignment: CrossAxisAlignment.start,
+                          //   children: [
+                          //     Text('${driverDetails['firstName']} ${driverDetails['lastName']}',
+                          //         style: TextStyle(fontSize: 16.0)),
+                          //     Row(
+                          //       children: [
+                          //         Text('${driverDetails['ratings']}', style: TextStyle(fontSize: 12.0)),
+                          //         Icon(
+                          //           Icons.star,
+                          //           color: Colors.orangeAccent.shade200,
+                          //           size: 15.0,
+                          //         ),
+                          //         SizedBox(
+                          //           width: 10.0,
+                          //         ),
+                          //         Text('${driverDetails['reviews'].length} Reviews',
+                          //             style: TextStyle(fontSize: 12.0)),
+                          //       ],
+                          //     ),
+                          //   ],
+                          // ),
+                          GestureDetector(
+                            onTap: () {
+                              // Replace with the appropriate way to access driver ID
+                              final String driverId = rideData?['driverId'];
+
+                              // Navigate to the other user's profile screen
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => OtherUserProfileScreen(userId: driverId,),
+                                ),
+                              );
+                            },
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${driverDetails['firstName']} ${driverDetails['lastName']}',
+                                  style: const TextStyle(fontSize: 16.0),
+                                ),
+                                Row(
+                                  children: [
+                                    Text('${driverDetails['ratings']}', style: const TextStyle(fontSize: 12.0)),
+                                    Icon(
+                                      Icons.star,
+                                      color: Colors.orangeAccent.shade200,
+                                      size: 15.0,
+                                    ),
+                                    const SizedBox(width: 10.0),
+                                    Text(
+                                      '${driverDetails['reviews'].length} Reviews',
+                                      style: const TextStyle(fontSize: 12.0),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -412,7 +452,7 @@ class RideDetailsScreen extends StatelessWidget {
                                 ),
                               );
                             },
-                            child: Row(
+                            child: const Row(
                               children: [
                                 Text('Contact Driver', style: TextStyle(color: Colors.black),),
                                 SizedBox(
@@ -430,33 +470,17 @@ class RideDetailsScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 8.0),
                       Divider(),
-                      // Text(
-                      //   'Ride Preferences',
-                      //   style: TextStyle(
-                      //     fontWeight: FontWeight.bold,
-                      //     fontSize: 18.0,
-                      //   ),
-                      // ),
-                      // SizedBox(height: 18.0),
-                      // Row(
-                      //   children: [
-                      //     Icon(Icons.flash_on),
-                      //     SizedBox(width: 8.0),
-                      //     Text('Instant Approval'),
-                      //   ],
-                      // ),
-
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             'Ride Preferences',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 18.0,
                             ),
                           ),
-                          SizedBox(height: 18.0),
+                          const SizedBox(height: 18.0),
                           // Render ride preferences dynamically
                           if (rideData?['ridePreferences'] != null)
                             for (var preference in rideData?['ridePreferences'])
@@ -467,7 +491,7 @@ class RideDetailsScreen extends StatelessWidget {
                                     children: [
                                       getIconForPreference(preference),
                                       // You can use a suitable icon based on the preference
-                                      SizedBox(width: 8.0),
+                                      const SizedBox(width: 8.0),
                                       Text(preference),
                                     ],
                                   ),
@@ -485,10 +509,10 @@ class RideDetailsScreen extends StatelessWidget {
                                   Text(ride["luggageAllowance"]),
                                 ],
                               ),
-                              SizedBox(height: 18.0),
+                              const SizedBox(height: 18.0),
                               Row(
                                 children: [
-                                  Icon(Icons.money_outlined),
+                                  const Icon(Icons.money_outlined),
                                   SizedBox(width: 8.0),
                                   Text("Payment: "),
                                   Text(ride["paymentMode"]),
@@ -501,6 +525,107 @@ class RideDetailsScreen extends StatelessWidget {
 
                       SizedBox(height: 18.0),
                       Divider(),
+                      // Column(
+                      //   crossAxisAlignment: CrossAxisAlignment.start,
+                      //   children: [
+                      //     const Text(
+                      //       'Co-passengers',
+                      //       style: TextStyle(
+                      //         fontWeight: FontWeight.bold,
+                      //         fontSize: 18.0,
+                      //       ),
+                      //     ),
+                      //     const SizedBox(height: 18.0),
+                      //     // Render ride preferences dynamically
+                      //     // if (rideData?['passengers'] != null && rideData?['passengers'].isNotEmpty)
+                      //     //   StreamBuilder(
+                      //     //     stream: FirebaseFirestore.instance.collection('users').where(FieldPath.documentId, whereIn: rideData?['passengers']).snapshots(),
+                      //     //     builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                      //     //       if (snapshot.connectionState == ConnectionState.waiting) {
+                      //     //         return CircularProgressIndicator(); // Placeholder while loading data
+                      //     //       }
+                      //     //       if (snapshot.hasError) {
+                      //     //         return Text('Error: ${snapshot.error}');
+                      //     //       }
+                      //     //       if (snapshot.hasData && snapshot.data != null) {
+                      //     //         return Column(
+                      //     //           crossAxisAlignment: CrossAxisAlignment.start,
+                      //     //           children: snapshot.data!.docs.map((document) {
+                      //     //             var passengerData = document.data() as Map<String, dynamic>?;
+                      //     //             var firstName = passengerData?['firstName'];
+                      //     //             var lastName = passengerData?['lastName'];
+                      //     //             return Column(
+                      //     //               crossAxisAlignment: CrossAxisAlignment.start,
+                      //     //               children: [
+                      //     //                 Row(
+                      //     //                   children: [
+                      //     //                     CircleAvatar(), // You can set the avatar image here
+                      //     //                     SizedBox(width: 8.0),
+                      //     //                     Text('$firstName $lastName'), // Display passenger name
+                      //     //                   ],
+                      //     //                 ),
+                      //     //                 SizedBox(height: 18.0), // Add space between preferences
+                      //     //               ],
+                      //     //             );
+                      //     //           }).toList(),
+                      //     //         );
+                      //     //       } else {
+                      //     //         return Text('User data not found');
+                      //     //       }
+                      //     //     },
+                      //     //   )
+                      //     if (rideData?['passengers'] != null && rideData?['passengers'].isNotEmpty)
+                      //       StreamBuilder(
+                      //         stream: FirebaseFirestore.instance.collection('users').where(FieldPath.documentId, whereIn: rideData?['passengers'].map((passenger) => passenger['userId']).toList()).snapshots(),
+                      //         builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                      //           if (snapshot.connectionState == ConnectionState.waiting) {
+                      //             return const CircularProgressIndicator(); // Placeholder while loading data
+                      //           }
+                      //           if (snapshot.hasError) {
+                      //             return Text('Error: ${snapshot.error}');
+                      //           }
+                      //           if (snapshot.hasData && snapshot.data != null) {
+                      //             return Column(
+                      //               crossAxisAlignment: CrossAxisAlignment.start,
+                      //               children: snapshot.data!.docs.map((document) {
+                      //                 var passengerData = document.data() as Map<String, dynamic>?;
+                      //                 var firstName = passengerData?['firstName'];
+                      //                 var lastName = passengerData?['lastName'];
+                      //                 return Column(
+                      //                   crossAxisAlignment: CrossAxisAlignment.start,
+                      //                   children: [
+                      //                     Row(
+                      //                       children: [
+                      //                         const CircleAvatar(), // You can set the avatar image here
+                      //                         const SizedBox(width: 8.0),
+                      //                         Text('$firstName $lastName'), // Display passenger name
+                      //                       ],
+                      //                     ),
+                      //                     const SizedBox(height: 18.0), // Add space between preferences
+                      //                   ],
+                      //                 );
+                      //               }).toList(),
+                      //             );
+                      //           } else {
+                      //             return const Text('User data not found');
+                      //           }
+                      //         },
+                      //       )
+                      //
+                      //     else
+                      //       const Column(
+                      //         crossAxisAlignment: CrossAxisAlignment.start,
+                      //         children: [
+                      //           Text(
+                      //             'No co-passengers',
+                      //             style: TextStyle(
+                      //               fontStyle: FontStyle.italic,
+                      //             ),
+                      //           ),
+                      //         ],
+                      //       ),
+                      //   ],
+                      // ),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -512,50 +637,12 @@ class RideDetailsScreen extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 18.0),
-                          // Render ride preferences dynamically
-                          // if (rideData?['passengers'] != null && rideData?['passengers'].isNotEmpty)
-                          //   StreamBuilder(
-                          //     stream: FirebaseFirestore.instance.collection('users').where(FieldPath.documentId, whereIn: rideData?['passengers']).snapshots(),
-                          //     builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                          //       if (snapshot.connectionState == ConnectionState.waiting) {
-                          //         return CircularProgressIndicator(); // Placeholder while loading data
-                          //       }
-                          //       if (snapshot.hasError) {
-                          //         return Text('Error: ${snapshot.error}');
-                          //       }
-                          //       if (snapshot.hasData && snapshot.data != null) {
-                          //         return Column(
-                          //           crossAxisAlignment: CrossAxisAlignment.start,
-                          //           children: snapshot.data!.docs.map((document) {
-                          //             var passengerData = document.data() as Map<String, dynamic>?;
-                          //             var firstName = passengerData?['firstName'];
-                          //             var lastName = passengerData?['lastName'];
-                          //             return Column(
-                          //               crossAxisAlignment: CrossAxisAlignment.start,
-                          //               children: [
-                          //                 Row(
-                          //                   children: [
-                          //                     CircleAvatar(), // You can set the avatar image here
-                          //                     SizedBox(width: 8.0),
-                          //                     Text('$firstName $lastName'), // Display passenger name
-                          //                   ],
-                          //                 ),
-                          //                 SizedBox(height: 18.0), // Add space between preferences
-                          //               ],
-                          //             );
-                          //           }).toList(),
-                          //         );
-                          //       } else {
-                          //         return Text('User data not found');
-                          //       }
-                          //     },
-                          //   )
                           if (rideData?['passengers'] != null && rideData?['passengers'].isNotEmpty)
                             StreamBuilder(
                               stream: FirebaseFirestore.instance.collection('users').where(FieldPath.documentId, whereIn: rideData?['passengers'].map((passenger) => passenger['userId']).toList()).snapshots(),
                               builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                                 if (snapshot.connectionState == ConnectionState.waiting) {
-                                  return CircularProgressIndicator(); // Placeholder while loading data
+                                  return const CircularProgressIndicator(); // Placeholder while loading data
                                 }
                                 if (snapshot.hasError) {
                                   return Text('Error: ${snapshot.error}');
@@ -567,29 +654,50 @@ class RideDetailsScreen extends StatelessWidget {
                                       var passengerData = document.data() as Map<String, dynamic>?;
                                       var firstName = passengerData?['firstName'];
                                       var lastName = passengerData?['lastName'];
-                                      return Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              CircleAvatar(), // You can set the avatar image here
-                                              SizedBox(width: 8.0),
-                                              Text('$firstName $lastName'), // Display passenger name
-                                            ],
-                                          ),
-                                          SizedBox(height: 18.0), // Add space between preferences
-                                        ],
+                                      var passengerId = document.id; // Assuming the document ID is the user ID
+                                      var profileImageUrl = passengerData?['profileImageUrl'];
+
+                                      return GestureDetector(
+                                        onTap: () {
+                                          // Navigate to the other user's profile screen
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => OtherUserProfileScreen(userId: passengerId),
+                                            ),
+                                          );
+                                        },
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                CircleAvatar(
+                                                  radius: 20.0, // Adjust the radius as per your design
+                                                  backgroundImage: profileImageUrl != null && profileImageUrl.isNotEmpty
+                                                      ? NetworkImage(profileImageUrl)
+                                                      : null, // Use the image URL if available
+                                                  child: profileImageUrl == null || profileImageUrl.isEmpty
+                                                      ? const Icon(Icons.person, size: 20.0) // Default icon when no profile image
+                                                      : null,
+                                                ),
+                                                const SizedBox(width: 8.0),
+                                                Text('$firstName $lastName'), // Display passenger name
+                                              ],
+                                            ),
+                                            const SizedBox(height: 18.0), // Add space between each passenger
+                                          ],
+                                        ),
                                       );
                                     }).toList(),
                                   );
                                 } else {
-                                  return Text('User data not found');
+                                  return const Text('User data not found');
                                 }
                               },
                             )
-
                           else
-                            Column(
+                            const Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
@@ -602,6 +710,8 @@ class RideDetailsScreen extends StatelessWidget {
                             ),
                         ],
                       ),
+
+
                     ],
                   ),
                 ),
@@ -632,8 +742,8 @@ class VerticalDashedLinePainter extends CustomPainter {
       ..strokeWidth = 1.0
       ..style = PaintingStyle.stroke;
 
-    final double dashHeight = 5.0;
-    final double dashSpace = 5.0;
+    const double dashHeight = 5.0;
+    const double dashSpace = 5.0;
 
     double startY = 0.0;
     while (startY < size.height) {
@@ -824,9 +934,9 @@ class BottomSeatSelectionContainer extends StatefulWidget {
       _BottomSeatSelectionContainerState();
 }
 
-class _BottomSeatSelectionContainerState
-    extends State<BottomSeatSelectionContainer> {
+class _BottomSeatSelectionContainerState extends State<BottomSeatSelectionContainer> {
   int selectedSeats = 0;
+  bool isLoading = false; // Track loading state
 
   void updateSelectedSeats(int count) {
     setState(() {
@@ -834,90 +944,58 @@ class _BottomSeatSelectionContainerState
     });
   }
 
-  // void handleRequestRide(BuildContext context) async {
-  //
-  //
-  //   double amountToBePaid = widget.ride['pricePerSeat'] * selectedSeats;
-  //
-  //   String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
-  //   print('Current User ID: $currentUserId');
-  //
-  //   // Prepare the request data
-  //   var requestData = {
-  //     'passengerId': currentUserId, // Replace with actual current user ID
-  //     'seatsRequested': selectedSeats,
-  //     'pickupCoordinate': widget.userPickupCoordinate,
-  //     'dropoffCoordinate': widget.userDropoffCoordinate,
-  //     'amount': amountToBePaid, // Store the amount
-  //     'paidStatus': false,
-  //   };
-  //
-  //   // Add to "ride requests" array in Firestore
-  //   var rideRef = FirebaseFirestore.instance.collection('rides').doc(widget.ride.id);
-  //   await rideRef.update({
-  //     'rideRequests': FieldValue.arrayUnion([requestData]),
-  //   });
-  //
-  //   // Redirect to the Request Sent page
-  //   // Navigator.push(
-  //   //   context,
-  //   //   MaterialPageRoute(builder: (context) => RequestSentPage()),
-  //   // );
-  //
-  //   debugPrint("Redirecting to Request sent page.....");
-  // }
-
   void handleRequestRide(BuildContext context) async {
     double amountToBePaid = widget.ride['pricePerSeat'] * selectedSeats;
-
     String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
     debugPrint('Current User ID: $currentUserId');
 
-    // Prepare the request data
     var requestData = {
-      'passengerId': currentUserId, // Replace with actual current user ID
+      'passengerId': currentUserId,
       'seatsRequested': selectedSeats,
       'pickupCoordinate': widget.userPickupCoordinate,
       'dropoffCoordinate': widget.userDropoffCoordinate,
-      'amount': amountToBePaid, // Store the amount
+      'amount': amountToBePaid,
       'paidStatus': false,
     };
 
-    // Add to "ride requests" array in Firestore
     var rideRef = FirebaseFirestore.instance.collection('rides').doc(widget.ride.id);
 
     try {
+      setState(() {
+        isLoading = true; // Start loading
+      });
+
       await rideRef.update({
         'rideRequests': FieldValue.arrayUnion([requestData]),
       });
-      debugPrint("Ride request successfully added.");
-      // Redirect to the Request Sent page
-      // Navigator.push(
-      //   context,
-      //   MaterialPageRoute(builder: (context) => RequestSentPage()),
-      // );
 
-      debugPrint("Redirecting to Request sent page.....");
+      debugPrint("Ride request successfully added.");
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => RideRequestSentPage()), // Replace with your page
+      );
     } catch (e) {
       debugPrint("Failed to add ride request: $e");
-      // Optionally, show an error message to the user
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Failed to send ride request. Please try again.'),
           backgroundColor: Colors.red,
         ),
       );
+    } finally {
+      setState(() {
+        isLoading = false; // Stop loading
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(16.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Seat selection button logic
           Row(
             children: [
               TextButton(
@@ -944,8 +1022,6 @@ class _BottomSeatSelectionContainerState
               ),
             ],
           ),
-
-          // Main action button
           ElevatedButton(
             style: ButtonStyle(
               backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
@@ -953,11 +1029,9 @@ class _BottomSeatSelectionContainerState
             ),
             onPressed: () {
               if (selectedSeats > 0) {
-                // Determine the action based on rideBookingType
                 if (widget.rideBookingType == "Request") {
                   handleRequestRide(context);
                 } else {
-                  // Proceed to the confirmation page for instant booking
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -972,19 +1046,152 @@ class _BottomSeatSelectionContainerState
                   );
                 }
               } else {
-                // Show a warning message
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Please select at least one seat.')),
                 );
               }
             },
-            child: Text(widget.bookingButtonText),
+            child: isLoading
+                ? const CircularProgressIndicator(color: Colors.white) // Show a progress indicator
+                : Text(widget.bookingButtonText), // Show button text if not loading
           ),
         ],
       ),
     );
   }
 }
+
+
+
+
+// class _BottomSeatSelectionContainerState
+//     extends State<BottomSeatSelectionContainer> {
+//   int selectedSeats = 0;
+//
+//   void updateSelectedSeats(int count) {
+//     setState(() {
+//       selectedSeats = count;
+//     });
+//   }
+//
+//   void handleRequestRide(BuildContext context) async {
+//     double amountToBePaid = widget.ride['pricePerSeat'] * selectedSeats;
+//
+//     String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
+//     debugPrint('Current User ID: $currentUserId');
+//
+//     // Prepare the request data
+//     var requestData = {
+//       'passengerId': currentUserId, // Replace with actual current user ID
+//       'seatsRequested': selectedSeats,
+//       'pickupCoordinate': widget.userPickupCoordinate,
+//       'dropoffCoordinate': widget.userDropoffCoordinate,
+//       'amount': amountToBePaid, // Store the amount
+//       'paidStatus': false,
+//     };
+//
+//     // Add to "ride requests" array in Firestore
+//     var rideRef = FirebaseFirestore.instance.collection('rides').doc(widget.ride.id);
+//
+//     try {
+//       await rideRef.update({
+//         'rideRequests': FieldValue.arrayUnion([requestData]),
+//       });
+//       debugPrint("Ride request successfully added.");
+//       // Redirect to the Request Sent page
+//       // Navigator.push(
+//       //   context,
+//       //   MaterialPageRoute(builder: (context) => RequestSentPage()),
+//       // );
+//
+//       debugPrint("Redirecting to Request sent page.....");
+//     } catch (e) {
+//       debugPrint("Failed to add ride request: $e");
+//       // Optionally, show an error message to the user
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         const SnackBar(
+//           content: Text('Failed to send ride request. Please try again.'),
+//           backgroundColor: Colors.red,
+//         ),
+//       );
+//     }
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Container(
+//       padding: EdgeInsets.all(16.0),
+//       child: Row(
+//         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//         children: [
+//           // Seat selection button logic
+//           Row(
+//             children: [
+//               TextButton(
+//                 onPressed: () {
+//                   showModalBottomSheet(
+//                     context: context,
+//                     builder: (BuildContext context) {
+//                       return SeatSelectionBottomSheet(
+//                         availableSeats: widget.availableSeats,
+//                         initialSeats: selectedSeats,
+//                         onUpdate: updateSelectedSeats,
+//                       );
+//                     },
+//                   );
+//                 },
+//                 child: Row(
+//                   children: [
+//                     Text(selectedSeats >= 1
+//                         ? "Seats Selected: ${selectedSeats.toString()}"
+//                         : "Select Seats"),
+//                     const Icon(Icons.keyboard_arrow_down),
+//                   ],
+//                 ),
+//               ),
+//             ],
+//           ),
+//
+//           // Main action button
+//           ElevatedButton(
+//             style: ButtonStyle(
+//               backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
+//               foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+//             ),
+//             onPressed: () {
+//               if (selectedSeats > 0) {
+//                 // Determine the action based on rideBookingType
+//                 if (widget.rideBookingType == "Request") {
+//                   handleRequestRide(context);
+//                 } else {
+//                   // Proceed to the confirmation page for instant booking
+//                   Navigator.push(
+//                     context,
+//                     MaterialPageRoute(
+//                       builder: (context) => ConfirmBookingPage(
+//                         ride: widget.ride,
+//                         driverDetails: widget.driver,
+//                         selectedSeats: selectedSeats,
+//                         userPickupCoordinate: widget.userPickupCoordinate,
+//                         userDropoffCoordinate: widget.userDropoffCoordinate,
+//                       ),
+//                     ),
+//                   );
+//                 }
+//               } else {
+//                 // Show a warning message
+//                 ScaffoldMessenger.of(context).showSnackBar(
+//                   const SnackBar(content: Text('Please select at least one seat.')),
+//                 );
+//               }
+//             },
+//             child: Text(widget.bookingButtonText),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
 
 
 class SeatSelectionBottomSheet extends StatefulWidget {
