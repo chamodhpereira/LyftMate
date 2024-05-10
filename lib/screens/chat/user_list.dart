@@ -112,7 +112,7 @@ class _UserListState extends State<UserList> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Messages"),
+        title: Text("Messagessss"),
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
         elevation: 0.5,
@@ -197,46 +197,43 @@ class _UserListState extends State<UserList> {
     );
   }
 
-  // build a list item for each user
+
   Widget _buildUserListItem(String userId) {
     return StreamBuilder<DocumentSnapshot>(
       stream: FirebaseFirestore.instance.collection('users').doc(userId).snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return ListTile(
-            title: Text("Loading..."),
-          );
+          return const ListTile(title: Text("Loading..."));
         } else if (snapshot.hasError) {
-          return ListTile(
-            title: Text("Error"),
-          );
+          return const ListTile(title: Text("Error"));
         } else {
+          // Safely get the user data map
           Map<String, dynamic>? userData = snapshot.data?.data() as Map<String, dynamic>?;
 
           if (userData != null) {
+            // Extract the profile image URL if it exists, otherwise use null
+            final String? profileImageUrl = userData.containsKey('profileImageUrl') && userData['profileImageUrl'] != null
+                ? userData['profileImageUrl'] as String
+                : null;
+
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 0),
               child: ListTile(
                 dense: false,
-                leading: const CircleAvatar(
-                  child: Icon(
-                    Icons.person,   // TODO: get user profile image as network image from model
+                leading: CircleAvatar(
+                  radius: 24, // Adjust the radius as needed
+                  backgroundImage: profileImageUrl != null
+                      ? NetworkImage(profileImageUrl)
+                      : null, // Use the network image if available
+                  child: profileImageUrl == null
+                      ? const Icon(
+                    Icons.person,
                     size: 25.0,
-                  ),
+                  )
+                      : null, // Fallback to an icon if no image is available
                 ),
                 title: Text("${userData['firstName']} ${userData['lastName']}"),
-                // onTap: () {   // working commented to add dash chat
-                //   Navigator.push(
-                //     context,
-                //     MaterialPageRoute(
-                //       builder: (context) => ChatPage(
-                //         receiverUserEmail: userData['email'] ?? "",
-                //         receiverUserID: userId,
-                //       ),
-                //     ),
-                //   );
-                // },
-                onTap: () {   // working commented to add dash chat
+                onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -250,141 +247,73 @@ class _UserListState extends State<UserList> {
               ),
             );
           } else {
-            return ListTile(
-              title: Text("User not found"),
-            );
+            return const ListTile(title: Text("User not found"));
           }
         }
       },
     );
   }
-}
 
 
-
-
-
-// workig i guessss but no sent user retreieval
-// class UserList extends StatefulWidget {
-//   const UserList({super.key});
-//
-//   @override
-//   State<UserList> createState() => _UserListState();
-// }
-//
-// class _UserListState extends State<UserList> {
-//   final FirebaseAuth _auth = FirebaseAuth.instance;
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text("Chat List"),
-//       ),
-//       body: SafeArea(
-//         child: _buildUserList(),
-//       ),
-//     );
-//   }
-//
-//   // build a list of user except the current logged user
-//   Widget _buildUserList() {
-//     return StreamBuilder<QuerySnapshot>(
-//       stream: FirebaseFirestore.instance.collection('users').snapshots(),
-//       builder: (context, snapshot) {
-//         if (snapshot.hasError) {
-//           return const Text('error');
-//         }
-//         if (snapshot.connectionState == ConnectionState.waiting) {
-//           return const Text("loading....");
-//         }
-//         List<Widget> userWidgets = snapshot.data!.docs
-//             .map<Widget>((doc) => _buildUserListItem(doc))
-//             .toList();
-//         return ListView(
-//           children: userWidgets,
-//         );
-//       },
-//     );
-//   }
-//
-//   Widget _buildUserListItem(DocumentSnapshot document) {
-//     // Extract document data
-//     Map<String, dynamic>? data = document.data() as Map<String, dynamic>?;
-//
-//     // Ensure document data is not null
-//     if (data != null) {
-//       print("User data: $data"); // Print document data to check its content
-//
-//       // Check if the 'userID' field exists
-//       if (data.containsKey("userID")) {
-//         // If the 'userID' field exists, proceed
-//         // Check if the 'userID' field is not empty
-//         if (data["userID"] != null && data["userID"].toString().isNotEmpty) {
-//           // If the 'userID' is not empty, proceed
-//           // Check if the user is not the current logged-in user
-//           if (_auth.currentUser!.uid != data["userID"]) {
-//             // If not the current user, build the ListTile
-//             return ListTile(
-//               title: Text("${data["firstName"]} ${data["lastName"]}"), // Displaying full name
-//               onTap: () {
-//                 // Go to chat page
-//                 Navigator.push(
-//                   context,
-//                   MaterialPageRoute(
-//                     builder: (context) => ChatPage(
-//                       receiverUserEmail: data['email'] ?? "", // Accessing the 'email' field
-//                       receiverUserID: data['userID'] ?? "", // Accessing the 'userID' field
-//                     ),
-//                   ),
-//                 );
-//               },
-//             );
-//           }
-//         } else {
-//           print("User ID is empty."); // Print a message if the 'userID' field is empty
-//         }
-//       } else {
-//         print("User ID field does not exist."); // Print a message if the 'userID' field is missing
-//       }
-//     }
-//
-//     // Return null if the document data is null or if the conditions are not met
-//     return Container();
-//   }
-
-
-
-  // Widget _buildUserListItem(DocumentSnapshot document) {
-  //   // Extract document data
-  //   Map<String, dynamic>? data = document.data() as Map<String, dynamic>?;
+  // build a list item for each user
+  // Widget _buildUserListItem(String userId) {
+  //   return StreamBuilder<DocumentSnapshot>(
+  //     stream: FirebaseFirestore.instance.collection('users').doc(userId).snapshots(),
+  //     builder: (context, snapshot) {
+  //       if (snapshot.connectionState == ConnectionState.waiting) {
+  //         return ListTile(
+  //           title: Text("Loading..."),
+  //         );
+  //       } else if (snapshot.hasError) {
+  //         return ListTile(
+  //           title: Text("Error"),
+  //         );
+  //       } else {
+  //         Map<String, dynamic>? userData = snapshot.data?.data() as Map<String, dynamic>?;
   //
-  //   // Ensure document data is not null
-  //   if (data != null) {
-  //     // Check if the user is not the current logged-in user
-  //     if (_auth.currentUser!.uid != data["userID"]) {
-  //       // If not the current user, build the ListTile
-  //       return ListTile(
-  //         title: Text("${data["firstName"]} ${data["lastName"]}"), // Displaying full name
-  //         onTap: () {
-  //           // Go to chat page
-  //           Navigator.push(
-  //             context,
-  //             MaterialPageRoute(
-  //               builder: (context) => ChatPage(
-  //                 receiverUserEmail: data['email'] ?? "", // Accessing the 'email' field
-  //                 receiverUserID: data['userID'] ?? "", // Accessing the 'userID' field
+  //         if (userData != null) {
+  //           return Padding(
+  //             padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 0),
+  //             child: ListTile(
+  //               dense: false,
+  //               leading: const CircleAvatar(
+  //                 child: Icon(
+  //                   Icons.person,   // TODO: get user profile image as network image from model
+  //                   size: 25.0,
+  //                 ),
   //               ),
+  //               title: Text("${userData['firstName']} ${userData['lastName']}"),
+  //               // onTap: () {   // working commented to add dash chat
+  //               //   Navigator.push(
+  //               //     context,
+  //               //     MaterialPageRoute(
+  //               //       builder: (context) => ChatPage(
+  //               //         receiverUserEmail: userData['email'] ?? "",
+  //               //         receiverUserID: userId,
+  //               //       ),
+  //               //     ),
+  //               //   );
+  //               // },
+  //               onTap: () {   // working commented to add dash chat
+  //                 Navigator.push(
+  //                   context,
+  //                   MaterialPageRoute(
+  //                     builder: (context) => DashChatPage(
+  //                       receiverUserEmail: userData['email'] ?? "",
+  //                       receiverUserID: userId,
+  //                     ),
+  //                   ),
+  //                 );
+  //               },
   //             ),
   //           );
-  //         },
-  //       );
-  //     }
-  //   }
-  //
-  //   // If the document data is null or the current user, return an empty container
-  //   return Container();
+  //         } else {
+  //           return const ListTile(
+  //             title: Text("User not found"),
+  //           );
+  //         }
+  //       }
+  //     },
+  //   );
   // }
-
-
-// }
+}
