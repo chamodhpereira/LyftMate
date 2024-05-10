@@ -259,11 +259,12 @@ class _UserRidesState extends State<UserRides>
                               ridesSnapshot) {
                         if (ridesSnapshot.connectionState ==
                             ConnectionState.waiting) {
-                          return Center(child: CircularProgressIndicator());
+                          return const Center(
+                              child: CircularProgressIndicator());
                         }
                         if (!ridesSnapshot.hasData ||
                             ridesSnapshot.data!.isEmpty) {
-                          return Center(
+                          return const Center(
                               child: Text('No ride details available'));
                         }
 
@@ -273,7 +274,7 @@ class _UserRidesState extends State<UserRides>
                           if (_selectedStatus == RideStatus.Cancelled) {
                             return ride['rideStatus'] == 'Cancelled';
                           } else if (_selectedStatus == RideStatus.Pending) {
-                            return ride['rideStatus'] == 'pending';
+                            return ride['rideStatus'] == 'Pending';
                           } else if (_selectedStatus == RideStatus.InProgress) {
                             return ride['rideStatus'] == 'In Progress';
                           }
@@ -317,8 +318,8 @@ class _UserRidesState extends State<UserRides>
       if (rideSnapshot.exists) {
         print("Ride with ID $rideId exists");
         // Fetch driver details using driverId from ride details
-        String driverId = (rideSnapshot.data()
-            as Map<String, dynamic>)['driverId'];
+        String driverId =
+            (rideSnapshot.data() as Map<String, dynamic>)['driverId'];
         print("Fetching user details for driver ID: $driverId");
         DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
             .collection('users')
@@ -871,7 +872,8 @@ class _UserRidesState extends State<UserRides>
     // Extract driver details
     Map<String, dynamic> driverDetails = rideData['driverDetails'];
     String driverName =
-        driverDetails['firstName'] + " " + driverDetails['lastName'] ?? 'Unknown';
+        driverDetails['firstName'] + " " + driverDetails['lastName'] ??
+            'Unknown';
     double driverRating = driverDetails['rating'] ?? 0.0;
     int numberOfReviews = driverDetails['numberOfReviews'] ?? 0;
 
@@ -883,7 +885,7 @@ class _UserRidesState extends State<UserRides>
 
     // Create passenger location maps
     List<Map<String, dynamic>> passengers =
-    List<Map<String, dynamic>>.from(rideData['passengers']);
+        List<Map<String, dynamic>>.from(rideData['passengers']);
     Map<String, LatLng> passengerStartLocations = {};
     Map<String, LatLng> passengerDropLocations = {};
 
@@ -933,20 +935,19 @@ class _UserRidesState extends State<UserRides>
       }
     }
 
-
-
-
-
-    Future<void> sendMultipleRefundRequestEmails(
-        String adminEmail, String rideId, List<Map<String, dynamic>> passengers) async {
-      String username = dotenv.env['EMAIL_USERNAME'] ?? ''; // Load email from .env file
-      String password = dotenv.env['EMAIL_PASSWORD'] ?? ''; // Load password from .env file
+    Future<void> sendMultipleRefundRequestEmails(String adminEmail,
+        String rideId, List<Map<String, dynamic>> passengers) async {
+      String username =
+          dotenv.env['EMAIL_USERNAME'] ?? ''; // Load email from .env file
+      String password =
+          dotenv.env['EMAIL_PASSWORD'] ?? ''; // Load password from .env file
 
       final smtpServer = gmail(username, password); // Using Gmail SMTP
       final messageBody = StringBuffer();
 
       messageBody.writeln('Dear Refund Department,');
-      messageBody.writeln('\nA request to refund passengers for the canceled ride has been made:');
+      messageBody.writeln(
+          '\nA request to refund passengers for the canceled ride has been made:');
       messageBody.writeln('\n**Ride Details:**');
       messageBody.writeln('- Ride ID: $rideId');
       messageBody.writeln('\n**Passengers to Refund:**');
@@ -965,7 +966,8 @@ class _UserRidesState extends State<UserRides>
         }
       }
 
-      messageBody.writeln('Please process these refund requests at your earliest convenience.\n');
+      messageBody.writeln(
+          'Please process these refund requests at your earliest convenience.\n');
       messageBody.writeln('Best Regards,\nLyftMate App Team');
 
       final message = mailer.Message()
@@ -982,13 +984,15 @@ class _UserRidesState extends State<UserRides>
       }
     }
 
-
     void cancelRide() async {
       // Show confirmation dialog
       bool confirmCancel = await showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text('Confirm Ride Cancellation', style: TextStyle(fontSize: 18.0),),
+          title: Text(
+            'Confirm Ride Cancellation',
+            style: TextStyle(fontSize: 18.0),
+          ),
           content: Text('Are you sure you want to cancel the ride?'),
           actions: <Widget>[
             TextButton(
@@ -1007,11 +1011,9 @@ class _UserRidesState extends State<UserRides>
 
       // If user confirms cancellation, cancel the ride
       if (confirmCancel == true) {
-
-
-        String? adminEmail = dotenv.env['ADMIN_EMAIL']; // Replace with the correct admin email
+        String? adminEmail =
+            dotenv.env['ADMIN_EMAIL']; // Replace with the correct admin email
         await sendMultipleRefundRequestEmails(adminEmail!, rideId, passengers);
-
 
         // Update ride status to 'Cancelled' in Firestore
         await FirebaseFirestore.instance
@@ -1029,21 +1031,21 @@ class _UserRidesState extends State<UserRides>
       }
     }
 
-
     return GestureDetector(
       onTap: rideData['rideStatus'].toUpperCase() == "COMPLETED"
           ? null
           : () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                MyPublishedRideDetailsPage(rideId: rideId),
-          ),
-        );
-      },
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      MyPublishedRideDetailsPage(rideId: rideId),
+                ),
+              );
+            },
       child: Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
         elevation: 4.0,
         margin: EdgeInsets.all(10.0),
         child: Padding(
@@ -1057,7 +1059,8 @@ class _UserRidesState extends State<UserRides>
                 children: [
                   Text(
                     "Ride No. #$rideId",
-                    style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold),
+                    style:
+                        TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold),
                   ),
                   Flexible(
                     child: Chip(
@@ -1065,11 +1068,13 @@ class _UserRidesState extends State<UserRides>
                         rideData['rideStatus'].toUpperCase(),
                         style: TextStyle(fontSize: 10),
                       ),
-                      backgroundColor: rideData['rideStatus'].toUpperCase() == 'PENDING'
-                          ? Colors.orange
-                          : rideData['rideStatus'].toUpperCase() == 'IN PROGRESS'
-                          ? Colors.green
-                          : Colors.grey,
+                      backgroundColor:
+                          rideData['rideStatus'].toUpperCase() == 'PENDING'
+                              ? Colors.orange
+                              : rideData['rideStatus'].toUpperCase() ==
+                                      'IN PROGRESS'
+                                  ? Colors.green
+                                  : Colors.grey,
                     ),
                   ),
                 ],
@@ -1080,7 +1085,8 @@ class _UserRidesState extends State<UserRides>
               Row(
                 children: [
                   CircleAvatar(
-                    backgroundImage: NetworkImage(driverDetails['profileImageUrl']),
+                    backgroundImage:
+                        NetworkImage(driverDetails['profileImageUrl']),
                     child: driverDetails['profileImageUrl'].isEmpty
                         ? Icon(Icons.person)
                         : null,
@@ -1108,7 +1114,8 @@ class _UserRidesState extends State<UserRides>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text("Start Location",
-                                  style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+                                  style: TextStyle(
+                                      color: Colors.grey[600], fontSize: 12)),
                               Text(startingPoint),
                             ],
                           ),
@@ -1134,7 +1141,8 @@ class _UserRidesState extends State<UserRides>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text("End Location",
-                                  style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+                                  style: TextStyle(
+                                      color: Colors.grey[600], fontSize: 12)),
                               Text(endingPoint),
                             ],
                           ),
@@ -1180,7 +1188,8 @@ class _UserRidesState extends State<UserRides>
                   ),
                   Text(
                     'LKR${pricePerSeat.toStringAsFixed(2)} Per Passenger',
-                    style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        color: Colors.black, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
@@ -1189,7 +1198,8 @@ class _UserRidesState extends State<UserRides>
                 children: [
                   // Leave Ride Button
                   Visibility(
-                    visible: rideStatus != "cancelled"  && rideStatus != "Completed",
+                    visible:
+                        rideStatus != "cancelled" && rideStatus != "Completed",
                     // visible: rideStatus == "pending" || rideStatus == "In Progress",
                     child: TextButton(
                       onPressed: () {
@@ -1203,47 +1213,49 @@ class _UserRidesState extends State<UserRides>
                   ),
                   // Track Ride Button
                   Visibility(
-                    visible: rideStatus != "cancelled" && rideStatus != "Completed",
+                    visible:
+                        rideStatus != "cancelled" && rideStatus != "Completed",
                     // visible: rideStatus == "pending" || rideStatus == "In Progress",
 
                     child: ElevatedButton(
                       onPressed: rideStatus == "Cancelled"
                           ? null
                           : () {
-                        // Construct the URL for the Google Maps directions
-                        if (rideStatus == "In Progress") {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  DriverRideTrackingScreen(
-                                    // rideId: "A1IxPYLCBhR9JUqPbFhD",
-                                    rideId: rideId,
-                                    origin: points.first,
-                                    destination: points.last,
-                                    encodedPolyline: encodedPolyline,
-                                    passengerStartLocations:
-                                    passengerStartLocations,
-                                    passengerDropLocations:
-                                    passengerDropLocations,
+                              // Construct the URL for the Google Maps directions
+                              if (rideStatus == "In Progress") {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        DriverRideTrackingScreen(
+                                      // rideId: "A1IxPYLCBhR9JUqPbFhD",
+                                      rideId: rideId,
+                                      origin: points.first,
+                                      destination: points.last,
+                                      encodedPolyline: encodedPolyline,
+                                      passengerStartLocations:
+                                          passengerStartLocations,
+                                      passengerDropLocations:
+                                          passengerDropLocations,
+                                    ),
                                   ),
-                            ),
-                          );
-                          debugPrint(
-                              "GET DIRECTIONSSSSSSSSSSSSSSSSSSSSSSSSSSS BTN PRESSED");
-                        } else {
-                          _startJourney();
-                        }
-                      },
+                                );
+                                debugPrint(
+                                    "GET DIRECTIONSSSSSSSSSSSSSSSSSSSSSSSSSSS BTN PRESSED");
+                              } else {
+                                _startJourney();
+                              }
+                            },
                       style: ButtonStyle(
                         // Set background color to grey when button is disabled
                         backgroundColor:
-                        MaterialStateProperty.resolveWith<Color?>((states) {
+                            MaterialStateProperty.resolveWith<Color?>((states) {
                           return rideStatus == "Cancelled"
                               ? Colors.grey
                               : Colors.green;
                         }),
-                        foregroundColor: MaterialStateProperty.resolveWith<Color?>((states) {
+                        foregroundColor:
+                            MaterialStateProperty.resolveWith<Color?>((states) {
                           return rideStatus == "Cancelled"
                               ? Colors.grey
                               : Colors.white;
@@ -1262,7 +1274,6 @@ class _UserRidesState extends State<UserRides>
       ),
     );
   }
-
 
   /// workingggggggggggggggggggg
   Widget _buildBookedRideCard(Map<String, dynamic> rideData, String rideId) {
@@ -1311,16 +1322,21 @@ class _UserRidesState extends State<UserRides>
 
     // Extract driver details
     Map<String, dynamic> driverDetails = rideData['driverDetails'];
-    String driverName = driverDetails['firstName'] + " " + driverDetails['lastName'] ?? 'Unknown';
+    String driverName =
+        driverDetails['firstName'] + " " + driverDetails['lastName'] ??
+            'Unknown';
     double driverRating = driverDetails['rating'] ?? 0.0;
     int numberOfReviews = driverDetails['numberOfReviews'] ?? 0;
 
     // bool isInProgress = true;
 
-
+    List<String> pickedUpPassengers =
+        List<String>.from(rideData['pickedUpPassengers'] ?? []);
+    bool isPickedUp = pickedUpPassengers.contains(user?.uid);
 
     // Assume 'droppedPassengers' is a list of UIDs who have completed the ride
-    List<String> droppedPassengers = List<String>.from(rideData['droppedOffPassengers'] ?? []);
+    List<String> droppedPassengers =
+        List<String>.from(rideData['droppedOffPassengers'] ?? []);
     bool isCompleted = droppedPassengers.contains(user?.uid);
 
     // Set ride status to "Completed" if current user's UID is found in droppedPassengers
@@ -1378,9 +1394,16 @@ class _UserRidesState extends State<UserRides>
     //   });
     // }
 
-    Future<void> sendRefundRequestEmail(String adminEmail, String passengerEmail, String paymentId, String rideId, double amount) async {
-      String username = dotenv.env['EMAIL_USERNAME'] ?? ''; // Load email from .env file
-      String password = dotenv.env['EMAIL_PASSWORD'] ?? ''; // Load password from .env file
+    Future<void> sendRefundRequestEmail(
+        String adminEmail,
+        String passengerEmail,
+        String paymentId,
+        String rideId,
+        double amount) async {
+      String username =
+          dotenv.env['EMAIL_USERNAME'] ?? ''; // Load email from .env file
+      String password =
+          dotenv.env['EMAIL_PASSWORD'] ?? ''; // Load password from .env file
 
       final smtpServer = gmail(username, password); // Using Gmail SMTP
       final message = mailer.Message()
@@ -1415,9 +1438,6 @@ LyftMate App Team
         print('Failed to send refund request email: $e');
       }
     }
-
-
-
 
     // void _leaveRide() async {
     //   if (user?.uid == null) return;
@@ -1463,12 +1483,12 @@ LyftMate App Team
     //   });
     // }
 
-
     void _leaveRide(String adminEmail) async {
       if (user?.uid == null) return;
 
       // Find the passenger index
-      int passengerIndex = passengers.indexWhere((p) => p['userId'] == user?.uid);
+      int passengerIndex =
+          passengers.indexWhere((p) => p['userId'] == user?.uid);
       if (passengerIndex == -1) return; // Passenger not found
 
       // Extract the number of seats they had booked
@@ -1482,7 +1502,8 @@ LyftMate App Team
 
       if (paymentId != null && paidStatus) {
         // Send a refund request email
-        await sendRefundRequestEmail(adminEmail, user?.email ?? '', paymentId, rideId, amount);
+        await sendRefundRequestEmail(
+            adminEmail, user?.email ?? '', paymentId, rideId, amount);
       }
 
       // Update the local passengers list
@@ -1490,8 +1511,10 @@ LyftMate App Team
 
       // Firestore transaction to ensure atomic updates
       await FirebaseFirestore.instance.runTransaction((transaction) async {
-        DocumentReference rideRef = FirebaseFirestore.instance.collection('rides').doc(rideId);
-        DocumentReference userRef = FirebaseFirestore.instance.collection('users').doc(user?.uid);
+        DocumentReference rideRef =
+            FirebaseFirestore.instance.collection('rides').doc(rideId);
+        DocumentReference userRef =
+            FirebaseFirestore.instance.collection('users').doc(user?.uid);
 
         // Get the current state of the ride
         DocumentSnapshot rideSnapshot = await transaction.get(rideRef);
@@ -1500,7 +1523,8 @@ LyftMate App Team
         }
 
         // Ensure the data is in the correct format
-        Map<String, dynamic> rideData = rideSnapshot.data()! as Map<String, dynamic>;
+        Map<String, dynamic> rideData =
+            rideSnapshot.data()! as Map<String, dynamic>;
 
         // Calculate new available seats
         int currentAvailableSeats = rideData['seats'] ?? 0;
@@ -1518,8 +1542,6 @@ LyftMate App Team
         });
       });
     }
-
-
 
     Color backgroundColor;
     if (rideStatus.toUpperCase() == "PENDING") {
@@ -1548,12 +1570,16 @@ LyftMate App Team
                 children: [
                   Text(
                     "Ride No. #$rideId",
-                    style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold),
+                    style:
+                        TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold),
                   ),
-                  Flexible( // Wrap the Chip with Flexible to prevent overflow
+                  Flexible(
+                    // Wrap the Chip with Flexible to prevent overflow
                     child: Chip(
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap, // Reduce tap target size
-                      padding: EdgeInsets.symmetric(horizontal: 10), // Reduce the internal padding
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      // Reduce tap target size
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      // Reduce the internal padding
                       label: Text(
                         rideStatus.toUpperCase(),
                         style: TextStyle(fontSize: 10), // Smaller font size
@@ -1561,8 +1587,8 @@ LyftMate App Team
                       backgroundColor: rideStatus.toUpperCase() == 'PENDING'
                           ? Colors.orange
                           : rideStatus.toUpperCase() == 'IN PROGRESS'
-                          ? Colors.green
-                          : Colors.grey,
+                              ? Colors.green
+                              : Colors.grey,
                     ),
                   ),
                 ],
@@ -1634,19 +1660,19 @@ LyftMate App Team
                     style: TextStyle(fontSize: 12, color: Colors.grey[600])),
               ],
             ),
-            Divider(),
+            const Divider(),
             Padding(
-              padding: EdgeInsets.symmetric(vertical: 8.0),
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   // Text(formattedDate, style: TextStyle(color: Colors.grey[600])),
                   Text(
                     DateFormat('EEE, d MMM yyyy').format(rideDate),
-                    style: TextStyle(color: Colors.grey),
+                    style: const TextStyle(color: Colors.grey),
                   ),
                   Text('LKR${pricePerSeat.toStringAsFixed(2)} Per Passenger',
-                      style: TextStyle(
+                      style: const TextStyle(
                           color: Colors.black, fontWeight: FontWeight.bold)),
                 ],
               ),
@@ -1655,21 +1681,33 @@ LyftMate App Team
               alignment: MainAxisAlignment.spaceBetween,
               children: [
                 // Leave Ride Button
-                if (isPending && !isCompleted)
-                // if (isInProgress && !isCompleted)
+                // if (isPending && !isCompleted)
+                // // if (isInProgress && !isCompleted)
+                //   TextButton(
+                //     onPressed: () => _leaveRide(dotenv.env['ADMIN_EMAIL']!),
+                //     style: TextButton.styleFrom(foregroundColor: Colors.red),
+                //     child: const Text('Leave Ride'),
+                //   ),
+
+                // Check if the ride is "PENDING" or "IN PROGRESS," the user isn't picked up, and the ride isn't completed
+                if ((isPending || isInProgress) && !isPickedUp && !isCompleted)
+
                   TextButton(
                     onPressed: () => _leaveRide(dotenv.env['ADMIN_EMAIL']!),
-                    child: Text('Leave Ride'),
                     style: TextButton.styleFrom(foregroundColor: Colors.red),
+                    child: const Text('Leave Ride'),
                   ),
+
                 // Track Ride Button
                 Visibility(
                   // visible: true,
                   visible: isInProgress && !isCompleted,
                   child: ElevatedButton(
                     style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
-                      foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+                      backgroundColor:
+                          MaterialStateProperty.all<Color>(Colors.green),
+                      foregroundColor:
+                          MaterialStateProperty.all<Color>(Colors.white),
                     ),
                     onPressed: () {
                       // Track ride logic
