@@ -40,7 +40,6 @@ class _ConfirmRouteState extends State<ConfirmRoute> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     // RideProvider rideProvider = Provider.of<RideProvider>(context, listen: false);
     _kPickupLocation = widget.pickupLocation!;
@@ -48,7 +47,6 @@ class _ConfirmRouteState extends State<ConfirmRoute> {
 
     // getTotalDistanceAndDuration();
 
-    // TODO - try to use traffic api??
 
     _initializeRideDistance();
 

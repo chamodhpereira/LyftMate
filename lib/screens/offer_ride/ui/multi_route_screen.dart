@@ -15,6 +15,7 @@ import '../../../constants/colors.dart';
 import '../../../models/offer_ride.dart';
 import '../../../services/directions/directions_service.dart';
 import '../../ride/ride_options_screen.dart';
+import 'edit_route_screen.dart';
 
 class RouteInfo {
   final String distance;
@@ -54,9 +55,17 @@ class _NewMapsRouteState extends State<NewMapsRoute> {
   late LatLng _kDropLocation;
   LatLng? _currentP;
 
+  List<LatLng> waypoints = []; // List of waypoints for the route
+
   Map<PolylineId, Polyline> polylines = {};
   Map<PolylineId, RouteInfo> routeInfo = {}; // Holds route information
   PolylineId? _selectedPolylineId;
+
+
+  // Route options
+  bool avoidHighways = false;
+  bool avoidTolls = false;
+  bool avoidFerries = false;
 
   @override
   void initState() {
@@ -71,32 +80,87 @@ class _NewMapsRouteState extends State<NewMapsRoute> {
     ride.resetPolylinePoints();
     super.dispose();
   }
-  /// ----------------------- workingggg commented to get encoded polyline ----------------
-  // Future<void> _fetchDirectionsAndPolylines() async {
-  //   List<Map<String, dynamic>> results = await DirectionsService().getDirections(
-  //     _kPickupLocation,
-  //     _kDropLocation,
+
+  // Future<void> _navigateToEditRoute() async {
+  //   // Navigate to the Edit Route page and await the waypoints result
+  //   final List<LatLng>? updatedWaypoints = await Navigator.push(
+  //     context,
+  //     MaterialPageRoute(
+  //       builder: (context) => EditRoutePage(
+  //         initialPickupLocation: _kPickupLocation,
+  //         initialDropoffLocation: _kDropLocation,
+  //       ),
+  //     ),
   //   );
   //
-  //   for (var i = 0; i < results.length; i++) {
-  //     List<LatLng> polylineCoordinates = decodePolyline(results[i]['polyline']);
-  //     String distance = results[i]['distance'].toString(); // Convert int to String
-  //     String duration = results[i]['duration'].toString(); // Convert int to String
-  //     // String summary = results[i]['summary'];
-  //     // print("SUMAAAAAARRRRYYYYYYY: $summary");
-  //     generatePolylineFromPoints(
-  //       polylineCoordinates,
-  //       i.toString(),
-  //       distance,
-  //       duration,
-  //       // summary,
-  //     );
-  //     print("Start coordinate of Polyline $i: ${polylineCoordinates.first}");
-  //     print("End coordinate of Polyline $i: ${polylineCoordinates.last}");
-  //     // print("Number of polylines stored: ${polylines.length}");
-  //     // print("Polylines $i: $polylines[i]");
+  //   // If new waypoints are selected, update and fetch new directions
+  //   if (updatedWaypoints != null) {
+  //     setState(() {
+  //       waypoints = updatedWaypoints;
+  //     });
+  //     _fetchDirectionsAndPolylines();
   //   }
   // }
+
+  // Future<void> _navigateToEditRoute() async {
+  //   // Navigate to the Edit Route page and await the route options result
+  //   final Map<String, dynamic>? routeOptions = await Navigator.push(
+  //     context,
+  //     MaterialPageRoute(
+  //       builder: (context) => EditRoutePage(
+  //         initialPickupLocation: _kPickupLocation,
+  //         initialDropoffLocation: _kDropLocation,
+  //       ),
+  //     ),
+  //   );
+  //
+  //   // If route options are selected, update and fetch new directions
+  //   if (routeOptions != null) {
+  //     final List<LatLng>? updatedWaypoints = routeOptions['waypoints'];
+  //     final bool avoidHighways = routeOptions['avoidHighways'];
+  //     final bool avoidTolls = routeOptions['avoidTolls'];
+  //     final bool avoidFerries = routeOptions['avoidFerries'];
+  //
+  //     setState(() {
+  //       waypoints = updatedWaypoints ?? [];
+  //       this.avoidHighways = avoidHighways;
+  //       this.avoidTolls = avoidTolls;
+  //       this.avoidFerries = avoidFerries;
+  //     });
+  //
+  //     _fetchDirectionsAndPolylines();
+  //   }
+  // }
+
+  Future<void> _navigateToEditRoute() async {
+    // Pass the initial checkbox states to EditRoutePage
+    final Map<String, dynamic>? result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditRoutePage(
+          initialPickupLocation: _kPickupLocation,
+          initialDropoffLocation: _kDropLocation,
+          initialAvoidHighways: avoidHighways,
+          initialAvoidTolls: avoidTolls,
+          initialAvoidFerries: avoidFerries,
+        ),
+      ),
+    );
+
+    // Receive the updated route options and waypoints
+    if (result != null) {
+      setState(() {
+        waypoints = result['waypoints'] ?? [];
+        avoidHighways = result['avoidHighways'];
+        avoidTolls = result['avoidTolls'];
+        avoidFerries = result['avoidFerries'];
+      });
+
+      // Fetch and apply the new directions using the updated options
+      _fetchDirectionsAndPolylines();
+    }
+  }
+
 
   Future<void> _fetchDirectionsAndPolylines() async {
 
@@ -105,9 +169,17 @@ class _NewMapsRouteState extends State<NewMapsRoute> {
     //   _kDropLocation,
     // );
 
+    final bool avoidHighways = this.avoidHighways;
+    final bool avoidTolls = this.avoidTolls;
+    final bool avoidFerries = this.avoidFerries;
+
     List<Map<String, dynamic>> results = await DirectionsService().getDirections(
       _kPickupLocation,
       _kDropLocation,
+      waypoints,
+      avoidHighways: avoidHighways,
+      avoidTolls: avoidTolls,
+      avoidFerries: avoidFerries,
     );
 
     for (var i = 0; i < results.length; i++) {
@@ -174,10 +246,18 @@ class _NewMapsRouteState extends State<NewMapsRoute> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Select Route"),
+        title: const Text("Select Route"),
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
         elevation: 0.5,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            // icon: const Icon(Icons.edit),
+            tooltip: 'Edit Route',
+            onPressed: _navigateToEditRoute,
+          ),
+        ],
       ),
       body: SafeArea(
         child: Stack(
@@ -305,14 +385,14 @@ class _NewMapsRouteState extends State<NewMapsRoute> {
         ),
       ),
 
-      floatingActionButton:  FloatingActionButton(
-        onPressed: () {
-          // This could open a dialog or use the current map center as a new waypoint
-          // _addWaypoint(_currentMapCenter);
-        },
-        tooltip: 'Add Waypoint',
-        child: Icon(Icons.add_location),
-      ),
+      // floatingActionButton:  FloatingActionButton(
+      //   onPressed: () {
+      //     // This could open a dialog or use the current map center as a new waypoint
+      //     // _addWaypoint(_currentMapCenter);
+      //   },
+      //   tooltip: 'Add Waypoint',
+      //   child: Icon(Icons.add_location),
+      // ),
     );
 
   }

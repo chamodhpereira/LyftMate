@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lyft_mate/screens/offer_ride/bloc/offer_ride_bloc.dart';
+import 'package:lyft_mate/screens/vehicles/vehicle_screen.dart';
 
 import '../../../models/offer_ride.dart';
 import '../../home/bloc/home_bloc.dart';
@@ -72,77 +73,213 @@ class _OfferRideScreenState extends State<OfferRideScreen> {
   }
 
   // Method to show the bottom sheet for vehicle selection
-  void _showVehicleSelection() {
-    showModalBottomSheet(
-      context: context,
-      builder: (BuildContext context) {
-        return vehicleList.isEmpty
-            ? Center(
-          child: ElevatedButton(
-            onPressed: () {
-              // Logic to add a new vehicle
-              // For example, navigate to a vehicle addition screen
-            },
-            child: Text('Add New Vehicle'),
-          ),
-        )
-            : ListView.builder(
-          itemCount: vehicleList.length,
-          itemBuilder: (BuildContext context, int index) {
-            return ListTile(
-              title: Text(vehicleList[index]),
-              onTap: () {
-                setState(() {
-                  selectedVehicle = vehicleList[index];
-                  ride.setVehicle(selectedVehicle!);
-                });
-                Navigator.pop(context);
-              },
-            );
-          },
-        );
-      },
-    );
-  }
-
-  // Future<void> _selectVehicle(BuildContext context) async {
-  //   final selected = await showModalBottomSheet<String>(
+  // void _showVehicleSelection() {
+  //   showModalBottomSheet(
   //     context: context,
   //     builder: (BuildContext context) {
-  //       return Container(
-  //         height: 200,
+  //       return vehicleList.isEmpty
+  //           ? Center(
+  //         child: ElevatedButton(
+  //           onPressed: () {
+  //             // Logic to add a new vehicle
+  //             // For example, navigate to a vehicle addition screen
+  //           },
+  //           child: Text('Add New Vehicle'),
+  //         ),
+  //       )
+  //           : ListView.builder(
+  //         itemCount: vehicleList.length,
+  //         itemBuilder: (BuildContext context, int index) {
+  //           return ListTile(
+  //             title: Text(vehicleList[index]),
+  //             onTap: () {
+  //               setState(() {
+  //                 selectedVehicle = vehicleList[index];
+  //                 ride.setVehicle(selectedVehicle!);
+  //               });
+  //               Navigator.pop(context);
+  //             },
+  //           );
+  //         },
+  //       );
+  //     },
+  //   );
+  // }
+
+  // void _showVehicleSelection() async {
+  //   // final bool? vehicleAdded = await Navigator.push<bool?>(
+  //   //   context,
+  //   //   MaterialPageRoute(
+  //   //     builder: (context) => VehicleScreen(),
+  //   //   ),
+  //   // );
+  //   //
+  //   // // If the vehicle was added, reload the list
+  //   // if (vehicleAdded == true) {
+  //   //   _loadUserVehicles();
+  //   // }
+  //
+  //   // Proceed with displaying the updated bottom sheet
+  //   showModalBottomSheet(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return vehicleList.isEmpty
+  //           ? Center(
+  //         child: TextButton.icon(
+  //           icon: const Icon(Icons.add, color: Colors.green),
+  //           label: const Text(
+  //             'Add Vehicle',
+  //             style: TextStyle(color: Colors.green),
+  //           ),
+  //           onPressed: () async {
+  //             final bool? vehicleAdded = await Navigator.push<bool?>(
+  //               context,
+  //               MaterialPageRoute(
+  //                 builder: (context) => VehicleScreen(),
+  //               ),
+  //             );
+  //
+  //             if (vehicleAdded == true) {
+  //               _loadUserVehicles(); // Refresh the list after vehicle addition
+  //             }
+  //
+  //             Navigator.pop(context);
+  //           },
+  //         ),
+  //       )
+  //           : Padding(
+  //         padding: const EdgeInsets.all(8.0),
   //         child: Column(
+  //           mainAxisSize: MainAxisSize.min,
+  //           crossAxisAlignment: CrossAxisAlignment.start,
   //           children: [
-  //             ListTile(
-  //               title: Text('Car'),
-  //               onTap: () {
-  //                 Navigator.pop(context, 'Car');
-  //               },
+  //             const Text(
+  //               'Select Vehicle',
+  //               style: TextStyle(
+  //                 fontSize: 18,
+  //                 fontWeight: FontWeight.bold,
+  //               ),
   //             ),
-  //             ListTile(
-  //               title: Text('Motorcycle'),
-  //               onTap: () {
-  //                 Navigator.pop(context, 'Motorcycle');
-  //               },
-  //             ),
-  //             ListTile(
-  //               title: Text('Bicycle'),
-  //               onTap: () {
-  //                 Navigator.pop(context, 'Bicycle');
-  //               },
+  //             const Divider(),
+  //             Expanded(
+  //               child: ListView.builder(
+  //                 itemCount: vehicleList.length,
+  //                 itemBuilder: (BuildContext context, int index) {
+  //                   return Card(
+  //                     margin: const EdgeInsets.symmetric(vertical: 5.0),
+  //                     elevation: 2.0,
+  //                     child: ListTile(
+  //                       title: Text(vehicleList[index]),
+  //                       onTap: () {
+  //                         setState(() {
+  //                           selectedVehicle = vehicleList[index];
+  //                           ride.setVehicle(selectedVehicle!);
+  //                         });
+  //                         Navigator.pop(context);
+  //                       },
+  //                     ),
+  //                   );
+  //                 },
+  //               ),
   //             ),
   //           ],
   //         ),
   //       );
   //     },
   //   );
-  //   if (selected != null) {
-  //     setState(() {
-  //       selectedVehicle = selected;
-  //       ride.setVehicle(selected);
-  //     });
-  //   }
   // }
+
+
+  void _showVehicleSelection() async {
+    // Proceed with displaying the updated bottom sheet
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      backgroundColor: Colors.white,
+      builder: (BuildContext context) {
+        return vehicleList.isEmpty
+            ? Center(
+          child: TextButton.icon(
+            icon: const Icon(Icons.add, color: Colors.green),
+            label: const Text(
+              'Add Vehicle',
+              style: TextStyle(color: Colors.green, fontSize: 16),
+            ),
+            onPressed: () async {
+              final bool? vehicleAdded = await Navigator.push<bool?>(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => VehicleScreen(),
+                ),
+              );
+
+              if (vehicleAdded == true) {
+                _loadUserVehicles(); // Refresh the list after vehicle addition
+              }
+
+              Navigator.pop(context);
+            },
+          ),
+        )
+            : Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 10,),
+              const Text(
+                'Select Vehicle',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 10,),
+              // const Divider(),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: vehicleList.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return Card(
+                      margin: const EdgeInsets.symmetric(vertical: 8.0),
+                      elevation: 2.0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      child: ListTile(
+                        leading: const Icon(Icons.directions_car, color: Colors.green),
+                        title: Text(
+                          vehicleList[index],
+                          style: const TextStyle(
+                            fontSize: 16,
+                            // fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        onTap: () {
+                          setState(() {
+                            selectedVehicle = vehicleList[index];
+                            ride.setVehicle(selectedVehicle!);
+                          });
+                          Navigator.pop(context);
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -329,7 +466,6 @@ class _OfferRideScreenState extends State<OfferRideScreen> {
                   //   // _handlePublishRideButtonPress();
                   // },
                   onPressed: () {
-                    offerRideBloc.add(OfferRideBtnNavigateEvent());
                     // Check if all fields are filled
                     if (_pickupLocationController.text.isNotEmpty &&
                         _dropoffLocationController.text.isNotEmpty &&

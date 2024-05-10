@@ -6,9 +6,9 @@ class RidePublishedPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.green, // Set the background color to green
+      backgroundColor: Colors.green,
       body: SafeArea(
-        child: Stack( // Use Stack to overlay widgets
+        child: Stack(
           children: [
             Padding(
               padding: const EdgeInsets.only(top: 100.0),
@@ -21,7 +21,7 @@ class RidePublishedPage extends StatelessWidget {
                 ),
               ),
             ),
-            Positioned( // Positioned to move the text exactly below the Lottie animation
+            const Positioned(
               top: 400,
               left: 0,
               right: 0,
@@ -38,7 +38,7 @@ class RidePublishedPage extends StatelessWidget {
                   ),
                   SizedBox(height: 10,),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    padding: EdgeInsets.symmetric(horizontal: 24.0),
                     child: Text(
                       "Passengers can now book and travel with you!",
                       style: TextStyle(
@@ -50,7 +50,7 @@ class RidePublishedPage extends StatelessWidget {
                   ),
                   SizedBox(height: 16,),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    padding: EdgeInsets.symmetric(horizontal: 24.0),
                     child: Text(
                       "Go to 'My rides' section to view and edit your publication.",
                       style: TextStyle(
@@ -75,14 +75,14 @@ class RidePublishedPage extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(24), // Rounded corners
                     ),
-                    minimumSize: Size(double.infinity, 50), // Full width button
+                    minimumSize: const Size(double.infinity, 50), // Full width button
                   ),
-                  onPressed: () {
-                    debugPrint("pressedddd");
-                    Navigator.pop(context);
-                  },
-                  // onPressed: () => Navigator.pushNamedAndRemoveUntil(context, NavigationScreen.routeName, (route) => false,), // Navigate when button is pressed
-                  child: Text(
+                  // onPressed: () {
+                  //   debugPrint("pressedddd");
+                  //   Navigator.pop(context);
+                  // },
+                  onPressed: () => Navigator.pushNamedAndRemoveUntil(context, '/navigationScreen', (route) => false,),
+                  child: const Text(
                     'OK',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
