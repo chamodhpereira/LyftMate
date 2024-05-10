@@ -136,10 +136,12 @@ class _RideOptionsState extends State<RideOptions> {
 
       try {
         await addRideToFirestore(ride);
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => RidePublishedPage()),
-        );
+        if(context.mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => RidePublishedPage()),
+          );
+        }
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: ${e.toString()}')),

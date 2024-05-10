@@ -112,7 +112,7 @@ class _UserListState extends State<UserList> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Messagessss"),
+        title: Text("Messages"),
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
         elevation: 0.5,
@@ -123,29 +123,6 @@ class _UserListState extends State<UserList> {
     );
   }
 
-  // // build a list of users that the current user has messaged with
-  // Widget _buildUserList() {
-  //   return FutureBuilder<List<String>>(
-  //     future: _chatService.getUsersWithMessages(),
-  //     builder: (context, snapshot) {
-  //       if (snapshot.connectionState == ConnectionState.waiting) {
-  //         return Center(child: CircularProgressIndicator());
-  //       } else if (snapshot.hasError) {
-  //         return Center(child: Text('Error: ${snapshot.error}'));
-  //       } else {
-  //         List<String> receiverIds = snapshot.data ?? [];
-  //         return ListView.builder(
-  //           itemCount: receiverIds.length,
-  //           itemBuilder: (context, index) {
-  //             return _buildUserListItem(receiverIds[index]);
-  //           },
-  //         );
-  //       }
-  //     },
-  //   );
-  // }
-
-  // build a list of users that the current user has messaged with
   Widget _buildUserList() {
     return FutureBuilder<List<String>>(
       future: _chatService.getUsersWithMessages(),
@@ -157,8 +134,8 @@ class _UserListState extends State<UserList> {
         } else {
           List<String> receiverIds = snapshot.data ?? [];
           if (receiverIds.isEmpty) {
-            return Padding(
-              padding: const EdgeInsets.all(8.0),
+            return const Padding(
+              padding: EdgeInsets.all(8.0),
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -253,67 +230,4 @@ class _UserListState extends State<UserList> {
       },
     );
   }
-
-
-  // build a list item for each user
-  // Widget _buildUserListItem(String userId) {
-  //   return StreamBuilder<DocumentSnapshot>(
-  //     stream: FirebaseFirestore.instance.collection('users').doc(userId).snapshots(),
-  //     builder: (context, snapshot) {
-  //       if (snapshot.connectionState == ConnectionState.waiting) {
-  //         return ListTile(
-  //           title: Text("Loading..."),
-  //         );
-  //       } else if (snapshot.hasError) {
-  //         return ListTile(
-  //           title: Text("Error"),
-  //         );
-  //       } else {
-  //         Map<String, dynamic>? userData = snapshot.data?.data() as Map<String, dynamic>?;
-  //
-  //         if (userData != null) {
-  //           return Padding(
-  //             padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 0),
-  //             child: ListTile(
-  //               dense: false,
-  //               leading: const CircleAvatar(
-  //                 child: Icon(
-  //                   Icons.person,   // TODO: get user profile image as network image from model
-  //                   size: 25.0,
-  //                 ),
-  //               ),
-  //               title: Text("${userData['firstName']} ${userData['lastName']}"),
-  //               // onTap: () {   // working commented to add dash chat
-  //               //   Navigator.push(
-  //               //     context,
-  //               //     MaterialPageRoute(
-  //               //       builder: (context) => ChatPage(
-  //               //         receiverUserEmail: userData['email'] ?? "",
-  //               //         receiverUserID: userId,
-  //               //       ),
-  //               //     ),
-  //               //   );
-  //               // },
-  //               onTap: () {   // working commented to add dash chat
-  //                 Navigator.push(
-  //                   context,
-  //                   MaterialPageRoute(
-  //                     builder: (context) => DashChatPage(
-  //                       receiverUserEmail: userData['email'] ?? "",
-  //                       receiverUserID: userId,
-  //                     ),
-  //                   ),
-  //                 );
-  //               },
-  //             ),
-  //           );
-  //         } else {
-  //           return const ListTile(
-  //             title: Text("User not found"),
-  //           );
-  //         }
-  //       }
-  //     },
-  //   );
-  // }
 }
