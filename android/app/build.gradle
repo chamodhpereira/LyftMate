@@ -31,10 +31,10 @@ android {
     ndkVersion flutter.ndkVersion
 
     compileOptions {
-//        sourceCompatibility JavaVersion.VERSION_1_8
-//        targetCompatibility JavaVersion.VERSION_1_8
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+//        sourceCompatibility JavaVersion.VERSION_11
+//        targetCompatibility JavaVersion.VERSION_11
     }
 
     kotlinOptions {
@@ -55,6 +55,7 @@ android {
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         multiDexEnabled true
+        resValue "string", "google_maps_api_key", System.getenv("GOOGLE_MAPS_API_KEY")
     }
 
     buildTypes {
