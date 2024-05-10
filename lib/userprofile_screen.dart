@@ -1,194 +1,3 @@
-// import 'dart:io';
-// import 'package:file_picker/file_picker.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:firebase_storage/firebase_storage.dart';
-// import 'package:flutter/material.dart';
-// import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:lyft_mate/editprofile_screen.dart';
-// import 'package:lyft_mate/screens/profile/settings_screen.dart';
-// import 'package:lyft_mate/services/authentication_service.dart';
-// import 'models/user_profile.dart';
-//
-// class UserProfileScreen extends StatefulWidget {
-//   @override
-//   _UserProfileScreenState createState() => _UserProfileScreenState();
-// }
-//
-// class _UserProfileScreenState extends State<UserProfileScreen> {
-//
-//   final AuthenticationService authService = AuthenticationService();
-//
-//   late Future<UserProfile> _futureUserProfile;
-//   late User _currentUser;
-//   String? _profileImageUrl;
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     _currentUser = FirebaseAuth.instance.currentUser!;
-//     _futureUserProfile = fetchUserProfile();
-//   }
-//
-//   Future<UserProfile> fetchUserProfile() async {
-//     String? userId = FirebaseAuth.instance.currentUser?.uid;
-//     DocumentSnapshot userProfileSnapshot = await FirebaseFirestore.instance.collection('users').doc(userId).get();
-//     print("user DATAAAAAA: $_currentUser");
-//
-//     if (userProfileSnapshot.exists) {
-//       return UserProfile.fromMap(userProfileSnapshot.data() as Map<String, dynamic>);
-//       // _profileImageUrl = userProfile.profileImageUrl;
-//     } else {
-//       throw Exception('User profile not found');
-//     }
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text('User Profile'),
-//         actions: [
-//           IconButton(
-//             icon: Icon(Icons.settings_outlined),
-//             onPressed: () {
-//               Navigator.push(
-//                 context,
-//                 MaterialPageRoute(
-//                   builder: (context) => UserProfileSettingsScreen(),
-//                 ),
-//               ).then((_) {
-//                 setState(() {
-//                   _futureUserProfile = fetchUserProfile();
-//                 });
-//               });
-//             },
-//           ),
-//         ],
-//       ),
-//       body: FutureBuilder<UserProfile>(
-//         future: _futureUserProfile,
-//         builder: (context, snapshot) {
-//           if (snapshot.connectionState == ConnectionState.waiting) {
-//             return Center(child: CircularProgressIndicator());
-//           } else if (snapshot.hasError) {
-//             return Center(child: Text('Error: ${snapshot.error}'));
-//           } else {
-//             UserProfile userProfile = snapshot.data!;
-//             print("user profile verified id: ${userProfile.governmentIdVerified}");
-//             print("user profile verified url: ${userProfile.governmentIdDocumentUrl}");
-//             print("user profile licesnse id: ${userProfile.driversLicenseVerified}");
-//             print("user profile verified url: ${userProfile.driversLicenseDocumentUrl}");
-//
-//             // Check if _currentUser is null and return loading indicator if true
-//
-//             return SingleChildScrollView(
-//               padding: EdgeInsets.all(20),
-//               child: Column(
-//                 crossAxisAlignment: CrossAxisAlignment.center,
-//                 children: [
-//                   CircleAvatar(
-//                     radius: 70,
-//                     backgroundImage: userProfile.profileImageUrl != null
-//                         ? NetworkImage(userProfile.profileImageUrl!)
-//                         : null, // Provide path to default user icon
-//                     child: userProfile.profileImageUrl == null ? Icon(Icons.person, size: 55.0) : null,
-//                   ),
-//                   // CircleAvatar(
-//                   //   radius: 70,
-//                   //   child: Icon(
-//                   //     Icons.person,
-//                   //     size: 55.0,
-//                   //   ),
-//                   // ),
-//                   SizedBox(height: 20),
-//                   // Text(
-//                   //   "${userProfile.firstName}",
-//                   //   style: const TextStyle(
-//                   //       fontSize: 24, fontWeight: FontWeight.bold),
-//                   // ),
-//                   // SizedBox(height: 10),
-//                   // Show user rating below the name
-//                   Row(
-//                     mainAxisAlignment: MainAxisAlignment.center,
-//                     children: [
-//                       Text(
-//                         "${userProfile.firstName} ${userProfile.firstName}",
-//                         style: const TextStyle(
-//                             fontSize: 24, fontWeight: FontWeight.bold),
-//                       ),
-//                       Icon(Icons.star, color: Colors.amber, size: 20),
-//                       SizedBox(width: 5),
-//                       Text(
-//                         "4.0",
-//                         // userRating.toStringAsFixed(1), // Show rating with one decimal point
-//                         style: TextStyle(fontSize: 16),
-//                       ),
-//                     ],
-//                   ),
-//                   SizedBox(height: 10),
-//                   Text(
-//                     '${userProfile.bio}',
-//                     style: TextStyle(fontSize: 16),
-//                     textAlign: TextAlign.center,
-//                   ),
-//                   SizedBox(height: 20),
-//                   SectionHeader(title: 'Verifications'),
-//                   SizedBox(height: 10),
-//                   VerificationItem(
-//                     text: 'Government ID',
-//                     verified: userProfile.governmentIdVerified,
-//                     documentUrl: userProfile.governmentIdDocumentUrl,
-//                     onDocumentUploaded: (documentUrl) async {
-//                       String? userId = FirebaseAuth.instance.currentUser?.uid;
-//                       await FirebaseFirestore.instance.collection('users').doc(userId).update({'governmentIdDocumentUrl': documentUrl});
-//                     },
-//                   ),
-//                   VerificationItem(
-//                     text: 'Driver\'s License',
-//                     verified: userProfile.driversLicenseVerified,
-//                     documentUrl: userProfile.driversLicenseDocumentUrl,
-//                     onDocumentUploaded: (documentUrl) async {
-//                       String? userId = FirebaseAuth.instance.currentUser?.uid;
-//                       await FirebaseFirestore.instance.collection('users').doc(userId).update({'driversLicenseDocumentUrl': documentUrl});
-//                     },
-//                   ),
-//                   ListTile(
-//                     leading: Icon(
-//                       _currentUser?.emailVerified ?? false ? Icons.check_circle : Icons.cancel_outlined,
-//                       color: _currentUser?.emailVerified ?? false ? Colors.green : Colors.red,
-//                     ),
-//                     title: Text(
-//                       'Email Verified',
-//                       style: TextStyle(fontSize: 16),
-//                     ),
-//                   ),
-//                   SizedBox(height: 20,),
-//                   ListTile(
-//                     leading: Icon(Icons.rocket_launch_outlined),
-//                     title: Text('Rides Published'),
-//                     subtitle: Text('10'), // Replace with actual number of rides published
-//                   ),
-//                   ListTile(
-//                     leading: Icon(Icons.book),
-//                     title: Text('Rides Booked'),
-//                     subtitle: Text('5'), // Replace with actual number of rides booked
-//                   ),
-//                   ListTile(
-//                     leading: Icon(Icons.calendar_today),
-//                     title: Text('Member Since'),
-//                     subtitle: Text('January 2022'), // Replace with actual join date
-//                   ),
-//                 ],
-//               ),
-//             );
-//           }
-//         },
-//       ),
-//     );
-//   }
-// }
-
-
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -322,16 +131,60 @@ class UserProfileScreenState extends State<UserProfileScreen> {
                       await FirebaseFirestore.instance.collection('users').doc(userId).update({'driversLicenseDocumentUrl': documentUrl});
                     },
                   ),
+                  // ListTile(
+                  //   leading: Icon(
+                  //     _currentUser.emailVerified ? Icons.check_circle : Icons.cancel_outlined,
+                  //     color: _currentUser.emailVerified ? Colors.green : Colors.red,
+                  //   ),
+                  //   title: const Text(
+                  //     'Email Verified',
+                  //     style: TextStyle(fontSize: 16),
+                  //   ),
+                  // ),
                   ListTile(
                     leading: Icon(
                       _currentUser.emailVerified ? Icons.check_circle : Icons.cancel_outlined,
                       color: _currentUser.emailVerified ? Colors.green : Colors.red,
                     ),
-                    title: const Text(
-                      'Email Verified',
-                      style: TextStyle(fontSize: 16),
+                    title: Row(
+                      children: [
+                        const Text(
+                          'Email Verified',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                        if (!_currentUser.emailVerified)
+                          TextButton(
+                            onPressed: () async {
+                              try {
+                                await _currentUser.sendEmailVerification();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Verification email sent! Please check your email.',
+                                    ),
+                                  ),
+                                );
+                              } catch (e) {
+                                debugPrint('Error sending verification email: $e');
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Failed to send verification email. Please try again later.'),
+                                  ),
+                                );
+                              }
+                            },
+                            child: const Text(
+                              'Verify Email',
+                              style: TextStyle(
+                                color: Colors.blue,
+                                fontSize: 13.0,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
+
                   const SizedBox(height: 20,),
                   const SectionHeader(title: 'Carpooling Stats'),
                   ListTile(
