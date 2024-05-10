@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lyft_mate/models/user_profile.dart';
+import 'package:lyft_mate/screens/vehicles/vehicle_screen.dart';
 
 import '../../editprofile_screen.dart';
 import '../../services/authentication_service.dart';
@@ -130,6 +131,12 @@ class _UserProfileSettingsScreenState extends State<UserProfileSettingsScreen> {
                       trailing: const Icon(Icons.arrow_forward_ios),
                       onTap: () {
                         print("Account settings");
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => VehicleScreen(),
+                          ),
+                        );
                       },
                     ),
                     const SizedBox(height: 5,),

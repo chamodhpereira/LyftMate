@@ -174,7 +174,7 @@ class _MapScreenState extends State<MapScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(icon: Icon(Icons.arrow_back_ios), onPressed: () {
+        leading: IconButton(icon: Icon(Icons.arrow_back), onPressed: () {
           Navigator.pop(context);
         },),
         title: Text("Enter $locationType location"),

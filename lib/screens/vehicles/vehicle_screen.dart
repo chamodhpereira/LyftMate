@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Vehicle {
+  String id;
   String make;
   String model;
   String licensePlate;
 
-  Vehicle({required this.make, required this.model, required this.licensePlate});
+  Vehicle({required this.id, required this.make, required this.model, required this.licensePlate});
 
   Map<String, dynamic> toJson() => {
     'make': make,
@@ -15,7 +16,8 @@ class Vehicle {
     'licensePlate': licensePlate,
   };
 
-  static Vehicle fromJson(Map<String, dynamic> json) => Vehicle(
+  static Vehicle fromJson(String id, Map<String, dynamic> json) => Vehicle(
+    id: id,
     make: json['make'],
     model: json['model'],
     licensePlate: json['licensePlate'],
@@ -23,7 +25,6 @@ class Vehicle {
 }
 
 class VehicleScreen extends StatefulWidget {
-
   VehicleScreen({Key? key}) : super(key: key);
 
   @override
@@ -33,6 +34,8 @@ class VehicleScreen extends StatefulWidget {
 class _VehicleScreenState extends State<VehicleScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   List<Vehicle> vehicles = [];
+  bool isLoading = true;
+  bool newVehicleAdded = false; // State variable
   User? user = FirebaseAuth.instance.currentUser;
 
   @override
@@ -43,7 +46,12 @@ class _VehicleScreenState extends State<VehicleScreen> {
     }
   }
 
+  // Load vehicles from Firestore
   void _loadVehicles() async {
+    setState(() {
+      isLoading = true;
+    });
+
     final snapshot = await _firestore
         .collection('users')
         .doc(user!.uid)
@@ -51,71 +59,152 @@ class _VehicleScreenState extends State<VehicleScreen> {
         .get();
 
     setState(() {
-      vehicles = snapshot.docs.map((doc) => Vehicle.fromJson(doc.data())).toList();
+      vehicles = snapshot.docs
+          .map((doc) => Vehicle.fromJson(doc.id, doc.data()))
+          .toList();
+      isLoading = false;
     });
   }
 
-  void _addVehicleDialog() async {
+  // Add a new vehicle using a bottom sheet
+  void _addVehicleBottomSheet() {
     String make = '', model = '', licensePlate = '';
-    await showDialog(
+
+    showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
       builder: (context) {
-        return AlertDialog(
-          title: Text('Add New Vehicle'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                decoration: InputDecoration(labelText: 'Make'),
-                onChanged: (value) => make = value,
-              ),
-              TextField(
-                decoration: InputDecoration(labelText: 'Model'),
-                onChanged: (value) => model = value,
-              ),
-              TextField(
-                decoration: InputDecoration(labelText: 'License Plate'),
-                onChanged: (value) => licensePlate = value,
-              ),
-            ],
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
-              child: Text('Cancel'),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Center(
+                    child: Text(
+                      'Add New Vehicle',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    decoration: const InputDecoration(labelText: 'Make'),
+                    onChanged: (value) => make = value,
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    decoration: const InputDecoration(labelText: 'Model'),
+                    onChanged: (value) => model = value,
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    decoration: const InputDecoration(labelText: 'License Plate'),
+                    onChanged: (value) => licensePlate = value,
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('Cancel', style: TextStyle(color: Colors.red),),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.white, backgroundColor: Colors.green, // Button text color
+                        ),
+                        onPressed: () async {
+                          final vehicle = Vehicle(
+                            id: '',
+                            make: make,
+                            model: model,
+                            licensePlate: licensePlate,
+                          );
+                          await _firestore
+                              .collection('users')
+                              .doc(user!.uid)
+                              .collection('vehicles')
+                              .add(vehicle.toJson());
+                          Navigator.of(context).pop();
+                          _loadVehicles(); // Refresh the list
+
+                          setState(() {
+                            newVehicleAdded = true; // Update the state variable
+                          });
+                        },
+                        child: const Text('Add'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-            ElevatedButton(
-              onPressed: () async {
-                final vehicle = Vehicle(make: make, model: model, licensePlate: licensePlate);
-                await _firestore
-                    .collection('users')
-                    .doc(user!.uid)
-                    .collection('vehicles')
-                    .add(vehicle.toJson());
-                Navigator.of(context).pop(); // Close the dialog
-                _loadVehicles(); // Refresh the list
-              },
-              child: Text('Add'),
-            ),
-          ],
+          ),
         );
       },
     );
+  }
+
+
+
+  // Delete a vehicle from Firestore
+  void _deleteVehicle(String id) async {
+    await _firestore
+        .collection('users')
+        .doc(user!.uid)
+        .collection('vehicles')
+        .doc(id)
+        .delete();
+    _loadVehicles(); // Refresh the list
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('My Vehicles'),
+        title: const Text('My Vehicles'),
+        backgroundColor: Colors.green,
+        foregroundColor: Colors.white,
+        elevation: 0.5,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pop(newVehicleAdded); // Return the value to the previous screen
+          },
+        ),
       ),
-      body: vehicles.isEmpty
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : vehicles.isEmpty
           ? Center(
-        child: ElevatedButton(
-          child: Text('Add New Vehicle'),
-          onPressed: _addVehicleDialog,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              'No vehicles found.',
+              style: TextStyle(fontSize: 18),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Add a new vehicle',
+              style: TextStyle(fontSize: 14),
+            ),
+            // ElevatedButton(
+            //   child: const Text('Add New Vehicle'),
+            //   onPressed: _addVehicleBottomSheet,
+            // ),
+          ],
         ),
       )
           : ListView.builder(
@@ -126,134 +215,21 @@ class _VehicleScreenState extends State<VehicleScreen> {
             child: ListTile(
               title: Text('${vehicle.make} ${vehicle.model}'),
               subtitle: Text('License Plate: ${vehicle.licensePlate}'),
-              // Add edit functionality if needed
+              trailing: IconButton(
+                icon: const Icon(Icons.delete, color: Colors.red),
+                onPressed: () => _deleteVehicle(vehicle.id),
+              ),
             ),
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        onPressed: _addVehicleDialog,
+        backgroundColor: Colors.green, // Change the button background color to green
+        foregroundColor: Colors.white,
+        onPressed: _addVehicleBottomSheet, // Set the icon color to white
+        child: const Icon(Icons.add),
       ),
     );
   }
 }
 
-
-
-
-// import 'package:flutter/material.dart';
-//
-// class AddVehicleScreen extends StatefulWidget {
-//   @override
-//   _AddVehicleScreenState createState() => _AddVehicleScreenState();
-// }
-//
-// class _AddVehicleScreenState extends State<AddVehicleScreen> {
-//   List<Map<String, dynamic>> vehicles = [];
-//
-//   void _addVehicle() {
-//     setState(() {
-//       vehicles.add({
-//         'make': '',
-//         'model': '',
-//         'licensePlate': '',
-//         'color': '',
-//       });
-//     });
-//   }
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     _addVehicle(); // Start with one vehicle
-//   }
-//
-//   Widget _vehicleCard(int index) {
-//     return Card(
-//       margin: EdgeInsets.all(10),
-//       child: Padding(
-//         padding: EdgeInsets.all(16),
-//         child: Column(
-//           children: [
-//             TextField(
-//               onChanged: (value) {
-//                 vehicles[index]['make'] = value;
-//               },
-//               decoration: InputDecoration(
-//                 labelText: 'Make (e.g. Toyota)',
-//               ),
-//             ),
-//             TextField(
-//               onChanged: (value) {
-//                 vehicles[index]['model'] = value;
-//               },
-//               decoration: InputDecoration(
-//                 labelText: 'Model (e.g. Corolla)',
-//               ),
-//             ),
-//             TextField(
-//               onChanged: (value) {
-//                 vehicles[index]['licensePlate'] = value;
-//               },
-//               decoration: InputDecoration(
-//                 labelText: 'License Plate Number',
-//               ),
-//             ),
-//             TextField(
-//               onChanged: (value) {
-//                 vehicles[index]['color'] = value;
-//               },
-//               decoration: InputDecoration(
-//                 labelText: 'Color (e.g. Red)',
-//               ),
-//             ),
-//             SizedBox(height: 20),
-//             if (vehicles.length > 1)
-//               OutlinedButton(
-//                 child: Text('Remove Vehicle'),
-//                 onPressed: () {
-//                   setState(() {
-//                     vehicles.removeAt(index);
-//                   });
-//                 },
-//               ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text('Add Your Vehicles'),
-//       ),
-//       body: ListView(
-//         children: [
-//           ...vehicles.asMap().entries.map((entry) => _vehicleCard(entry.key)),
-//           Padding(
-//             padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
-//             child: TextButton.icon(
-//               icon: Icon(Icons.add),
-//               label: Text('Add New Vehicle'),
-//               onPressed: _addVehicle,
-//             ),
-//           ),
-//           ElevatedButton(
-//             child: Text('Save'),
-//             onPressed: () {
-//               // TODO: Save vehicles to database or state management
-//               print('Vehicles: $vehicles');
-//             },
-//             style: ElevatedButton.styleFrom(
-//               // backgroundColor: Theme.of(context).primaryColor,
-//               minimumSize: Size(double.infinity, 50), // double.infinity is the width and 50 is the height
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }

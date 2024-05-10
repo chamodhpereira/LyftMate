@@ -193,7 +193,7 @@ class _UserRidesState extends State<UserRides>
                           if (_selectedStatus == RideStatus.Cancelled) {
                             return ride['rideStatus'] == 'Cancelled';
                           } else if (_selectedStatus == RideStatus.Pending) {
-                            return ride['rideStatus'] == 'pending';
+                            return ride['rideStatus'] == 'Pending';
                           } else if (_selectedStatus == RideStatus.InProgress) {
                             return ride['rideStatus'] == 'In Progress';
                           } else if (_selectedStatus == RideStatus.Completed) {
@@ -318,7 +318,7 @@ class _UserRidesState extends State<UserRides>
         print("Ride with ID $rideId exists");
         // Fetch driver details using driverId from ride details
         String driverId = (rideSnapshot.data()
-            as Map<String, dynamic>)['driverId']; //TOdo : change to driverId
+            as Map<String, dynamic>)['driverId'];
         print("Fetching user details for driver ID: $driverId");
         DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
             .collection('users')

@@ -229,7 +229,11 @@ class DirectionsService {
 
 ////// updated and working route description
   Future<List<Map<String, dynamic>>> getDirections(
-      LatLng pickupLocation, LatLng dropoffLocation) async {
+      LatLng pickupLocation, LatLng dropoffLocation, List<LatLng>? waypoints, {
+        bool avoidHighways = false,
+        bool avoidTolls = false,
+        bool avoidFerries = false,
+      }) async {
     final apiKey = _getApiKey();
 
     // String formattedDepartureTime = formatDepartureTime(departureTime);
@@ -237,6 +241,34 @@ class DirectionsService {
     // // "departureTime": "2024-04-08T15:01:23.045123456Z",
 
     String url = 'https://routes.googleapis.com/directions/v2:computeRoutes';
+
+    // Prepare waypoints if available
+    List<Map<String, dynamic>> intermediatePoints = [];
+    if (waypoints != null && waypoints.isNotEmpty) {
+      intermediatePoints = waypoints.map((point) {
+        return {
+          "location": {
+            "latLng": {
+              "latitude": point.latitude,
+              "longitude": point.longitude,
+            },
+          },
+        };
+      }).toList();
+    }
+
+    // Determine the routing preference based on the provided parameters
+    String routingPreference = "TRAFFIC_AWARE_OPTIMAL";
+    if (avoidHighways || avoidTolls || avoidFerries) {
+      routingPreference = "TRAFFIC_AWARE";
+    }
+
+    // Additional travel advisories to avoid tolls, highways, ferries
+    List<String> travelAdvisories = [];
+    if (avoidHighways) travelAdvisories.add("AVOID_HIGHWAYS");
+    if (avoidTolls) travelAdvisories.add("AVOID_TOLLS");
+    if (avoidFerries) travelAdvisories.add("AVOID_FERRIES");
+
 
     Map<String, dynamic> requestBody = {
       "origin": {
@@ -262,6 +294,20 @@ class DirectionsService {
       "languageCode": "en-US",
       "units": "IMPERIAL"
     };
+
+    // Add waypoints only if there are any
+    if (intermediatePoints.isNotEmpty) {
+      requestBody["intermediates"] = intermediatePoints;
+    }
+
+    // Add travel advisories if present
+    if (travelAdvisories.isNotEmpty) {
+      requestBody["routeModifiers"] = {
+        "avoidTolls": avoidTolls,
+        "avoidHighways": avoidHighways,
+        "avoidFerries": avoidFerries,
+      };
+    }
 
     var response = await client.post(
       Uri.parse(url),

@@ -18,13 +18,13 @@ class RideBookedPage extends StatelessWidget {
                 alignment: Alignment.topCenter,
                 child: Lottie.asset(
                   "assets/images/ridebooked-animation.json",
-                  height: MediaQuery.of(context).size.height * 0.5, // Adjust the height accordingly
+                  height: MediaQuery.of(context).size.height * 0.5,
                   fit: BoxFit.cover,
                 ),
               ),
             ),
-            Positioned( // Positioned to move the text exactly below the Lottie animation
-              // top: MediaQuery.of(context).size.height * 0.5, // Position the text right below the Lottie animation
+            const Positioned(
+              // top: MediaQuery.of(context).size.height * 0.5,
               top: 360,
               left: 0,
               right: 0,
@@ -41,7 +41,7 @@ class RideBookedPage extends StatelessWidget {
                   ),
                   SizedBox(height: 30,),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    padding: EdgeInsets.symmetric(horizontal: 24.0),
                     child: Text(
                       "Go to 'My rides' section for details of your ride and more options.",
                       style: TextStyle(
@@ -66,7 +66,7 @@ class RideBookedPage extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(24), // Rounded corners
                     ),
-                    minimumSize: Size(double.infinity, 50), // Full width button
+                    minimumSize: const Size(double.infinity, 50), // Full width button
                   ),
                   onPressed: () => Navigator.pushNamedAndRemoveUntil(context, '/navigationScreen', (route) => false,), // Dismiss the screen when button is pressed
                   child: Text(
