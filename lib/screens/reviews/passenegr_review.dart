@@ -80,7 +80,8 @@ class _PassengerReviewsScreenState extends State<PassengerReviewsScreen> {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                // Add navigation or additional action upon confirmation
+                Navigator.pushNamedAndRemoveUntil(context, '/navigationScreen', (route) => false,);
+                debugPrint("Pushing toooo navvvvvvvvvv");
               },
               child: Text("Submit"),
             ),

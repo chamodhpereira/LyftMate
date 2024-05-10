@@ -15,78 +15,6 @@ class Passenger {
 }
 
 class PassengerRepository {
-  // Future<List<Passenger>> fetchPassengersForRide(String rideId) async {
-  //   try {
-  //     final rideSnapshot = await FirebaseFirestore.instance.collection('rides').doc(rideId).get();
-  //     if (rideSnapshot.exists) {
-  //       List<Map<String, dynamic>> passengerData = List<Map<String, dynamic>>.from(rideSnapshot.data()!['passengers']);
-  //
-  //       // Corrected: Cast to List<String>
-  //       List<String> userIds = passengerData.map<String>((data) => data['userId']).toList();
-  //
-  //       Map<String, String> userNames = await fetchUserNames(userIds);
-  //
-  //       print("THISSSSI SSSSSSS UDERNAMESSS: $userNames");
-  //
-  //       // Map passenger data to Passenger objects with names
-  //       List<Passenger> passengers = passengerData.map((data) {
-  //         String userId = data['userId'];
-  //         String name = userNames[userId] ?? 'Unknown';
-  //         return Passenger(
-  //           id: userId,
-  //           name: name,
-  //           rating: data['rating'] ?? 0.0,
-  //         );
-  //       }).toList();
-  //
-  //       return passengers;
-  //     }
-  //     return [];
-  //   } catch (error) {
-  //     print('Error fetching passengers for ride: $error');
-  //     return [];
-  //   }
-  // }
-
-
-  // Future<List<Passenger>> fetchPassengersForRide(String rideId) async {
-  //   try {
-  //     final rideSnapshot = await FirebaseFirestore.instance.collection('rides')
-  //         .doc(rideId)
-  //         .get();
-  //     if (rideSnapshot.exists) {
-  //       List<Map<String, dynamic>> passengerData = List<
-  //           Map<String, dynamic>>.from(rideSnapshot.data()!['passengers']);
-  //
-  //       // Get a list of passenger IDs
-  //       List<String> passengerIds = passengerData.map<String>((
-  //           data) => data['userId']).toList();
-  //
-  //       // Fetch user names for the passenger IDs
-  //       Map<String, String> userNames = await fetchUserNames(passengerIds);
-  //
-  //       print('User names: $userNames');
-  //
-  //       // Map passenger data to Passenger objects with names
-  //       List<Passenger> passengers = passengerData.map((data) {
-  //         String passengerId = data['userId'];
-  //         String name = userNames[passengerId] ?? 'Unknown';
-  //         return Passenger(
-  //           id: passengerId,
-  //           name: name,
-  //           rating: data['rating'] ?? 0.0,
-  //         );
-  //       }).toList();
-  //
-  //       return passengers;
-  //     }
-  //     return [];
-  //   } catch (error) {
-  //     print('Error fetching passengers for ride: $error');
-  //     return [];
-  //   }
-  // }
-
 
   Future<List<Passenger>> fetchPassengersForRide(String rideId) async {
     try {
@@ -158,51 +86,33 @@ class PassengerRepository {
     }
     return userDetails;
   }
-  // Future<Map<String, String>> fetchUserNames(List<String> userIds) async {
-  //   try {
-  //     Map<String, String> userNames = {};
-  //
-  //     // Query the Firestore collection to fetch user documents
-  //     // QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('users').where('userId', whereIn: userIds).get();
-  //     QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('users').where(FieldPath.documentId, whereIn: userIds).get();
-  //
-  //     print('Query snapshot length: ${querySnapshot.docs.length}'); // Debug statement
-  //
-  //     // Iterate through the documents and extract user names
-  //     // Iterate through the query snapshot and populate the userNames map
-  //     querySnapshot.docs.forEach((doc) {
-  //       // Check if the document ID is in the list of user IDs
-  //       if (userIds.contains(doc.id)) {
-  //         userNames[doc.id] = doc['firstName'] + ' ' + doc['lastName']; // Adjust based on your user document structure
-  //       }
-  //     });
-  //
-  //     print('User names: $userNames'); // Debug statement
-  //
-  //     return userNames;
-  //   } catch (error) {
-  //     print('Error fetching user names: $error');
-  //     return {};
-  //   }
-  // }
 
   Future<void> updatePassengerRating(String passengerId, double newRating) async {
     try {
-      // Fetch the current rating of the passenger
+      // Fetch the current rating and number of ratings of the passenger
       DocumentSnapshot passengerSnapshot = await FirebaseFirestore.instance.collection('users').doc(passengerId).get();
-
-      // Get the current rating from the document snapshot and cast it to double
       double currentRating = (passengerSnapshot.get('ratings') ?? 0).toDouble();
+      int numberOfRatings = (passengerSnapshot.get('numberOfRatings') ?? 0).toInt();
 
-      // Calculate the new rating by averaging the current rating and the new rating
-      double updatedRating = (currentRating + newRating) / 2;
+      // Calculate the new total rating
+      double newTotalRating = currentRating * numberOfRatings + newRating;
+      int updatedNumberOfRatings = numberOfRatings + 1;
 
-      // Update the rating field of the passenger document with the new rating
+      // Calculate the new average rating
+      double updatedAverageRating = newTotalRating / updatedNumberOfRatings;
+
+      // Ensure the rating does not exceed 5.0
+      if (updatedAverageRating > 5.0) {
+        updatedAverageRating = 5.0;
+      }
+
+      // Update the passenger's document with the new average rating and updated number of ratings
       await FirebaseFirestore.instance.collection('users').doc(passengerId).update({
-        'ratings': updatedRating,
+        'ratings': updatedAverageRating,
+        'numberOfRatings': updatedNumberOfRatings,
       });
 
-      print('Passenger rating updated successfully: Passenger ID: $passengerId, New Rating: $updatedRating');
+      print('Passenger rating updated successfully: Passenger ID: $passengerId, New Rating: $updatedAverageRating');
     } catch (error) {
       print('Error updating passenger rating: $error');
     }
