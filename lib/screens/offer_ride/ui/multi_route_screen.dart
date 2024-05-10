@@ -356,28 +356,62 @@ class _NewMapsRouteState extends State<NewMapsRoute> {
                   // side: const BorderSide(color: kSecondaryColor),
                   // padding: const EdgeInsets.symmetric(vertical: 15.0),
                 ),
+                // onPressed: () {
+                //   // Handle proceed action here
+                //   // Get the selected route's details
+                //   PolylineId? selectedPolylineId = _selectedPolylineId; // Assuming you already have this value
+                //   print("SELECTEEEED ROUTE POLYLINE ID: $selectedPolylineId");
+                //   RouteInfo selectedRoute = routeInfo[selectedPolylineId]!; // Assuming you have a map of route info
+                //
+                //   // print("ENCODEDDD POLY LINEEEEEE: ${selectedRoute.encodedPolyline}");
+                //
+                //   // Format distance and duration
+                //   String formattedDistance = _convertMetersToKilometers(selectedRoute.distance).toStringAsFixed(2);
+                //   String formattedDuration = _formatDuration(selectedRoute.duration);
+                //
+                //   // Update the ride details in OfferRide class
+                //   OfferRide().updateRideDetails(formattedDistance, formattedDuration, polylines[selectedPolylineId]!.points);
+                //   // OfferRide().updateRideDetails(formattedDistance, formattedDuration, polylines[selectedPolylineId]!.points, selectedRoute.encodedPolyline);
+                //
+                //   Navigator.push(
+                //     context,
+                //     MaterialPageRoute(builder: (context) => const RideOptions()), // Replace RideOptions with your screen widget
+                //   );
+                // },
                 onPressed: () {
-                  // Handle proceed action here
-                  // Get the selected route's details
-                  PolylineId? selectedPolylineId = _selectedPolylineId; // Assuming you already have this value
-                  print("SELECTEEEED ROUTE POLYLINE ID: $selectedPolylineId");
-                  RouteInfo selectedRoute = routeInfo[selectedPolylineId]!; // Assuming you have a map of route info
+                  // Check if a route is selected
+                  if (_selectedPolylineId == null) {
+                    // Display a message prompting the user to select a route
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Please choose a route to proceed.'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                    return; // Exit early if no route is selected
+                  }
 
-                  // print("ENCODEDDD POLY LINEEEEEE: ${selectedRoute.encodedPolyline}");
+                  // Proceed if a route is selected
+                  RouteInfo selectedRoute = routeInfo[_selectedPolylineId]!; // Assuming you have a map of route info
 
                   // Format distance and duration
                   String formattedDistance = _convertMetersToKilometers(selectedRoute.distance).toStringAsFixed(2);
                   String formattedDuration = _formatDuration(selectedRoute.duration);
 
                   // Update the ride details in OfferRide class
-                  OfferRide().updateRideDetails(formattedDistance, formattedDuration, polylines[selectedPolylineId]!.points);
-                  // OfferRide().updateRideDetails(formattedDistance, formattedDuration, polylines[selectedPolylineId]!.points, selectedRoute.encodedPolyline);
+                  OfferRide().updateRideDetails(
+                    formattedDistance,
+                    formattedDuration,
+                    polylines[_selectedPolylineId]!.points,
+                  );
 
+                  // Navigate to the next screen
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const RideOptions()), // Replace RideOptions with your screen widget
+                    MaterialPageRoute(builder: (context) => const RideOptions()),
                   );
                 },
+
                 child: Text("Proceed"),
               ),
             ],
