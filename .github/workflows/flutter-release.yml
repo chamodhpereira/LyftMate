@@ -3,7 +3,7 @@ name: Build and Release Flutter APK
 on:
   pull_request:
     branches:
-      - main  # Trigger on the master branch
+      - main
 
 jobs:
   build_and_release:
@@ -11,16 +11,16 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      # Step 1: Set up JDK 11
+      # Step 1: Check out the repository code
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      # Step 2: Set up JDK 11
       - name: Set up JDK 11
         uses: actions/setup-java@v2
         with:
           distribution: 'adopt'
           java-version: '11'
-
-      # Step 2: Check out the code
-      - name: Check out code
-        uses: actions/checkout@v2
 
       # Step 3: Set up Flutter (master channel)
       - name: Set up Flutter
@@ -28,19 +28,31 @@ jobs:
         with:
           channel: 'master'
 
-      # Step 4: Enable macOS desktop support
-      - name: Enable macOS desktop support
-        run: flutter config --enable-macos-desktop
+      # Step 4: Create .env file using repository secrets
+      - name: Create .env File
+        run: |
+          echo "ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}" >> .env
+          echo "EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }}" >> .env
+          echo "EMAIL_USERNAME=${{ secrets.EMAIL_USERNAME }}" >> .env
+          echo "GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}" >> .env
+          echo "REGISTERED_PHONENUMBER=${{ secrets.REGISTERED_PHONENUMBER }}" >> .env
+          echo "STRIPE_PUBLISHABLE_KEY=${{ secrets.STRIPE_PUBLISHABLE_KEY }}" >> .env
+          echo "TWILIO_ACCOUNT_SID=${{ secrets.TWILIO_ACCOUNT_SID }}" >> .env
+          echo "TWILIO_AUTH_TOKEN=${{ secrets.TWILIO_AUTH_TOKEN }}" >> .env
+          echo "TWILIO_PHONE_NUMBER=${{ secrets.TWILIO_PHONE_NUMBER }}" >> .env
+          echo "TWILIO_SERVICE_SID=${{ secrets.TWILIO_SERVICE_SID }}" >> .env
+          echo "VONAGE_API_KEY=${{ secrets.VONAGE_API_KEY }}" >> .env
+          echo "VONAGE_API_SECRET=${{ secrets.VONAGE_API_SECRET }}" >> .env
 
-      # Step 5: Get the required Flutter packages
+      # Step 5: Install Flutter packages
       - name: Get Flutter packages
         run: flutter pub get
 
-      # Step 6: Build the APK and split by architecture
+      # Step 6: Build the Flutter APK and split by architecture
       - name: Build Flutter APK
         run: flutter build apk --split-per-abi
 
-      # Step 7: Upload built APK files as artifacts
+      # Step 7: Upload APK artifacts
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v2
         with:
