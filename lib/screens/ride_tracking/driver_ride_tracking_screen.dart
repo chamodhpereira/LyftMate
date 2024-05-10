@@ -42,7 +42,6 @@ class DriverRideTrackingScreenState extends State<DriverRideTrackingScreen> {
   Location location = Location();
 
   late StreamSubscription<LocationData>? _locationSubscription;
-  late GoogleMapController mapController;
   late CollectionReference ridesCollection;
   late LatLng currentRideLocation;
 
@@ -51,6 +50,9 @@ class DriverRideTrackingScreenState extends State<DriverRideTrackingScreen> {
   Set<String> removedMarkerIds = {};
   Set<Polyline> polylines = {};
   Set<String> notifiedPassengers = {};
+
+  GoogleMapController? mapController; // Make nullable to handle initialization
+  bool mapControllerInitialized = false; // Track if the map controller is initialized
 
   Map<String, String> passengerNameCache = {};
   Map<String, Map<String, String>> passengerDetailsCache = {};
@@ -121,21 +123,14 @@ class DriverRideTrackingScreenState extends State<DriverRideTrackingScreen> {
             distanceToClosestMarker();
           });
 
-          // Move the camera to the current location
-          mapController.animateCamera(CameraUpdate.newLatLng(currentRideLocation));
+          // Move the camera to the current location only if the map controller is initialized
+          mapController?.animateCamera(CameraUpdate.newLatLng(currentRideLocation));
         }
       }
-
-
-
-
-
-
-
       debugPrint("DISTANCEEEEEEIN SUBSSSSCRIPTION: $distance");
 
-      // Update Firestore only if the distance exceeds a certain threshold (1000 meters)
-      if (distance >= 1) {
+      // Update Firestore only if the distance exceeds a certain threshold (200 meters)
+      if (distance >= 0.2) {
         debugPrint("Location change triggered: $currentLocation");
 
         updateRideLocation(widget.rideId, newLatitude, newLongitude);
@@ -148,6 +143,12 @@ class DriverRideTrackingScreenState extends State<DriverRideTrackingScreen> {
 
     location.enableBackgroundMode(enable: true);
   }
+
+  void _onMapCreated(GoogleMapController controller) {
+    mapController = controller;
+    mapControllerInitialized = true; // Set the flag to true
+  }
+
 
   void _cancelLocationSubscription() {
     if (_locationSubscription != null) {
@@ -510,7 +511,7 @@ class DriverRideTrackingScreenState extends State<DriverRideTrackingScreen> {
         };
       case 'start':
         return {
-          'text': 'Pick upppp $passengerName',
+          'text': 'Pick up $passengerName',
           'distance': distance,
           'markerId': marker.markerId.value
         };
@@ -535,9 +536,9 @@ class DriverRideTrackingScreenState extends State<DriverRideTrackingScreen> {
     removedMarkerIds.add(markerId); // Add the removed marker ID to the set
   }
 
-  void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
-  }
+  // void _onMapCreated(GoogleMapController controller) {
+  //   mapController = controller;
+  // }
 
   void _pauseRide() {
     setState(() {
@@ -745,16 +746,19 @@ class DriverRideTrackingScreenState extends State<DriverRideTrackingScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Map Route"),
+        title: const Text("Trip Route"),
+        backgroundColor: Colors.green,
+        foregroundColor: Colors.white,
+        elevation: 0.5,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.pause),
-            onPressed: isRidePaused ? null : _pauseRide,
-          ),
-          IconButton(
-            icon: const Icon(Icons.play_arrow),
-            onPressed: isRidePaused ? _resumeRide : null,
-          ),
+          // IconButton(
+          //   icon: const Icon(Icons.pause),
+          //   onPressed: isRidePaused ? null : _pauseRide,
+          // ),
+          // IconButton(
+          //   icon: const Icon(Icons.play_arrow),
+          //   onPressed: isRidePaused ? _resumeRide : null,
+          // ),
           IconButton(
             icon: const Icon(Icons.map),
             onPressed: _openGoogleMaps,
@@ -776,7 +780,7 @@ class DriverRideTrackingScreenState extends State<DriverRideTrackingScreen> {
             // onCameraMove: (CameraPosition position) {
             //   currentRideLocation = position.target;
             // },
-            padding: EdgeInsets.only(bottom: nearPassengerLocation ? 260.0 : 180.0),
+            padding: EdgeInsets.only(top: 10.0 ,bottom: nearPassengerLocation ? 260.0 : 180.0),
             // padding: EdgeInsets.only(bottom: 250.0),
           ),
           if(isDataReady) Positioned(
@@ -881,6 +885,12 @@ class DriverRideTrackingScreenState extends State<DriverRideTrackingScreen> {
                                       mainAxisAlignment: MainAxisAlignment.start,
                                       children: [
                                         ElevatedButton(
+                                          style: ButtonStyle(
+                                            backgroundColor:
+                                            MaterialStateProperty.all<Color>(Colors.green),
+                                            foregroundColor:
+                                            MaterialStateProperty.all<Color>(Colors.white),
+                                          ),
                                           onPressed: () async {
                                             String markerId = data['markerId'];
                                             if (markerId.startsWith('start_')) {
@@ -895,7 +905,7 @@ class DriverRideTrackingScreenState extends State<DriverRideTrackingScreen> {
                                               _cancelLocationSubscription();
                                               await updateRideStatus(widget.rideId, "Completed");
                                               if(context.mounted) {
-                                                Navigator.push(context, MaterialPageRoute(builder: (context) => PassengerReviewsScreen(rideId: widget.rideId)));
+                                                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => PassengerReviewsScreen(rideId: widget.rideId)));
                                               }
 
                                             }

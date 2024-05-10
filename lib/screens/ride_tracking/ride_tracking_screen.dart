@@ -31,6 +31,7 @@ class _RideTrackingPageState extends State<RideTrackingPage> {
   late CollectionReference ridesCollection;
   late bool isPickedUp = false;
   late bool isDroppedOff = false;
+  bool hasShownDialog = false;
   late double remainingDistance = 0;
   late String eta = "";
   late Timer timer;
@@ -145,21 +146,30 @@ class _RideTrackingPageState extends State<RideTrackingPage> {
     debugPrint("Is user dropped off: $isDroppedOff");
 
     // Show a dialog if the passenger has been dropped off
-    if (isDroppedOff) {
+    if (isDroppedOff && !hasShownDialog) {
+      hasShownDialog = true;
+
       showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
             title: const Text("Ride Ended"),
-            content: const Text("Your ride has ended. Thank you for using our LyftMate!"),
+            content: const Text("Your ride has ended. Thank you for using LyftMate!"),
             actions: [
               TextButton(
                 child: const Text("OK"),
+                // onPressed: () {
+                //   Navigator.of(context).pop();
+                //   Navigator.push(
+                //     context,
+                //     MaterialPageRoute(builder: (context) => ReviewsScreen(rideId: widget.rideId,)),
+                //   );
+                // },
                 onPressed: () {
                   Navigator.of(context).pop();
-                  Navigator.push(
+                  Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => ReviewsScreen(rideId: widget.rideId,)),
+                    MaterialPageRoute(builder: (context) => ReviewsScreen(rideId: widget.rideId)),
                   );
                 },
               ),
@@ -364,12 +374,61 @@ class _RideTrackingPageState extends State<RideTrackingPage> {
   }
 
 
+  // void _showEmergencyOptions() {
+  //   showModalBottomSheet(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return Padding(
+  //         padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 0.0), // Adjust padding as needed
+  //         child: Column(
+  //           mainAxisSize: MainAxisSize.min,
+  //           children: [
+  //             ListTile(
+  //               leading: const Icon(Icons.bolt, size: 40.0,),
+  //               minLeadingWidth: 0,
+  //               horizontalTitleGap: 0,
+  //               title: const Text('Send SOS'),
+  //               onTap: () {
+  //                 // Implement SOS functionality
+  //                 EmergencyService.sendSOS(userFirstName!);
+  //                 Navigator.pop(context);
+  //               },
+  //               subtitle: const Column(
+  //                 crossAxisAlignment: CrossAxisAlignment.start,
+  //                 children: [
+  //                   Text("Send SOS to your emergency contacts"),
+  //                 ],
+  //               ),
+  //             ),
+  //             ListTile(
+  //               leading: const Icon(Icons.share, size: 35.0,),
+  //               minLeadingWidth: 0,
+  //               horizontalTitleGap: 10,
+  //               title: const Text('Share Ride Details'),
+  //               onTap: () {
+  //                 // Implement share ride details functionality
+  //                 EmergencyService.shareRideDetails(widget.rideId);
+  //                 Navigator.pop(context);
+  //               },
+  //               subtitle: const Column(
+  //                 crossAxisAlignment: CrossAxisAlignment.start,
+  //                 children: [
+  //                   Text("Share ride details with your emergency contacts"),
+  //                 ],
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
   void _showEmergencyOptions() {
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
         return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 0.0), // Adjust padding as needed
+          padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 0.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -378,10 +437,16 @@ class _RideTrackingPageState extends State<RideTrackingPage> {
                 minLeadingWidth: 0,
                 horizontalTitleGap: 0,
                 title: const Text('Send SOS'),
-                onTap: () {
-                  // Implement SOS functionality
-                  EmergencyService.sendSOS(userFirstName!);
+                onTap: () async {
                   Navigator.pop(context);
+                  // Implement SOS functionality
+                  bool success = await EmergencyService.sendSOS(userFirstName!);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(success ? 'SOS sent successfully!' : 'Failed to send SOS.'),
+                      backgroundColor: success ? Colors.green : Colors.red,
+                    ),
+                  );
                 },
                 subtitle: const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -395,10 +460,16 @@ class _RideTrackingPageState extends State<RideTrackingPage> {
                 minLeadingWidth: 0,
                 horizontalTitleGap: 10,
                 title: const Text('Share Ride Details'),
-                onTap: () {
-                  // Implement share ride details functionality
-                  EmergencyService.shareRideDetails(widget.rideId);
+                onTap: () async {
                   Navigator.pop(context);
+                  // Implement share ride details functionality
+                  bool success = await EmergencyService.shareRideDetails(widget.rideId);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(success ? 'Ride details shared successfully!' : 'Failed to share ride details.'),
+                      backgroundColor: success ? Colors.green : Colors.red,
+                    ),
+                  );
                 },
                 subtitle: const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -416,6 +487,7 @@ class _RideTrackingPageState extends State<RideTrackingPage> {
 
 
 
+
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
@@ -423,9 +495,12 @@ class _RideTrackingPageState extends State<RideTrackingPage> {
     return Scaffold(
         appBar: AppBar(
           title: const Text("Track Ride Location"),
+          backgroundColor: Colors.green,
+          foregroundColor: Colors.white,
+          elevation: 0.5,
           actions: [
             IconButton(
-              icon: const Icon(Icons.warning),
+              icon: const Icon(Icons.warning, color: Colors.yellowAccent),
               onPressed: _showEmergencyOptions,
             ),
           ],
@@ -471,7 +546,7 @@ class _RideTrackingPageState extends State<RideTrackingPage> {
                     )),
               },
               polylines: Set<Polyline>.of(_polylines),
-              padding: const EdgeInsets.only(bottom: 250.0),
+              padding: const EdgeInsets.only(bottom: 180.0),
             ),
             Positioned(
               bottom: 0,
