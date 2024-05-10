@@ -192,6 +192,16 @@ class _NotificationsPageState extends State<NotificationsPage> {
           // Extract notifications from the snapshot
           final List<QueryDocumentSnapshot> documents = snapshot.data!.docs;
 
+          // Check if there are no notifications
+          if (documents.isEmpty) {
+            return const Center(
+              child: Text(
+                "No notifications",
+                style: TextStyle(fontSize: 18, color: Colors.grey),
+              ),
+            );
+          }
+
           // Group notifications by date
           final Map<String, List<QueryDocumentSnapshot>> groupedNotifications = {};
           for (final document in documents) {
