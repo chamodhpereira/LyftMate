@@ -12,7 +12,7 @@ import 'package:lyft_mate/providers/notification_provider.dart';
 import 'package:lyft_mate/providers/ride_provider.dart';
 import 'package:lyft_mate/providers/user_provider.dart';
 import 'package:lyft_mate/screens/chat/user_list.dart';
-import 'package:lyft_mate/screens/find_ride/find_rides.dart';
+
 import 'package:lyft_mate/screens/find_ride/ride_request_sent_screen.dart';
 import 'package:lyft_mate/screens/home/ui/home.dart';
 import 'package:lyft_mate/screens/map/map_screen.dart';
