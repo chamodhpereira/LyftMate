@@ -48,7 +48,7 @@ jobs:
       - name: Get Flutter packages
         run: flutter pub get
 
-      # Step 6: Build the Flutter APK and split by architecture
+      # Step 6: Build the Flutter APK and split by architectureee
       - name: Build Flutter APK
         run: flutter build apk --split-per-abi
 
