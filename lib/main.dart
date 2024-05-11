@@ -33,9 +33,6 @@ import 'package:lyft_mate/screens/vehicles/vehicle_screen.dart';
 
 import 'package:lyft_mate/services/authentication_service.dart';
 import 'package:lyft_mate/services/notifications/notifications_service.dart';
-import 'package:lyft_mate/testing-demo/endoded_polyline.dart';
-import 'package:lyft_mate/testing-demo/map_gpx_new.dart';
-import 'package:lyft_mate/testing-demo/saved/map_gpx_nav.dart';
 import 'package:lyft_mate/userprofile_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
