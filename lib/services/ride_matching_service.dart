@@ -184,45 +184,6 @@ class RideMatching {
 
       print("FILETERRRRRREEEEEEEEEED DRIDESSSSSSSS: ${rides.length}");
 
-      // for (var doc in rides) {
-      //   Map<String, dynamic> ride = doc.data() as Map<String, dynamic>;
-      //   List<dynamic> rideGeohashesList = ride['polylinePointsGeohashes'];
-      //   List<String> rideGeohashes = [];
-      //
-      //   for (var geohashMap in rideGeohashesList) {
-      //     if (geohashMap is Map<String, dynamic> && geohashMap.containsKey('geohash')) {
-      //       rideGeohashes.add(geohashMap['geohash']);
-      //     }
-      //   }
-      //
-      //   bool pickupMatch = pickupGeohashes.any((geohash) => rideGeohashes.contains(geohash));
-      //   bool dropoffMatch = dropoffGeohashes.any((geohash) => rideGeohashes.contains(geohash));
-      //
-      //   if (pickupMatch && dropoffMatch) {
-      //     debugPrint("HAMBUNAAAAAAAAA WTTOOOOOOOOO");
-      //   }
-      // }
-
-      // for (var doc in rides) {
-      //   Map<String, dynamic> ride = doc.data() as Map<String, dynamic>;
-      //   Map<dynamic, dynamic> rideGeohashes = ride['polylinePointsGeohashes'] ?? {};
-      //
-      //   // Check if any geohash from the user's pickup or dropoff geohashes matches the ride's geohashes
-      //   bool pickupMatch = pickupGeohashes.any((gh) => rideGeohashes.containsKey(gh));
-      //   bool dropoffMatch = dropoffGeohashes.any((gh) => rideGeohashes.containsKey(gh));
-      //
-      //   if (pickupMatch && dropoffMatch) {
-      //     debugPrint("HAMBUNAAAAAAAAA WTTOOOOOOOOO");
-      //     // Calculate distances and further process the ride if it's within walking distance
-      //     // Here you might calculate exact distances or add further checks/logic
-      //     // ridesWithDistances.add({
-      //     //   'ride': ride,
-      //     //   'pickupMatch': pickupMatch,
-      //     //   'dropoffMatch': dropoffMatch
-      //     // });
-      //   }
-      // }
-
       for (var ride in rides) {
         print('Processing document: $ride');
 
@@ -278,34 +239,6 @@ class RideMatching {
         print(
             'Closest snapped dropoff coordinate: $closestSnappedDropoffCoordinate');
 
-        // double minPickupDistance = calculateUpdatedDistance(userPickupLocation, closestSnappedPickupCoordinate);
-        // double minDropoffDistance = calculateUpdatedDistance(userDropoffLocation, closestSnappedDropoffCoordinate);
-
-        // double minPickupDistance = calculateDistance(
-        //     userPickupLocation.latitude,
-        //     userPickupLocation.longitude,
-        //     closestSnappedPickupCoordinate.latitude,
-        //     closestSnappedPickupCoordinate.longitude
-        // );
-        // double minDropoffDistance = calculateDistance(
-        //     userDropoffLocation.latitude,
-        //     userDropoffLocation.longitude,
-        //     closestSnappedDropoffCoordinate.latitude,
-        //     closestSnappedDropoffCoordinate.longitude
-        // );
-
-        // double minPickupDistance = calculateRouteDistance(
-        //     userPickupLocation,
-        //     closestSnappedPickupCoordinate,
-        //
-        // );
-        // double minDropoffDistance = calculateRouteDistance(
-        //     userDropoffLocation,
-        //     closestSnappedDropoffCoordinate,
-        //
-        // );
-
-        // Check if snapped pickup or drop-off locations fall on a highway/expressway
         if (await isHighway(closestSnappedPickupCoordinate) || await isHighway(closestSnappedDropoffCoordinate)) {
           debugPrint("==============================================");
           debugPrint("----------------falllssss on high waaaayyyyy-------");
@@ -395,95 +328,6 @@ class RideMatching {
         }
       }
 
-      // return ridesWithDistances;
-
-      // for (var ride in rides) {
-      //   List<LatLng> polylineCoordinates = (ride['polylinePoints'] as List).map((point) {
-      //     return LatLng(point['latitude'], point['longitude']);
-      //   }).toList();
-      //
-      //   List<LatLng> snappedPickupCoordinates = await callNearbySearchAPI(userPickupLocation);
-      //   print("SNAPED PICK UPPPPPPPPPP: $snappedPickupCoordinates");
-      //   List<LatLng> snappedDropoffCoordinates = await callNearbySearchAPI(userDropoffLocation);
-      //   print("SNAPED DROOOOOOOP UPPPPPPPPPP: $snappedDropoffCoordinates");
-      //
-      //   double minPickupDistance = double.infinity;
-      //   LatLng closestSnappedPickupCoordinate = LatLng(0, 0);
-      //   LatLng closestSnappedDropoffCoordinate = LatLng(0, 0);
-      //
-      //   for (LatLng snappedCoordinate in snappedPickupCoordinates) {
-      //     for (LatLng polylineCoordinate in polylineCoordinates) {
-      //       double distance = calculateDistance(
-      //         snappedCoordinate.latitude,
-      //         snappedCoordinate.longitude,
-      //         polylineCoordinate.latitude,
-      //         polylineCoordinate.longitude,
-      //       );
-      //
-      //       if (distance < minPickupDistance) {
-      //         minPickupDistance = distance;
-      //         // closestSnappedPickupCoordinate = snappedCoordinate;
-      //         closestSnappedPickupCoordinate = polylineCoordinate;
-      //       }
-      //     }
-      //   }
-      //
-      //   GeoPoint dropoffLocation = ride['dropoffLocation']['geopoint'];
-      //
-      //   double minDropoffDistance = double.infinity;
-      //   String pickupDistanceText = "";
-      //   String dropoffDistanceText = "";
-      //
-      //     for (LatLng snappedCoordinate in snappedDropoffCoordinates) {
-      //       for (LatLng polylineCoordinate in polylineCoordinates) {
-      //         double distance = calculateDistance(
-      //           snappedCoordinate.latitude,
-      //           snappedCoordinate.longitude,
-      //           polylineCoordinate.latitude,
-      //           polylineCoordinate.longitude,
-      //         );
-      //
-      //         if (distance < minDropoffDistance) {
-      //           minDropoffDistance = distance;
-      //           // closestSnappedDropoffCoordinate = snappedCoordinate;
-      //           closestSnappedDropoffCoordinate = polylineCoordinate;
-      //         }
-      //       }
-      //     }
-      //
-      //     pickupDistanceText =
-      //         '${(minPickupDistance / 1000).toStringAsFixed(2)} km';
-      //     print("PDT: $pickupDistanceText");
-      //     dropoffDistanceText =
-      //         '${(minDropoffDistance / 1000).toStringAsFixed(2)} km';
-      //     print("DDDDDDDDDDDDT: $dropoffDistanceText");
-      //
-      //     print("MIN PICCCCK DIST: ${minPickupDistance}");
-      //     print("DIST Threshold: ${distanceThreshold}");
-      //     print("MIN DropDIST: ${minDropoffDistance}");
-      //     print("DIST Threshold: ${distanceThreshold}");
-      //
-      //
-      //   if (minPickupDistance < distanceThreshold &&
-      //       minDropoffDistance < distanceThreshold) {
-      //     print("CHECKINGGG TRUEEEE");
-      //     print("MIN PICCCCK DIST: ${minPickupDistance}");
-      //     print("DIST Threshold: ${distanceThreshold}");
-      //     print("MIN DropDIST: ${minDropoffDistance}");
-      //     print("DIST Threshold: ${distanceThreshold}");
-      //     print("DISTANCE TEXT: $pickupDistanceText");
-      //     print("Dstance text: $dropoffDistanceText");
-      //     ridesWithDistances.add({
-      //       'ride': ride,
-      //       'pickupDistance': minPickupDistance,
-      //       'dropoffDistance': minDropoffDistance,
-      //       'pickupDistanceText': pickupDistanceText,
-      //       'dropoffDistanceText': dropoffDistanceText,
-      //       'closestSnappedPickupCoordinate': closestSnappedPickupCoordinate,
-      //       'closestSnappedDropoffCoordinate': closestSnappedDropoffCoordinate,
-      //     });
-      //   }
-      // }
       printRidesWithDistances(ridesWithDistances);
 
       return ridesWithDistances;

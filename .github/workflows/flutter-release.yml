@@ -28,7 +28,7 @@ jobs:
         with:
           channel: 'master'
 
-      # Step 4: Create .env file using repository secrets
+      # Step 4: Create .env file using repository secretss
       - name: Create .env File
         run: |
           echo "ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}" >> .env
@@ -43,6 +43,8 @@ jobs:
           echo "TWILIO_SERVICE_SID=${{ secrets.TWILIO_SERVICE_SID }}" >> .env
           echo "VONAGE_API_KEY=${{ secrets.VONAGE_API_KEY }}" >> .env
           echo "VONAGE_API_SECRET=${{ secrets.VONAGE_API_SECRET }}" >> .env
+          GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}
+          echo "GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}" >> $GITHUB_ENV
 
       # Step 5: Install Flutter packages
       - name: Get Flutter packages

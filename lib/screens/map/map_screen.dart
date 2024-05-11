@@ -79,88 +79,6 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  // Future<void> _getCurrentLocation() async {
-  //   LocationData? locationData;
-  //   var location = Location();
-  //
-  //   try {
-  //     locationData = await location.getLocation();
-  //   } catch (e) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //         content: Text('Failed to retrieve your location. Please make sure location services are enabled.'),
-  //       ),
-  //     );
-  //     print('Failed to get location: $e');
-  //   }
-  //
-  //   if (locationData != null) {
-  //     final GoogleMapController controller = await _controller.future;
-  //         controller.animateCamera(CameraUpdate.newCameraPosition(
-  //           CameraPosition(
-  //             target: LatLng(locationData.latitude!, locationData.longitude!),
-  //             zoom: 14,
-  //           ),
-  //         ));
-  //     final double latitude = locationData.latitude!;
-  //     final double longitude = locationData.longitude!;
-  //
-  //
-  //     // // Clear existing markers
-  //     // setState(() {
-  //     //   _markers.clear();
-  //     // });
-  //     //
-  //     // // Set marker at current location
-  //     // _setMarker(LatLng(latitude, longitude));
-  //
-  //
-  //     final apiKey = _getApiKey();
-  //     final request = Uri.parse('https://maps.googleapis.com/maps/api/geocode/json?latlng=$latitude,$longitude&key=$apiKey');
-  //
-  //     final response = await client.get(request);
-  //
-  //     if (response.statusCode == 200) {
-  //       final jsonData = json.decode(response.body);
-  //       if (jsonData['results'] != null && jsonData['results'].isNotEmpty) {
-  //         final addressComponents = jsonData['results'][0]['address_components'];
-  //
-  //         String cityName = '';
-  //         String locationName = '';
-  //         for (var component in addressComponents) {
-  //           if (component['types'].contains('locality')) {
-  //             cityName = component['long_name'];
-  //           }
-  //           if (component['types'].contains('point_of_interest')) {
-  //             locationName = component['long_name'];
-  //           }
-  //         }
-  //
-  //         final address = jsonData['results'][0]['formatted_address'];
-  //
-  //         setState(() {
-  //           _markers.clear();
-  //           _setMarker(LatLng(latitude, longitude));
-  //           pickedLocation = address;
-  //           pickedCity = cityName;
-  //           pickedLatitude = latitude;
-  //           pickedLongitude = longitude;
-  //         });
-  //         _textController.text = address;
-  //
-  //         // Now you have pickedLatitude, pickedLongitude, pickedCity, and pickedLocation available here.
-  //         // You can use them as needed.
-  //         print('Latitude: $pickedLatitude, Longitude: $pickedLongitude');
-  //         print('Picked City: $pickedCity');
-  //         print('Picked Location: $pickedLocation');
-  //       }
-  //     } else {
-  //       print('Failed to fetch address: ${response.statusCode}');
-  //     }
-  //   }
-  // }
-
-
   late String locationType;
 
   @override
@@ -204,37 +122,6 @@ class _MapScreenState extends State<MapScreen> {
                 // _getCurrentLocation();
               },
             ),
-            // Positioned(
-            //   top: 65.0, // Adjust this value to position the button under the search bar
-            //   right: 10.0,
-            //   child: Opacity(
-            //     opacity: 0.7,
-            //     child: Container(
-            //       height: 40,
-            //       width: 40,
-            //       // padding: EdgeInsets.all(8.0),
-            //       decoration: BoxDecoration(
-            //         color: Colors.white,
-            //         borderRadius: BorderRadius.circular(0.0),
-            //         // boxShadow: [
-            //         //   BoxShadow(
-            //         //     color: Colors.grey.withOpacity(0.9),
-            //         //     spreadRadius: 2,
-            //         //     blurRadius: 10,
-            //         //     offset: Offset(0, 5),
-            //         //   ),
-            //         // ],
-            //       ),
-            //       child: IconButton(
-            //         icon: Icon(Icons.my_location, size: 22, color: Colors.grey.shade900,),
-            //         // onPressed: _moveToMyLocation,
-            //         onPressed: (){
-            //           _getCurrentLocation();
-            //         },
-            //       ),
-            //     ),
-            //   ),
-            // ),
             Positioned(
               top: 8.0,
               left: 8.0,
@@ -279,16 +166,10 @@ class _MapScreenState extends State<MapScreen> {
                   child:
                   ElevatedButton(
                     onPressed: () {
-                      // if (widget.locType == 'dropoff') {
-                      //   // _confirmDropoffLocation(pickedLatitude, pickedLongitude, _textController.text, pickedCity);
-                      // } else {
-                      //   _confirmPickupLocation(pickedLatitude, pickedLongitude, _textController.text, pickedCity);
-                      // }
-
                       if (pickedLatitude == 0 || pickedLongitude == 0) {
                         debugPrint("Insideeee IFFFFFFFFFFFFFF BLOCCCCCCCCCCCCCK");
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
+                          const SnackBar(
                             content: Text('Please choose a location on the map.'),
                           ),
                         );
@@ -296,8 +177,6 @@ class _MapScreenState extends State<MapScreen> {
                         debugPrint("Insideeee ELSEEEEEEEEEEE BLOCCCCCCCCCCCCCK");
                         _confirmPickupLocation(pickedLatitude, pickedLongitude, _textController.text, pickedCity);
                       }
-
-
                     },
                     style: ButtonStyle(
                       foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
@@ -318,17 +197,6 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  // Future<void> _handleTap(LatLng tappedPoint) async {
-  //   setState(() {
-  //     _markers.clear();
-  //     _markers.add(Marker(
-  //       markerId: MarkerId(tappedPoint.toString()),
-  //       position: tappedPoint,
-  //     ));
-  //     pickedLatitude = tappedPoint.latitude;
-  //     pickedLongitude = tappedPoint.longitude;
-  //   });
-  // }
   String _getApiKey() {
     return dotenv.env['GOOGLE_MAPS_API_KEY'] ?? 'YOUR_DEFAULT_API_KEY';
   }
@@ -388,10 +256,6 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  // void _confirmPickupLocation(double lat, double lng, String locationName, String cityName) {
-  //   Navigator.pop(context, {'lat': lat, 'lng': lng, 'locationName': locationName, 'cityName': cityName});
-  // }
-
   void _confirmPickupLocation(double? lat, double? lng, String locationName, String cityName) {
     if (lat == null || lng == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -438,35 +302,4 @@ class _MapScreenState extends State<MapScreen> {
       print("Some properties are missing or null in the place object.");
     }
   }
-
-
-// Future<void> _goToPlace(Map<String, dynamic> place) async {
-  //   if (place != null &&
-  //       place.containsKey('result') &&
-  //       place['result'] != null &&
-  //       place['result'].containsKey('geometry') &&
-  //       place['result']['geometry'] != null &&
-  //       place['result']['geometry'].containsKey('location') &&
-  //       place['result']['geometry']['location'] != null) {
-  //     final double lat = place['result']['geometry']['location']['lat'];
-  //     final double lng = place['result']['geometry']['location']['lng'];
-  //
-  //     pickedLatitude = lat;
-  //     pickedLongitude = lng;
-  //
-  //     final GoogleMapController controller = await _controller.future;
-  //     CameraPosition _newCameraPosition = CameraPosition(
-  //       target: LatLng(lat, lng),
-  //       zoom: 13,
-  //     );
-  //
-  //     await controller.animateCamera(
-  //       CameraUpdate.newCameraPosition(_newCameraPosition),
-  //     );
-  //
-  //     _setMarker(LatLng(lat, lng));
-  //   } else {
-  //     print("Some properties are missing or null in the place object.");
-  //   }
-  // }
 }
