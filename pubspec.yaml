@@ -76,6 +76,7 @@ dependencies:
   mailer: ^6.1.0
   firebase_auth_mocks: ^0.13.0
   flutter_native_splash: ^2.4.0
+  shared_preferences: ^2.2.3
 
 
 

@@ -37,6 +37,7 @@ import 'package:lyft_mate/testing-demo/endoded_polyline.dart';
 import 'package:lyft_mate/testing-demo/map_gpx_new.dart';
 import 'package:lyft_mate/testing-demo/saved/map_gpx_nav.dart';
 import 'package:lyft_mate/userprofile_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -56,6 +57,9 @@ Future<void> main() async {
 
   await dotenv.load(fileName: ".env");
 
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  bool hasSeenOnboarding = prefs.getBool('seenOnboarding') ?? false;
+
   Stripe.publishableKey = dotenv.env['STRIPE_PUBLISHABLE_KEY']!;
   await Stripe.instance.applySettings();
 
@@ -63,21 +67,19 @@ Future<void> main() async {
       NotificationService.initNotifications();
   }
 
-  runApp(LyftMate());
+  runApp(LyftMate(hasSeenOnboarding: hasSeenOnboarding));
 }
 
 class LyftMate extends StatelessWidget {
+  final bool hasSeenOnboarding;
+
+  LyftMate({required this.hasSeenOnboarding});
+
   @override
   Widget build(BuildContext context) {
-    return MultiProvider( // Use MultiProvider for multiple providers
+    return MultiProvider(
       providers: [
-        // ChangeNotifierProvider(create: (_) => LoggedUser()),
-        // ChangeNotifierProvider(create: (_) => RideProvider()),
         ChangeNotifierProvider(create: (_)=> NotificationProvider()),
-        // ChangeNotifierProvider(create: (context) => RadiusProvider()),
-        // ChangeNotifierProvider(create: (_) => UserM()),
-        // ChangeNotifierProvider(create: (_) => UserProvider()),
-        // ChangeNotifierProvider(create: (_) => AuthenticationService()), // Provide AuthenticationService
       ],
       child: MaterialApp(
         theme: LyftMateAppTheme.lightTheme,
