@@ -28,7 +28,7 @@ jobs:
         with:
           channel: 'master'
 
-      # Step 4: Create .env file using repository secrets
+      # Step 4: Create .env file using repository secretss
       - name: Create .env File
         run: |
           echo "ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}" >> .env
