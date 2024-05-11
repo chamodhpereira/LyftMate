@@ -15,12 +15,12 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v2
 
-      # Step 2: Set up JDK 11 (mistakenly labeled as JDK 18 in your setup comment)
-      - name: Set up JDK 11
+      # Step 2: Set up JDK 18
+      - name: Set up JDK 18
         uses: actions/setup-java@v2
         with:
           distribution: 'adopt'
-          java-version: '11'
+          java-version: '18'
 
       # Step 3: Set up Flutter (master channel)
       - name: Set up Flutter
