@@ -103,7 +103,7 @@ To integrate Firebase into your project, follow these detailed steps:
 
 5. Configure Services:
 
-    - Configure services like Firestore, Authentication, etc., according to your needs.
+    - Configure services like Firestore, Authentication, Storage, Cloud Functions.
     - Set up rules and configurations for each service as needed.
 
 6. Test Your Setup:
