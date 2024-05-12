@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lyft_mate/screens/profile/settings_screen.dart';
-import 'package:lyft_mate/services/authentication_service.dart';
-import 'models/user_profile.dart';
+import 'package:lyft_mate/services/authentication/authentication_service.dart';
+import '../../models/user_profile.dart';
 
 
 class UserProfileScreen extends StatefulWidget {

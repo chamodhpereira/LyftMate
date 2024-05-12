@@ -81,57 +81,6 @@ class _NewMapsRouteState extends State<NewMapsRoute> {
     super.dispose();
   }
 
-  // Future<void> _navigateToEditRoute() async {
-  //   // Navigate to the Edit Route page and await the waypoints result
-  //   final List<LatLng>? updatedWaypoints = await Navigator.push(
-  //     context,
-  //     MaterialPageRoute(
-  //       builder: (context) => EditRoutePage(
-  //         initialPickupLocation: _kPickupLocation,
-  //         initialDropoffLocation: _kDropLocation,
-  //       ),
-  //     ),
-  //   );
-  //
-  //   // If new waypoints are selected, update and fetch new directions
-  //   if (updatedWaypoints != null) {
-  //     setState(() {
-  //       waypoints = updatedWaypoints;
-  //     });
-  //     _fetchDirectionsAndPolylines();
-  //   }
-  // }
-
-  // Future<void> _navigateToEditRoute() async {
-  //   // Navigate to the Edit Route page and await the route options result
-  //   final Map<String, dynamic>? routeOptions = await Navigator.push(
-  //     context,
-  //     MaterialPageRoute(
-  //       builder: (context) => EditRoutePage(
-  //         initialPickupLocation: _kPickupLocation,
-  //         initialDropoffLocation: _kDropLocation,
-  //       ),
-  //     ),
-  //   );
-  //
-  //   // If route options are selected, update and fetch new directions
-  //   if (routeOptions != null) {
-  //     final List<LatLng>? updatedWaypoints = routeOptions['waypoints'];
-  //     final bool avoidHighways = routeOptions['avoidHighways'];
-  //     final bool avoidTolls = routeOptions['avoidTolls'];
-  //     final bool avoidFerries = routeOptions['avoidFerries'];
-  //
-  //     setState(() {
-  //       waypoints = updatedWaypoints ?? [];
-  //       this.avoidHighways = avoidHighways;
-  //       this.avoidTolls = avoidTolls;
-  //       this.avoidFerries = avoidFerries;
-  //     });
-  //
-  //     _fetchDirectionsAndPolylines();
-  //   }
-  // }
-
   Future<void> _navigateToEditRoute() async {
     // Pass the initial checkbox states to EditRoutePage
     final Map<String, dynamic>? result = await Navigator.push(
@@ -163,11 +112,6 @@ class _NewMapsRouteState extends State<NewMapsRoute> {
 
 
   Future<void> _fetchDirectionsAndPolylines() async {
-
-    // List<Map<String, dynamic>> results = await DirectionsService().getRouteDirections(
-    //   _kPickupLocation,
-    //   _kDropLocation,
-    // );
 
     final bool avoidHighways = this.avoidHighways;
     final bool avoidTolls = this.avoidTolls;

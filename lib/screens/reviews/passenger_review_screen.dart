@@ -24,28 +24,6 @@ class _PassengerReviewsScreenState extends State<PassengerReviewsScreen> {
     fetchPassengers(); // Call fetchPassengers() in initState()
   }
 
-  // Future<void> fetchPassengers() async {
-  //   // Fetch passengers for the given rideId
-  //   passengers = await _repository.fetchPassengersForRide(widget.rideId);
-  //   setState(() {}); // Update the UI after fetching passengers
-  // }
-
-  // Future<void> fetchPassengers() async {
-  //   // Fetch passengers for the given rideId
-  //   List<Map<String, dynamic>> passengerData = await _repository.fetchPassengersForRide(widget.rideId);
-  //
-  //   print('Passenger data: $passengerData');
-  //
-  //   // Convert the fetched data to a list of Passenger objects
-  //   passengers = passengerData.map((data) => Passenger(
-  //     id: data['userId'],
-  //     name: data['firstName'],
-  //     // Add other properties as needed
-  //   )).toList();
-  //
-  //   setState(() {}); // Update the UI after fetching passengers
-  // }
-
   Future<void> fetchPassengers() async {
     // Fetch passengers for the given rideId
     List<Passenger> passengerData = await _repository.fetchPassengersForRide(widget.rideId);
@@ -93,13 +71,17 @@ class _PassengerReviewsScreenState extends State<PassengerReviewsScreen> {
 
 @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+        canPop: false, // Prevents the user from going back
+        child: Scaffold(
       appBar: AppBar(
         title: Text('Rate Your Passengers'),
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
+        leading: Container(),
+        leadingWidth: 0,
         elevation: 0.5,
-        leadingWidth: 50.0,
+        // leadingWidth: 50.0,
       ),
       body: Stack(
         children: [
@@ -185,7 +167,7 @@ class _PassengerReviewsScreenState extends State<PassengerReviewsScreen> {
       //   child: Icon(Icons.check),
       // ),
 
-
+        ),
     );
   }
 }

@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart'; // For date formatting
 import 'package:lyft_mate/screens/chat/dash_chatpage.dart';
 
+import '../profile/other_userprofile.dart';
+
 class MyPublishedRideDetailsPage extends StatefulWidget {
   final String rideId;
 
@@ -44,6 +46,21 @@ class _MyPublishedRideDetailsPageState extends State<MyPublishedRideDetailsPage>
       'passengers': FieldValue.arrayUnion([passenger]),
       'rideRequests': FieldValue.arrayRemove([request]),
     });
+
+    // Add rideId to user's bookedRides array
+    // await firestore.collection('users').doc(request['passengerId']).update({
+    //   'ridesBooked': FieldValue.arrayUnion([widget.rideId]),
+    // });
+
+    // Add rideId to user's bookedRides array
+    await firestore.collection('users').doc(request['passengerId']).update({
+      'ridesBooked': FieldValue.arrayUnion([widget.rideId]),
+    }).then((_) {
+      debugPrint("Added rideId ${widget.rideId} to user ${request['passengerId']} bookedRides array.");
+    }).catchError((error) {
+      debugPrint("Failed to add rideId to user's bookedRides due to: $error");
+    });
+
 
     // Refresh ride data
     _fetchRideData();
@@ -184,7 +201,16 @@ class _MyPublishedRideDetailsPageState extends State<MyPublishedRideDetailsPage>
         } else {
           var userData = snapshot.data!.data() as Map<String, dynamic>;
           String? profileImageUrl = userData['profileImageUrl'];
-          return Card(
+          return GestureDetector(
+              onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => OtherUserProfileScreen(userId: passenger['userId']),
+              ),
+            );
+          },
+        child: Card(
             margin: const EdgeInsets.symmetric(vertical: 8.0),
             elevation: 2,
             shape: RoundedRectangleBorder(
@@ -217,6 +243,7 @@ class _MyPublishedRideDetailsPageState extends State<MyPublishedRideDetailsPage>
                 },
               ),
             ),
+          ),
           );
         }
       },
@@ -236,46 +263,69 @@ class _MyPublishedRideDetailsPageState extends State<MyPublishedRideDetailsPage>
           return const ListTile(
             title: Text('Error loading data'),
           );
-        } else {
+        } else if (snapshot.hasData && snapshot.data!.data() != null) {
           var userData = snapshot.data!.data() as Map<String, dynamic>;
           String? profileImageUrl = userData['profileImageUrl'];
-          return Card(
-            margin: const EdgeInsets.symmetric(vertical: 8.0),
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-            child: ListTile(
-              leading: profileImageUrl != null && profileImageUrl.isNotEmpty
-                  ? CircleAvatar(
-                radius: 25,
-                backgroundImage: NetworkImage(profileImageUrl),
-              )
-                  : const CircleAvatar(
-                radius: 25,
-                child: Icon(Icons.person, color: Colors.blue),
+          double rating = userData['rating'] ?? 0.0; // Assuming the rating field exists and is a double
+          return GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => OtherUserProfileScreen(userId: request['passengerId']),
+                ),
+              );
+            },
+            child: Card(
+              margin: const EdgeInsets.symmetric(vertical: 8.0),
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.0),
               ),
-              title: Text('${userData['firstName']} ${userData['lastName']}'),
-              subtitle: Text('Requested Seats: ${request['seatsRequested']}'),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.check, color: Colors.green),
-                    onPressed: () => _acceptRequest(request),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: Colors.red),
-                    onPressed: () => _declineRequest(request),
-                  ),
-                ],
+              child: ListTile(
+                leading: profileImageUrl != null && profileImageUrl.isNotEmpty
+                    ? CircleAvatar(
+                  radius: 25,
+                  backgroundImage: NetworkImage(profileImageUrl),
+                )
+                    : const CircleAvatar(
+                  radius: 25,
+                  child: Icon(Icons.person, color: Colors.blue),
+                ),
+                title: Text(
+                  '${userData['firstName']} ${userData['lastName']}',
+                  style: const TextStyle(fontSize: 16), // Name styling
+                ),
+                subtitle: Text(
+                  'Rating: ${rating.toStringAsFixed(1)}★',
+                  style: TextStyle(fontSize: 12, color: Colors.grey), // Smaller, greyed-out rating
+                ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.check, color: Colors.green),
+                      onPressed: () => _acceptRequest(request),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.red),
+                      onPressed: () => _declineRequest(request),
+                    ),
+                  ],
+                ),
               ),
             ),
+          );
+        } else {
+          return const ListTile(
+            title: Text('No data available'),
           );
         }
       },
     );
   }
+
+
 
   Widget _buildRideInfoRow(String label, String value) {
     return Padding(

@@ -10,7 +10,7 @@ import 'package:lyft_mate/screens/signup/screens/signup_name_page.dart';
 import 'package:lyft_mate/screens/signup/screens/signup_title_page.dart';
 import 'package:lyft_mate/widgets/custom_bottom_buttom.dart';
 
-import '../../../services/authentication_service.dart';
+import '../../../services/authentication/authentication_service.dart';
 
 class SignUpForm extends StatefulWidget {
   const SignUpForm({super.key});
@@ -48,14 +48,14 @@ class _SignUpFormState extends State<SignUpForm> {
 
   @override
   void dispose() {
-    // _progressController.dispose();
-    // firstNameController.dispose();
-    // secondNameController.dispose();
-    // emailController.dispose();
-    // passwordController.dispose();
-    // reEnterPasswordController.dispose();
-    // emergencyContactNameController.dispose();
-    // emergencyContactPhoneNumberController.dispose();
+    _progressController.dispose();
+    firstNameController.dispose();
+    secondNameController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    reEnterPasswordController.dispose();
+    emergencyContactNameController.dispose();
+    emergencyContactPhoneNumberController.dispose();
 
     super.dispose();
   }
@@ -139,9 +139,9 @@ class _SignUpFormState extends State<SignUpForm> {
                   fontWeight: FontWeight.bold,
                   color: Colors.black.withOpacity(0.5),
                 )
-              : kBoldTextStyle,
+              : null,
         ),
-        centerTitle: true,
+        // centerTitle: true,
         foregroundColor: Colors.white,
         elevation: 0.5,
       ),

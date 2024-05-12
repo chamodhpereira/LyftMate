@@ -126,56 +126,56 @@ void updateRideDetails(String distance, String duration, List<LatLng> polylinePo
   // Setter method to update date
   void setDate(DateTime newDate) {
     date = newDate;
-    print("dateeee wtooo dateee: $date");
+    debugPrint("dateeee wtooo dateee: $date");
   }
 
   // Setter method to update time
   void setTime(TimeOfDay newTime) {
     time = newTime;
-    print("timeeee wtooo timeee: $time");
+    debugPrint("timeeee wtooo timeee: $time");
   }
 
   void setVehicle(String rideVehicle) {
     vehicle = rideVehicle;
-    print("vehiceleeeee: $vehicle");
+    debugPrint("vehiceleeeee: $vehicle");
   }
 
   // Setter method to update seats
   void setSeats(int newSeats) {
     seats = newSeats;
-    print("seatssss: $seats");
+    debugPrint("seatssss: $seats");
   }
 
   void setPreferences(List<String> preferences) {
     ridePreferences.clear();
     ridePreferences.addAll(preferences);
-    print("this is preferences $ridePreferences");
+    debugPrint("this is preferences $ridePreferences");
   }
 
   void setNotes(String notes) {
     rideNotes = notes;
-    print("this isss notesss: $rideNotes");
+    debugPrint("this isss notesss: $rideNotes");
   }
 
   // Setter method to update price per seat
   void setPricePerSeat(double newPrice) {
     pricePerSeat = newPrice;
-    print("PRiceeeeee per seaaat: $pricePerSeat");
+    debugPrint("PRiceeeeee per seaaat: $pricePerSeat");
   }
 
   void setLuggageAllowance(String luggageOption) {
     luggageAllowance = luggageOption;
-    print("Luggage allowance: $luggageAllowance");
+    debugPrint("Luggage allowance: $luggageAllowance");
   }
 
   void setPaymentMode(String paymentOption) {
     paymentMode = paymentOption;
-    print("Payment option: $paymentMode");
+    debugPrint("Payment option: $paymentMode");
   }
 
   void setRideApproval(String approvalOption) {
     rideApproval = approvalOption;
-    print("rideee approavaal: $rideApproval");
+    debugPrint("rideee approavaal: $rideApproval");
   }
 
   // Method to add a passenger to the ride

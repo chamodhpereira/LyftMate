@@ -42,7 +42,7 @@ class SmsService {
     return await sendMessage(refundMessage, dotenv.env['REGISTERED_PHONENUMBER']!);
   }
 
-  static Future<void> notifyPaidPassengersOfRefund(List<dynamic> passengers, String rideId, double? refundAmount) async {
+  static Future<void> notifyPaidPassengersOfRefund(List<dynamic> passengers, String rideId, {double? refundAmount}) async {
     for (var passenger in passengers) {
       bool paidStatus = passenger['paidStatus'] ?? false;
       String? phoneNumber = passenger['phoneNumber'];

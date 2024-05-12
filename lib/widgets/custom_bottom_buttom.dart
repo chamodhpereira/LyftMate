@@ -21,7 +21,7 @@ class CustomBottomButton extends StatelessWidget {
       onPressed: onPressed,
       child: Text(
         text,
-        style: kBoldButtonTextStyle,
+        // style: kBoldButtonTextStyle,
       ),
     );
   }
