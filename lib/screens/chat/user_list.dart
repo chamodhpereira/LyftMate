@@ -1,11 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:lyft_mate/home.dart';
 import 'package:lyft_mate/screens/chat/chatpage.dart';
 import 'package:lyft_mate/screens/chat/dash_chatpage.dart';
 
-import '../../services/authentication_service.dart';
+import '../../services/authentication/authentication_service.dart';
 import '../../services/chat/chat_service.dart';
 
 class UserList extends StatefulWidget {

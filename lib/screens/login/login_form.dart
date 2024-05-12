@@ -4,7 +4,7 @@ import 'package:lyft_mate/screens/navigation/navigation_screen.dart';
 
 
 import '../../constants/colors.dart';
-import '../../services/authentication_service.dart';
+import '../../services/authentication/authentication_service.dart';
 import '../forgot_password/forgot_password_screen.dart';
 
 class LoginForm extends StatefulWidget {
@@ -80,7 +80,7 @@ class _LoginFormState extends State<LoginForm> {
               child: TextButton(
                 onPressed: () {
                   Navigator.push(context, MaterialPageRoute(builder: (context){
-                    return ForgotPasswordScreen();
+                    return const ForgotPasswordScreen();
                   }));
                 },
                 child: const Text("Forgot Password?"),
@@ -118,19 +118,19 @@ class _LoginFormState extends State<LoginForm> {
                     }
                   }
                 },
-                // style: ElevatedButton.styleFrom(
-                //   foregroundColor: kWhiteColor,
-                //   backgroundColor: Colors.green,
-                //   side: const BorderSide(color: kSecondaryColor),
-                // ),
                 style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 50),
+                  foregroundColor: kWhiteColor,
                   backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  // side: const BorderSide(color: kSecondaryColor),
                 ),
+                // style: ElevatedButton.styleFrom(
+                //   minimumSize: const Size(double.infinity, 50),
+                //   backgroundColor: Colors.green,
+                //   foregroundColor: Colors.white,
+                //   shape: RoundedRectangleBorder(
+                //     borderRadius: BorderRadius.circular(12),
+                //   ),
+                // ),
                 child: _isLoading
                     ? const CircularProgressIndicator(color: Colors.green,) // Show loading indicator if _isLoading is true
                     : Text(

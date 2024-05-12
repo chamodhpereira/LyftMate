@@ -158,13 +158,7 @@ class _RideTrackingPageState extends State<RideTrackingPage> {
             actions: [
               TextButton(
                 child: const Text("OK"),
-                // onPressed: () {
-                //   Navigator.of(context).pop();
-                //   Navigator.push(
-                //     context,
-                //     MaterialPageRoute(builder: (context) => ReviewsScreen(rideId: widget.rideId,)),
-                //   );
-                // },
+
                 onPressed: () {
                   Navigator.of(context).pop();
                   Navigator.pushReplacement(
@@ -179,10 +173,6 @@ class _RideTrackingPageState extends State<RideTrackingPage> {
       );
     }
 
-    // userPickUpLocation = LatLng(geoPointUserPickUp.latitude, geoPointUserPickUp.longitude);
-    // userDropOffLocation = LatLng(geoPointUserDropOff.latitude, geoPointUserDropOff.longitude);
-
-    // rideLocation = LatLng(0, 0);
     setState(() {
       rideLocation = LatLng(geoPointRideLocation.latitude, geoPointRideLocation.longitude);
     });
@@ -328,25 +318,6 @@ class _RideTrackingPageState extends State<RideTrackingPage> {
     }
   }
 
-  // void showArrivalPopup() {
-  //   showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         title: Text("Delivery/Ride Arrival"),
-  //         content: Text("Your delivery/ride is here!"),
-  //         actions: [
-  //           TextButton(
-  //             onPressed: () {
-  //               Navigator.of(context).pop();
-  //             },
-  //             child: Text("OK"),
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
 
   void updateUIWithLocation(LatLng driverLocation) {
     setState(() {
@@ -373,56 +344,6 @@ class _RideTrackingPageState extends State<RideTrackingPage> {
     // }
   }
 
-
-  // void _showEmergencyOptions() {
-  //   showModalBottomSheet(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return Padding(
-  //         padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 0.0), // Adjust padding as needed
-  //         child: Column(
-  //           mainAxisSize: MainAxisSize.min,
-  //           children: [
-  //             ListTile(
-  //               leading: const Icon(Icons.bolt, size: 40.0,),
-  //               minLeadingWidth: 0,
-  //               horizontalTitleGap: 0,
-  //               title: const Text('Send SOS'),
-  //               onTap: () {
-  //                 // Implement SOS functionality
-  //                 EmergencyService.sendSOS(userFirstName!);
-  //                 Navigator.pop(context);
-  //               },
-  //               subtitle: const Column(
-  //                 crossAxisAlignment: CrossAxisAlignment.start,
-  //                 children: [
-  //                   Text("Send SOS to your emergency contacts"),
-  //                 ],
-  //               ),
-  //             ),
-  //             ListTile(
-  //               leading: const Icon(Icons.share, size: 35.0,),
-  //               minLeadingWidth: 0,
-  //               horizontalTitleGap: 10,
-  //               title: const Text('Share Ride Details'),
-  //               onTap: () {
-  //                 // Implement share ride details functionality
-  //                 EmergencyService.shareRideDetails(widget.rideId);
-  //                 Navigator.pop(context);
-  //               },
-  //               subtitle: const Column(
-  //                 crossAxisAlignment: CrossAxisAlignment.start,
-  //                 children: [
-  //                   Text("Share ride details with your emergency contacts"),
-  //                 ],
-  //               ),
-  //             ),
-  //           ],
-  //         ),
-  //       );
-  //     },
-  //   );
-  // }
   void _showEmergencyOptions() {
     showModalBottomSheet(
       context: context,
@@ -441,12 +362,14 @@ class _RideTrackingPageState extends State<RideTrackingPage> {
                   Navigator.pop(context);
                   // Implement SOS functionality
                   bool success = await EmergencyService.sendSOS(userFirstName!);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(success ? 'SOS sent successfully!' : 'Failed to send SOS.'),
-                      backgroundColor: success ? Colors.green : Colors.red,
-                    ),
-                  );
+                  if(context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(success ? 'SOS sent successfully!' : 'Failed to send SOS.'),
+                        backgroundColor: success ? Colors.green : Colors.red,
+                      ),
+                    );
+                  }
                 },
                 subtitle: const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -464,12 +387,14 @@ class _RideTrackingPageState extends State<RideTrackingPage> {
                   Navigator.pop(context);
                   // Implement share ride details functionality
                   bool success = await EmergencyService.shareRideDetails(widget.rideId);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(success ? 'Ride details shared successfully!' : 'Failed to share ride details.'),
-                      backgroundColor: success ? Colors.green : Colors.red,
-                    ),
-                  );
+                  if(context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(success ? 'Ride details shared successfully!' : 'Failed to share ride details.'),
+                        backgroundColor: success ? Colors.green : Colors.red,
+                      ),
+                    );
+                  }
                 },
                 subtitle: const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

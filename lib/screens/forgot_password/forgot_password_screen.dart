@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lyft_mate/screens/forgot_password/password_reset_screen.dart';
-import '../../services/authentication_service.dart';
+import '../../services/authentication/authentication_service.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -51,12 +51,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 const SizedBox(height: 32),
                 TextFormField(
                   controller: _emailController,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.mail_outline),
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.mail_outline),
                     labelText: "E-Mail",
                     hintText: "Enter your email",
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      // borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   validator: (value) {
@@ -89,9 +89,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     minimumSize: const Size(double.infinity, 50),
                     backgroundColor: Colors.green,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    // shape: RoundedRectangleBorder(
+                    //   borderRadius: BorderRadius.circular(12),
+                    // ),
                   ),
                   child: const Text("Submit"),
                 ),

@@ -66,7 +66,7 @@ class UserM extends ChangeNotifier {
 
   void updateTitle(NameTitle? title) {
     selectedTitle = title;
-    print("see;ecteddd ttileee fm: $selectedTitle");
+    print("selected title: $selectedTitle");
     notifyListeners();
   }
 

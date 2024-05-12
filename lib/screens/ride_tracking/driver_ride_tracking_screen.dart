@@ -11,7 +11,7 @@ import 'package:http/http.dart';
 import 'package:collection/collection.dart';
 
 import '../chat/dash_chatpage.dart';
-import '../reviews/passenegr_review.dart';
+import '../reviews/passenger_review_screen.dart';
 import '../reviews/reviews_screen.dart';
 
 class DriverRideTrackingScreen extends StatefulWidget {
@@ -43,7 +43,7 @@ class DriverRideTrackingScreenState extends State<DriverRideTrackingScreen> {
 
   late StreamSubscription<LocationData>? _locationSubscription;
   late CollectionReference ridesCollection;
-  late LatLng currentRideLocation;
+  LatLng currentRideLocation = LatLng(7.6208296949485055, 80.72228593307872);
 
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   Set<Marker> markers = {};
@@ -244,109 +244,6 @@ class DriverRideTrackingScreenState extends State<DriverRideTrackingScreen> {
         m.markerId.value.startsWith('drop_') &&
         !removedMarkerIds.contains(m.markerId.value));
   }
-
-  // Future<dynamic> distanceToClosestMarker() async {
-  //   double minDistance = double.infinity;
-  //   String closestMarkerId = '';
-  //   Marker? currentMarker;
-  //   List<String> actionSequence = [];
-  //
-  //   // Iterate through all markers to find the closest actionable marker
-  //   for (final marker in markers) {
-  //     if (marker.markerId.value == 'origin') {
-  //       continue; // Skip the origin marker
-  //     }
-  //
-  //     final LatLng markerLocation = marker.position;
-  //     final double distance = calculateDistance(currentRideLocation, markerLocation);
-  //
-  //     // Check if the marker is actionable and closer than any previously considered markers
-  //     if ((marker.markerId.value.startsWith('drop_') || marker.markerId.value.startsWith('start_')) && distance < minDistance && !removedMarkerIds.contains(marker.markerId.value)) {
-  //       minDistance = distance;
-  //       closestMarkerId = marker.markerId.value;
-  //       currentMarker = marker;
-  //     }
-  //   }
-  //
-  //   // If no actionable markers are closer or all passengers are dropped off, consider the destination
-  //   if (closestMarkerId.isEmpty || allPassengersDroppedOff()) {
-  //     Marker? destinationMarker =
-  //         markers.firstWhereOrNull((m) => m.markerId.value == 'destination');
-  //     if (destinationMarker != null) {
-  //       final double distance = calculateDistance(currentRideLocation, destinationMarker.position);
-  //       if (distance < minDistance) {
-  //         minDistance = distance;
-  //         closestMarkerId = destinationMarker.markerId.value;
-  //         currentMarker = destinationMarker;
-  //       }
-  //     }
-  //   }
-  //
-  //   // Output based on closest marker
-  //   if (closestMarkerId.isEmpty) {
-  //     return {'text': 'No marker nearby', 'distance': double.infinity};
-  //   } else {
-  //     // Check if the current location is within 1km(prev 500m 0.5) of the closest marker
-  //     if (minDistance <= 1) {
-  //       // Perform actions based on type of marker when within 500 meters
-  //       String markerType = closestMarkerId.split('_').first;
-  //       switch (markerType) {
-  //         case 'start':
-  //           String passengerId = closestMarkerId.split('_').last;
-  //           await triggerNotification(passengerId);
-  //           String passengerName = await getPassengerDetails(passengerId, 'name');
-  //           String passengerEmail = await getPassengerDetails(passengerId, 'email');
-  //           return {
-  //             'text':
-  //                 'Arriving at $passengerName\'s pick up location.',
-  //             // 'subtext': 'Confirm passenger boarding.',
-  //             'distance': minDistance,
-  //             'markerId': closestMarkerId,
-  //             'passengerId': passengerId,
-  //             'passengerEmail': passengerEmail,
-  //           };
-  //         case 'drop':
-  //           String passengerId = closestMarkerId.split('_').last;
-  //           String passengerName = await getPassengerDetails(passengerId, 'name');
-  //           String passengerEmail = await getPassengerDetails(passengerId, 'email');
-  //           return {
-  //             'text': 'Arriving at $passengerName\'s drop off location.',
-  //             // 'subtext': 'Confirm passenger departure.',
-  //             'distance': minDistance,
-  //             'markerId': closestMarkerId,
-  //             'passengerId': passengerId,
-  //             'passengerEmail': passengerEmail,
-  //           };
-  //         case 'destination':
-  //           return {
-  //             'text': 'End Trip',
-  //             'distance': minDistance,
-  //             'markerId': closestMarkerId
-  //           };
-  //         // if(minDistance <= 0) {
-  //         //
-  //         //   return {
-  //         //     'text': 'End Trip',
-  //         //     'distance': minDistance,
-  //         //     'markerId': closestMarkerId
-  //         //   };
-  //         // } else {
-  //         //
-  //         // }
-  //
-  //         default:
-  //           return {
-  //             'text': 'En Route',
-  //             'distance': minDistance,
-  //             'markerId': closestMarkerId
-  //           };
-  //       }
-  //     } else {
-  //       // Return text and distance for the closest marker if not within 500 meters
-  //       return prepareResponseForMarker(currentMarker, minDistance);
-  //     }
-  //   }
-  // }
 
   Future<dynamic> distanceToClosestMarker() async {
     double minDistance = double.infinity;

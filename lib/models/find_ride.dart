@@ -10,8 +10,8 @@ class FindRide {
 
   FindRide._internal();
 
-  String? id; // Unique identifier for the ride
-  String? userId; // ID of the user offering/requesting the ride
+  String? id;
+  String? userId;
   LatLng? rideLocation;
   LatLng? pickupLocation; // LatLng object representing pickup location
   LatLng? dropoffLocation; // LatLng object representing dropoff location

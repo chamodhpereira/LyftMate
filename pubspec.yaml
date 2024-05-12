@@ -76,6 +76,8 @@ dependencies:
   mailer: ^6.1.0
   firebase_auth_mocks: ^0.13.0
   flutter_native_splash: ^2.4.0
+  shared_preferences: ^2.2.3
+  flutter_launcher_icons: ^0.13.1
 
 
 
@@ -138,6 +140,15 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: "AppIcon"
+  image_path: "assets/images/ic_launcher_round.png"
+  min_sdk_android: 21
+  remove_alpha_ios: true
+
 flutter_native_splash:
   # This package generates native code to customize Flutter's default white native splash screen
   # with background color and splash image.

@@ -8,38 +8,6 @@ import 'package:http/http.dart' as http;
 class PaymentService {
   static Map<String, dynamic>? paymentIntent;
 
-  // static Future<bool> makePayment(double amount, String email, String username) async {
-  //   try {
-  //     paymentIntent = await createPaymentIntent(amount, email, username);
-  //     print('Payment Intent: $paymentIntent');
-  //
-  //     var gpay = const PaymentSheetGooglePay(
-  //       merchantCountryCode: "US",
-  //       currencyCode: "US",
-  //       testEnv: true,
-  //     );
-  //
-  //     await Stripe.instance.initPaymentSheet(paymentSheetParameters: SetupPaymentSheetParameters(
-  //       paymentIntentClientSecret: paymentIntent!["client_secret"],
-  //       style: ThemeMode.dark,
-  //       merchantDisplayName: "LyftMate",
-  //       googlePay: gpay,
-  //     ));
-  //
-  //     print('Payment sheet initialized');
-  //
-  //     bool res = await displayPaymentSheet();
-  //     if (res==false) {
-  //       return false;
-  //     }
-  //     return true; // Payment successful
-  //   } catch (e) {
-  //     print('Error making payment: $e');
-  //     return false; // Payment failed
-  //   }
-  // }
-
-
   static Future<String?> makePayment(double amount, String email, String username) async {
     try {
       paymentIntent = await createPaymentIntent(amount, email, username);
@@ -89,8 +57,6 @@ class PaymentService {
       // Convert amount to cents
       int amountInCents = (amount * 100).toInt();
 
-      // Create a customer if not exists
-      // String customerId = await createOrRetrieveCustomer(email, payerName);
 
 
       Map<String, dynamic> body = {

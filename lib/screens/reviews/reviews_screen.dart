@@ -182,9 +182,9 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
 class ReviewsScreen extends StatefulWidget {
-  final String rideId;
+  final String? rideId;
 
-  const ReviewsScreen({super.key, required this.rideId});
+  const ReviewsScreen({super.key, this.rideId});
 
   @override
   _ReviewsScreenState createState() => _ReviewsScreenState();
@@ -197,9 +197,13 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+        canPop: false, // Prevents the user from going back
+        child: Scaffold(
       appBar: AppBar(
         title: const Text('Leave a Review'),
+        leading: Container(),
+        leadingWidth: 0,// Removes the default back arrow
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
         elevation: 0.5,
@@ -300,8 +304,9 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
 
                             // Get the current rating information of the driver
                             DocumentSnapshot driverSnapshot = await FirebaseFirestore.instance.collection('users').doc(driverId).get();
-                            double currentRating = (driverSnapshot.get('ratings') ?? 0).toDouble();
-                            int numberOfRatings = (driverSnapshot.get('numberOfRatings') ?? 0).toInt();
+                            Map<String, dynamic> driverData = driverSnapshot.data() as Map<String, dynamic>;
+                            double currentRating = driverData['ratings'] ?? 0.0;
+                            int numberOfRatings = driverData['numberOfRatings'] ?? 0;
 
                             // Calculate the new total rating
                             double newTotalRating = currentRating * numberOfRatings + _rating;
@@ -353,6 +358,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
           ),
         ],
       ),
+    ),
     );
   }
 }

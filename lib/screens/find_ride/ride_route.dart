@@ -25,7 +25,6 @@ class _RideMapScreenState extends State<RideMapScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print('Building RideMapScreen');
 
     LatLng closestToPickupPosition = LatLng(
       widget.closestCoordinateToPickup.latitude,
@@ -63,14 +62,6 @@ class _RideMapScreenState extends State<RideMapScreen> {
         ),
         infoWindow: InfoWindow(title: 'Drop-off Location'),
       ),
-      // Marker(
-      //   markerId: MarkerId('closestToPickup'),
-      //   position: LatLng(
-      //     closestToPickupPosition.latitude,
-      //     closestToPickupPosition.longitude,
-      //   ),
-      //   infoWindow: InfoWindow(title: 'Closest to Pickup'),
-      // ),
       Marker(
         markerId: MarkerId('closestToPickup'),
         position: closestToPickupPosition, // Use updated position
@@ -102,21 +93,14 @@ class _RideMapScreenState extends State<RideMapScreen> {
       ),
     ]);
 
-
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
             onPressed: () {
               Navigator.pop(context);
-              // Navigator.pop(
-              //   context,
-              //   MaterialPageRoute(builder: (context) => AvailableRides()),
-              // );
             },
-            icon: Icon(Icons.arrow_back)),
-        title: Text('Ride Details Map'),
-        // titleSpacing: 0,
-        // leadingWidth: 60.0,
+            icon: const Icon(Icons.arrow_back)),
+        title: const Text('Ride Details Map'),
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
         elevation: 0.5,
@@ -132,18 +116,13 @@ class _RideMapScreenState extends State<RideMapScreen> {
         onTap: (LatLng latLng) {
           LatLng closestToPickupPos = findNearestPointOnPolyline(latLng);
           print('Nearest point to tap: $closestToPickupPos');
-          // if (markers.any((marker) => marker.markerId.value == 'closestToPickup')) {
-          //   print("Thiyenawaaaa wttooooo");
-          //   // If marker with ID 'closestToPickup' exists, remove it
-          //   markers.removeWhere((marker) => marker.markerId.value == 'closestToPickup');
-          // }
           setState(() {
             closestToPickupPosition = closestToPickupPos; // Update the state
 
             // Find the existing marker with markerId 'closestToPickup'
             Marker existingMarker = markers.firstWhere(
                   (marker) => marker.markerId.value == 'closestToPickup',
-              orElse: () => Marker(markerId: MarkerId('closestToPickup')), // Create a new marker if not found
+              orElse: () => const Marker(markerId: MarkerId('closestToPickup')), // Create a new marker if not found
             );
 
             // Update the position of the existing marker
@@ -154,40 +133,6 @@ class _RideMapScreenState extends State<RideMapScreen> {
             // Update the markers set with the modified marker
             markers = Set.of(markers..removeWhere((marker) => marker.markerId.value == 'closestToPickup')..add(existingMarker));
 
-            // markers.removeWhere((marker) => marker.markerId.value == 'closestToPickup');
-            // Check if markers set contains a marker with ID 'closestToPickup'
-
-            // markers.add(
-            //   Marker(          ---- mvoingggg
-            //     markerId: MarkerId('closestToPickup'),
-            //     position: closestToPickupPosition, // Use updated position
-            //     infoWindow: InfoWindow(title: '$closestToPickupPosition'),
-            //   ),
-            // );
-
-            // Find the existing marker with ID 'closestToPickup' and update its position
-            // markers = markers.map((marker) {
-            //   if (marker.markerId.value == 'closestToPickup') {
-            //     return marker.copyWith(positionParam: closestToPickupPosition);
-            //   } else {
-            //     return marker;
-            //   }
-            // }).toSet();
-
-            // setState(() {
-            //   // Your existing code to update markers set
-            //   markers.removeWhere((marker) => marker.markerId.value == 'closestToPickup');
-            //
-            //   // Add this line to trigger a rebuild of the widget tree
-            // });
-            // markers.add(
-            //   Marker(
-            //     markerId: MarkerId('newMarker'),
-            //     position: closestToPickupPosition,
-            //     infoWindow: InfoWindow(title: 'New Marker'),
-            //   ),
-            // );
-            print("AFTER assign: $closestToDropPosition");
             // Print the updated markers set
             markers.forEach((marker) {
               print(marker.markerId.value);
@@ -195,60 +140,6 @@ class _RideMapScreenState extends State<RideMapScreen> {
           });
         },
         markers: markers ,
-      // Marker(
-      // markerId: MarkerId('pickup'),
-      // position: LatLng(
-      // widget.ride['pickupLocation']['geopoint'].latitude,
-      // widget.ride['pickupLocation']['geopoint'].longitude,
-      // ),
-      // infoWindow: InfoWindow(title: 'Pickup Location'),
-      // ),
-      // Marker(
-      // markerId: MarkerId('dropoff'),
-      // position: LatLng(
-      // widget.ride['dropoffLocation']['geopoint'].latitude,
-      // widget.ride['dropoffLocation']['geopoint'].longitude,
-      // ),
-      // infoWindow: InfoWindow(title: 'Drop-off Location'),
-      // ),
-      // // Marker(
-      // //   markerId: MarkerId('closestToPickup'),
-      // //   position: LatLng(
-      // //     closestToPickupPosition.latitude,
-      // //     closestToPickupPosition.longitude,
-      // //   ),
-      // //   infoWindow: InfoWindow(title: 'Closest to Pickup'),
-      // // ),
-      // Marker(
-      // markerId: MarkerId('closestToPickup'),
-      // position: closestToPickupPosition, // Use updated position
-      // infoWindow: InfoWindow(title: '$closestToPickupPosition'),
-      // ),
-      // Marker(
-      // markerId: MarkerId('ToPickup'),
-      // position: LatLng(
-      // widget.userPickupLocation.latitude,
-      // widget.userPickupLocation.longitude,
-      // ),
-      // infoWindow: InfoWindow(title: 'your location'),
-      // ),
-      // Marker(
-      // markerId: MarkerId('ToDropoff'),
-      // position: LatLng(
-      // closestToDropPosition.latitude,
-      // closestToDropPosition.longitude,
-      // ),
-      // infoWindow: InfoWindow(title: 'closest to your drop location'),
-      // ),
-      // Marker(
-      // markerId: MarkerId('UserDropoff'),
-      // position: LatLng(
-      // userDropoffPosition.latitude,
-      // userDropoffPosition.longitude,
-      // ),
-      // infoWindow: InfoWindow(title: 'your picked drop location'),
-      // ),
-      // },
         polylines: {
           Polyline(
             polylineId: PolylineId('route'),
@@ -276,27 +167,6 @@ class _RideMapScreenState extends State<RideMapScreen> {
       ),
     );
   }
-
-
-  // LatLng findNearestPointOnPolyline(LatLng tapLatLng) {
-  //   // Calculate nearest point on the polyline to the tap
-  //   List<LatLng> polylinePoints = List<LatLng>.from(widget.ride['polylinePoints']
-  //       .map<LatLng>((point) => LatLng(point['latitude'], point['longitude'])));
-  //
-  //   double minDistance = double.infinity;
-  //   LatLng nearestPoint = polylinePoints.first;
-  //
-  //   for (LatLng point in polylinePoints) {
-  //     double distance = distanceBetween(point.latitude, point.longitude, tapLatLng.latitude, tapLatLng.longitude);
-  //     if (distance < minDistance) {
-  //       minDistance = distance;
-  //       nearestPoint = point;
-  //     }
-  //   }
-  //
-  //   return nearestPoint;
-  // }
-
 
   double calculateDistance(double startLatitude, double startLongitude,
       double endLatitude, double endLongitude) {
@@ -346,7 +216,7 @@ class _RideMapScreenState extends State<RideMapScreen> {
         nearestPoint = point;
       }
     }
-    print('Nearest point: $nearestPoint');
+    debugPrint('Nearest point: $nearestPoint');
     return nearestPoint;
   }
 }
