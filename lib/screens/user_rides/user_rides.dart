@@ -1084,7 +1084,7 @@ LyftMate App Team
                   Text(
                     "Ride No. #$rideId",
                     style:
-                        TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold),
+                    TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold),
                   ),
                   Flexible(
                     // Wrap the Chip with Flexible to prevent overflow
@@ -1100,8 +1100,8 @@ LyftMate App Team
                       backgroundColor: rideStatus.toUpperCase() == 'PENDING'
                           ? Colors.orange
                           : rideStatus.toUpperCase() == 'IN PROGRESS'
-                              ? Colors.green
-                              : Colors.grey,
+                          ? Colors.green
+                          : Colors.grey,
                     ),
                   ),
                 ],
@@ -1218,9 +1218,9 @@ LyftMate App Team
                   child: ElevatedButton(
                     style: ButtonStyle(
                       backgroundColor:
-                          MaterialStateProperty.all<Color>(Colors.green),
+                      MaterialStateProperty.all<Color>(Colors.green),
                       foregroundColor:
-                          MaterialStateProperty.all<Color>(Colors.white),
+                      MaterialStateProperty.all<Color>(Colors.white),
                     ),
                     onPressed: () {
                       // Track ride logic
@@ -1240,5 +1240,6 @@ LyftMate App Team
         ),
       ),
     );
+
   }
 }

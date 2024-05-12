@@ -622,7 +622,7 @@ class RideDetailsScreen extends StatelessWidget {
       // bottomNavigationBar: BottomSeatSelectionContainer(availableSeats: ride['seats'] ?? 4, ride: ride,),
       bottomNavigationBar: BottomSeatSelectionContainer(
         // availableSeats: int.parse(ride['seats'] ?? '4'),
-        availableSeats: ride['seats'],
+        // availableSeats: ride['seats'],
         ride: ride,
         bookingButtonText: bookingButtonText, // Pass the button text here
         rideBookingType: rideBookingType, // Pass the booking type here
@@ -690,66 +690,83 @@ class DashedLinePainter extends CustomPainter {
 }
 
 // class BottomSeatSelectionContainer extends StatefulWidget {
-//   final int availableSeats;
 //   final DocumentSnapshot ride;
 //   final DocumentSnapshot driver;
 //   final GeoPoint userPickupCoordinate;
 //   final GeoPoint userDropoffCoordinate;
+//   final String bookingButtonText;
+//   final String rideBookingType;
 //
-//   const BottomSeatSelectionContainer(
-//       {super.key, required this.availableSeats, required this.ride, required this.userPickupCoordinate, required this.userDropoffCoordinate, required this.driver});
+//   const BottomSeatSelectionContainer({
+//     super.key,
+//     required this.ride,
+//     required this.userPickupCoordinate,
+//     required this.userDropoffCoordinate,
+//     required this.driver,
+//     required this.bookingButtonText,
+//     required this.rideBookingType,
+//   });
 //
 //   @override
 //   _BottomSeatSelectionContainerState createState() =>
 //       _BottomSeatSelectionContainerState();
 // }
-
-// class _BottomSeatSelectionContainerState
-//     extends State<BottomSeatSelectionContainer> {
-//   int selectedSeats = 0;
 //
-//   void updateSelectedSeats(int count) {
-//     print("updateee method: $count");
-//     setState(() {
-//       selectedSeats = count;
-//     });
+// class _BottomSeatSelectionContainerState extends State<BottomSeatSelectionContainer> {
+//   bool isLoading = false; // Track loading state
+//
+//   void handleRequestRide(BuildContext context) async {
+//     double amountToBePaid = widget.ride['pricePerSeat'];
+//     String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
+//
+//     var requestData = {
+//       'passengerId': currentUserId,
+//       'seatsRequested': 1, // Always 1 seat since selection isn't allowed
+//       'pickupCoordinate': widget.userPickupCoordinate,
+//       'dropoffCoordinate': widget.userDropoffCoordinate,
+//       'amount': amountToBePaid,
+//       'paidStatus': false,
+//     };
+//
+//     var rideRef = FirebaseFirestore.instance.collection('rides').doc(widget.ride.id);
+//
+//     try {
+//       setState(() {
+//         isLoading = true; // Start loading
+//       });
+//
+//       await rideRef.update({
+//         'rideRequests': FieldValue.arrayUnion([requestData]),
+//       });
+//
+//       Navigator.push(
+//         context,
+//         MaterialPageRoute(builder: (context) => RideRequestSentPage()),
+//       );
+//     } catch (e) {
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         const SnackBar(
+//           content: Text('Failed to send ride request. Please try again.'),
+//           backgroundColor: Colors.red,
+//         ),
+//       );
+//     } finally {
+//       setState(() {
+//         isLoading = false; // Stop loading
+//       });
+//     }
 //   }
 //
 //   @override
 //   Widget build(BuildContext context) {
 //     return Container(
-//       padding: EdgeInsets.all(16.0),
+//       padding: const EdgeInsets.all(16.0),
 //       child: Row(
 //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
 //         children: [
 //           Row(
 //             children: [
-//               TextButton(
-//                 onPressed: () {
-//                   showModalBottomSheet(
-//                     context: context,
-//                     builder: (BuildContext context) {
-//                       return SeatSelectionBottomSheet(
-//                         availableSeats: widget.availableSeats,
-//                         initialSeats: selectedSeats,
-//                         onUpdate: updateSelectedSeats,
-//                       );
-//                     },
-//                   );
-//                 },
-//                 child: Row(
-//                   // children: [
-//                   //   Text("Select Seats"),
-//                   //   Icon(Icons.keyboard_arrow_down),
-//                   // ],
-//                   children: [
-//                     Text(selectedSeats >= 1
-//                         ? "Seats Selected: ${selectedSeats.toString()}"
-//                         : "Select Seats"),
-//                     const Icon(Icons.keyboard_arrow_down),
-//                   ],
-//                 ),
-//               )
+//               Text("Seats Selected: 1", style: TextStyle(fontWeight: FontWeight.bold),), // Display fixed number of selected seats
 //             ],
 //           ),
 //           ElevatedButton(
@@ -757,49 +774,10 @@ class DashedLinePainter extends CustomPainter {
 //               backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
 //               foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
 //             ),
-//             // onPressed: () {
-//             //   // Navigate to ConfirmBookingPage with necessary parameters
-//             //   Navigator.push(
-//             //     context,
-//             //     MaterialPageRoute(
-//             //       builder: (context) => ConfirmBookingPage(
-//             //         ride: widget.ride,
-//             //         // Pass the ride details to the confirm booking page
-//             //         selectedSeats:
-//             //         selectedSeats, // Pass the selected number of seats
-//             //         userPickupCoordinate: widget.userPickupCoordinate,
-//             //         userDropoffCoordinate: widget.userDropoffCoordinate,
-//             //       ),
-//             //     ),
-//             //   );
-//             // },
-//             onPressed: () {
-//               if (selectedSeats > 0) {
-//                 // Navigate to ConfirmBookingPage with necessary parameters
-//                 Navigator.push(
-//                   context,
-//                   MaterialPageRoute(
-//                     builder: (context) => ConfirmBookingPage(
-//                       ride: widget.ride,
-//                       driverDetails: widget.driver,
-//                       // Pass the ride details to the confirm booking page
-//                       selectedSeats:
-//                       selectedSeats, // Pass the selected number of seats
-//                       userPickupCoordinate: widget.userPickupCoordinate,
-//                       userDropoffCoordinate: widget.userDropoffCoordinate,
-//                     ),
-//                   ),
-//                 );
-//               } else {
-//                 // Show a scaffold message
-//                 ScaffoldMessenger.of(context).showSnackBar(
-//                   SnackBar(
-//                     content: Text('Please select at least one seat.'),
-//                   ),
-//                 );
-//               }
-//             },
-//             child: Text('Continue'),
+//             onPressed: isLoading ? null : () => handleRequestRide(context),
+//             child: isLoading
+//                 ? const CircularProgressIndicator(color: Colors.white)
+//                 : Text(widget.bookingButtonText),
 //           ),
 //         ],
 //       ),
@@ -808,8 +786,9 @@ class DashedLinePainter extends CustomPainter {
 // }
 
 
+
 class BottomSeatSelectionContainer extends StatefulWidget {
-  final int availableSeats;
+  // final int availableSeats;
   final DocumentSnapshot ride;
   final DocumentSnapshot driver;
   final GeoPoint userPickupCoordinate;
@@ -819,7 +798,7 @@ class BottomSeatSelectionContainer extends StatefulWidget {
 
   const BottomSeatSelectionContainer({
     super.key,
-    required this.availableSeats,
+    // required this.availableSeats,
     required this.ride,
     required this.userPickupCoordinate,
     required this.userDropoffCoordinate,
@@ -850,7 +829,7 @@ class _BottomSeatSelectionContainerState extends State<BottomSeatSelectionContai
 
     var requestData = {
       'passengerId': currentUserId,
-      'seatsRequested': selectedSeats,
+      'seatsRequested': 1,
       'pickupCoordinate': widget.userPickupCoordinate,
       'dropoffCoordinate': widget.userDropoffCoordinate,
       'amount': amountToBePaid,
@@ -895,30 +874,36 @@ class _BottomSeatSelectionContainerState extends State<BottomSeatSelectionContai
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          // Row(
+          //   children: [
+              // TextButton(
+              //   onPressed: () {
+              //     showModalBottomSheet(
+              //       context: context,
+              //       builder: (BuildContext context) {
+              //         return SeatSelectionBottomSheet(
+              //           availableSeats: widget.availableSeats,
+              //           initialSeats: selectedSeats,
+              //           onUpdate: updateSelectedSeats,
+              //         );
+              //       },
+              //     );
+              //   },
+          //       child: Row(
+          //         children: [
+          //           Text(selectedSeats >= 1
+          //               ? "Seats Selected: ${selectedSeats.toString()}"
+          //               : "Select Seats"),
+          //           const Icon(Icons.keyboard_arrow_down),
+          //         ],
+          //       ),
+          //     ),
+          //   ],
+          // ),
+
           Row(
             children: [
-              TextButton(
-                onPressed: () {
-                  showModalBottomSheet(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return SeatSelectionBottomSheet(
-                        availableSeats: widget.availableSeats,
-                        initialSeats: selectedSeats,
-                        onUpdate: updateSelectedSeats,
-                      );
-                    },
-                  );
-                },
-                child: Row(
-                  children: [
-                    Text(selectedSeats >= 1
-                        ? "Seats Selected: ${selectedSeats.toString()}"
-                        : "Select Seats"),
-                    const Icon(Icons.keyboard_arrow_down),
-                  ],
-                ),
-              ),
+              Text("Seats Selected: 1", style: TextStyle(fontWeight: FontWeight.bold),), // Display fixed number of selected seats
             ],
           ),
           ElevatedButton(
@@ -927,26 +912,43 @@ class _BottomSeatSelectionContainerState extends State<BottomSeatSelectionContai
               foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
             ),
             onPressed: () {
-              if (selectedSeats > 0) {
-                if (widget.rideBookingType == "Request") {
-                  handleRequestRide(context);
-                } else {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ConfirmBookingPage(
-                        ride: widget.ride,
-                        driverDetails: widget.driver,
-                        selectedSeats: selectedSeats,
-                        userPickupCoordinate: widget.userPickupCoordinate,
-                        userDropoffCoordinate: widget.userDropoffCoordinate,
-                      ),
-                    ),
-                  );
-                }
+              // if (selectedSeats > 0) {
+              //   if (widget.rideBookingType == "Request") {
+              //     handleRequestRide(context);
+              //   } else {
+              //     Navigator.push(
+              //       context,
+              //       MaterialPageRoute(
+              //         builder: (context) => ConfirmBookingPage(
+              //           ride: widget.ride,
+              //           driverDetails: widget.driver,
+              //           selectedSeats: 1,
+              //           userPickupCoordinate: widget.userPickupCoordinate,
+              //           userDropoffCoordinate: widget.userDropoffCoordinate,
+              //         ),
+              //       ),
+              //     );
+              //   }
+              // } else {
+              //   ScaffoldMessenger.of(context).showSnackBar(
+              //     const SnackBar(content: Text('Please select at least one seat.')),
+              //   );
+              // }
+
+              if (widget.rideBookingType == "Request") {
+                handleRequestRide(context);
               } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Please select at least one seat.')),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ConfirmBookingPage(
+                      ride: widget.ride,
+                      driverDetails: widget.driver,
+                      selectedSeats: 1,
+                      userPickupCoordinate: widget.userPickupCoordinate,
+                      userDropoffCoordinate: widget.userDropoffCoordinate,
+                    ),
+                  ),
                 );
               }
             },
@@ -959,138 +961,6 @@ class _BottomSeatSelectionContainerState extends State<BottomSeatSelectionContai
     );
   }
 }
-
-
-
-
-// class _BottomSeatSelectionContainerState
-//     extends State<BottomSeatSelectionContainer> {
-//   int selectedSeats = 0;
-//
-//   void updateSelectedSeats(int count) {
-//     setState(() {
-//       selectedSeats = count;
-//     });
-//   }
-//
-//   void handleRequestRide(BuildContext context) async {
-//     double amountToBePaid = widget.ride['pricePerSeat'] * selectedSeats;
-//
-//     String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
-//     debugPrint('Current User ID: $currentUserId');
-//
-//     // Prepare the request data
-//     var requestData = {
-//       'passengerId': currentUserId, // Replace with actual current user ID
-//       'seatsRequested': selectedSeats,
-//       'pickupCoordinate': widget.userPickupCoordinate,
-//       'dropoffCoordinate': widget.userDropoffCoordinate,
-//       'amount': amountToBePaid, // Store the amount
-//       'paidStatus': false,
-//     };
-//
-//     // Add to "ride requests" array in Firestore
-//     var rideRef = FirebaseFirestore.instance.collection('rides').doc(widget.ride.id);
-//
-//     try {
-//       await rideRef.update({
-//         'rideRequests': FieldValue.arrayUnion([requestData]),
-//       });
-//       debugPrint("Ride request successfully added.");
-//       // Redirect to the Request Sent page
-//       // Navigator.push(
-//       //   context,
-//       //   MaterialPageRoute(builder: (context) => RequestSentPage()),
-//       // );
-//
-//       debugPrint("Redirecting to Request sent page.....");
-//     } catch (e) {
-//       debugPrint("Failed to add ride request: $e");
-//       // Optionally, show an error message to the user
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         const SnackBar(
-//           content: Text('Failed to send ride request. Please try again.'),
-//           backgroundColor: Colors.red,
-//         ),
-//       );
-//     }
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Container(
-//       padding: EdgeInsets.all(16.0),
-//       child: Row(
-//         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//         children: [
-//           // Seat selection button logic
-//           Row(
-//             children: [
-//               TextButton(
-//                 onPressed: () {
-//                   showModalBottomSheet(
-//                     context: context,
-//                     builder: (BuildContext context) {
-//                       return SeatSelectionBottomSheet(
-//                         availableSeats: widget.availableSeats,
-//                         initialSeats: selectedSeats,
-//                         onUpdate: updateSelectedSeats,
-//                       );
-//                     },
-//                   );
-//                 },
-//                 child: Row(
-//                   children: [
-//                     Text(selectedSeats >= 1
-//                         ? "Seats Selected: ${selectedSeats.toString()}"
-//                         : "Select Seats"),
-//                     const Icon(Icons.keyboard_arrow_down),
-//                   ],
-//                 ),
-//               ),
-//             ],
-//           ),
-//
-//           // Main action button
-//           ElevatedButton(
-//             style: ButtonStyle(
-//               backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
-//               foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-//             ),
-//             onPressed: () {
-//               if (selectedSeats > 0) {
-//                 // Determine the action based on rideBookingType
-//                 if (widget.rideBookingType == "Request") {
-//                   handleRequestRide(context);
-//                 } else {
-//                   // Proceed to the confirmation page for instant booking
-//                   Navigator.push(
-//                     context,
-//                     MaterialPageRoute(
-//                       builder: (context) => ConfirmBookingPage(
-//                         ride: widget.ride,
-//                         driverDetails: widget.driver,
-//                         selectedSeats: selectedSeats,
-//                         userPickupCoordinate: widget.userPickupCoordinate,
-//                         userDropoffCoordinate: widget.userDropoffCoordinate,
-//                       ),
-//                     ),
-//                   );
-//                 }
-//               } else {
-//                 // Show a warning message
-//                 ScaffoldMessenger.of(context).showSnackBar(
-//                   const SnackBar(content: Text('Please select at least one seat.')),
-//                 );
-//               }
-//             },
-//             child: Text(widget.bookingButtonText),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
 
 
 class SeatSelectionBottomSheet extends StatefulWidget {

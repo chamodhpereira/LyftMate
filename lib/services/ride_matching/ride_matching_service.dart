@@ -10,8 +10,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geoflutterfire2/geoflutterfire2.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-
-
 class RideMatching {
   final client = Client();
   final geo = GeoFlutterFire();
@@ -36,7 +34,7 @@ class RideMatching {
         if (placesResponse.statusCode == 200) {
           final placesData = json.decode(placesResponse.body);
           final addressComponents =
-          placesData['result']['address_components'] as List<dynamic>;
+              placesData['result']['address_components'] as List<dynamic>;
 
           for (final component in addressComponents) {
             final longName = component['long_name'] as String;
@@ -55,15 +53,12 @@ class RideMatching {
     }
   }
 
-
-
   // Generate a list of geohashes that cover the area around the provided geopoint
   List<String> generateNearbyGeohashes(double latitude, double longitude) {
-    String centralGeohash = geoHasher.encode(longitude, latitude,
-        precision: 5);
+    String centralGeohash = geoHasher.encode(longitude, latitude, precision: 5);
 
-    Map<String, String> nearbyGeohashesMap = geoHasher.neighbors(
-        centralGeohash);
+    Map<String, String> nearbyGeohashesMap =
+        geoHasher.neighbors(centralGeohash);
     List<String> nearbyGeohashes = nearbyGeohashesMap.values.toList();
     nearbyGeohashes.add(centralGeohash); // Include the central geohash
 
@@ -95,23 +90,30 @@ class RideMatching {
     // Define the time slot ranges
     List<DateTimeRange> timeSlotRanges = [
       DateTimeRange(
-        start: DateTime(desiredDate!.year, desiredDate.month, desiredDate.day, 0, 0),
-        end: DateTime(desiredDate.year, desiredDate.month, desiredDate.day, 5, 59),
+        start: DateTime(
+            desiredDate!.year, desiredDate.month, desiredDate.day, 0, 0),
+        end: DateTime(
+            desiredDate.year, desiredDate.month, desiredDate.day, 5, 59),
       ),
       DateTimeRange(
-        start: DateTime(desiredDate.year, desiredDate.month, desiredDate.day, 6, 0),
-        end: DateTime(desiredDate.year, desiredDate.month, desiredDate.day, 11, 59),
+        start: DateTime(
+            desiredDate.year, desiredDate.month, desiredDate.day, 6, 0),
+        end: DateTime(
+            desiredDate.year, desiredDate.month, desiredDate.day, 11, 59),
       ),
       DateTimeRange(
-        start: DateTime(desiredDate.year, desiredDate.month, desiredDate.day, 12, 0),
-        end: DateTime(desiredDate.year, desiredDate.month, desiredDate.day, 17, 59),
+        start: DateTime(
+            desiredDate.year, desiredDate.month, desiredDate.day, 12, 0),
+        end: DateTime(
+            desiredDate.year, desiredDate.month, desiredDate.day, 17, 59),
       ),
       DateTimeRange(
-        start: DateTime(desiredDate.year, desiredDate.month, desiredDate.day, 18, 0),
-        end: DateTime(desiredDate.year, desiredDate.month, desiredDate.day, 23, 59),
+        start: DateTime(
+            desiredDate.year, desiredDate.month, desiredDate.day, 18, 0),
+        end: DateTime(
+            desiredDate.year, desiredDate.month, desiredDate.day, 23, 59),
       ),
     ];
-
 
     try {
       List<String> pickupGeohashes = generateNearbyGeohashes(
@@ -136,17 +138,19 @@ class RideMatching {
       debugPrint("DISTANCEEE THRESHOLDDD: $distanceThreshold");
       debugPrint("PREFEREEEECESSSSS: $preferences");
 
-
       // generateNearbyGeohashes(7.201192460189143, 79.87352611754969);
 
       QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection('rides')
-          .where('date', isGreaterThanOrEqualTo: startTime) // Filter rides starting from the beginning of the desired date
-          .where('date', isLessThanOrEqualTo: endTime) // Filter rides up to the end of the desired date
-          .where('rideStatus', whereNotIn: ['In Progress', 'Cancelled', 'Completed'])
-          .get();
+          .where('date',
+              isGreaterThanOrEqualTo:
+                  startTime) // Filter rides starting from the beginning of the desired date
+          .where('date',
+              isLessThanOrEqualTo:
+                  endTime) // Filter rides up to the end of the desired date
+          .where('rideStatus',
+              whereNotIn: ['In Progress', 'Cancelled', 'Completed']).get();
       List<DocumentSnapshot> rides = snapshot.docs;
-
 
       // Apply filtering based on the selected time slot
       if (selectedTimeSlot >= 0 && selectedTimeSlot < timeSlotRanges.length) {
@@ -171,118 +175,129 @@ class RideMatching {
 
       debugPrint("Filtered Rides: ${rides.length}");
 
+
       for (var ride in rides) {
         debugPrint('Processing document: $ride');
 
         Map<String, dynamic> rideData = ride.data() as Map<String, dynamic>;
         debugPrint('Ride data: $rideData');
 
-        Map<dynamic, dynamic> polylineGeohashes = rideData['polylinePointsGeohashes'] ?? {};
+        debugPrint('----------------------------------------------------------------------------');
+        debugPrint('Ride data seats: ${rideData['seats']}');
 
+        Map<dynamic, dynamic> polylineGeohashes =
+            rideData['polylinePointsGeohashes'] ?? {};
 
         List<LatLng> matchedPickupCoordinates = [];
         List<LatLng> matchedDropoffCoordinates = [];
 
-        pickupGeohashes.forEach((gh) {
-          // debugPrint('Checking pickup geohash: $gh');
-          if (polylineGeohashes.containsKey(gh)) {
-            var coords = polylineGeohashes[gh];
-            // debugPrint('Found matching geohash for pickup: $gh, coordinates: $coords');
-            if (coords != null) {
-              matchedPickupCoordinates.addAll(coords.map<LatLng>(
-                  (coord) => LatLng(coord['latitude'], coord['longitude'])));
+        if (rideData['seats'] > 0) {
+          pickupGeohashes.forEach((gh) {
+            // debugPrint('Checking pickup geohash: $gh');
+            if (polylineGeohashes.containsKey(gh)) {
+              var coords = polylineGeohashes[gh];
+              // debugPrint('Found matching geohash for pickup: $gh, coordinates: $coords');
+              if (coords != null) {
+                matchedPickupCoordinates.addAll(coords.map<LatLng>(
+                    (coord) => LatLng(coord['latitude'], coord['longitude'])));
+              }
             }
-          }
-        });
-
-        dropoffGeohashes.forEach((gh) {
-          // debugPrint('Checking dropoff geohash: $gh');
-          if (polylineGeohashes.containsKey(gh)) {
-            var coords = polylineGeohashes[gh];
-            // debugPrint('Found matching geohash for dropoff: $gh, coordinates: $coords');
-            if (coords != null) {
-              matchedDropoffCoordinates.addAll(coords.map<LatLng>(
-                  (coord) => LatLng(coord['latitude'], coord['longitude'])));
-            }
-          }
-        });
-
-        // Find the closest coordinates for pickup and dropoff
-        LatLng closestSnappedPickupCoordinate =
-            findClosestCoordinate(userPickupLocation, matchedPickupCoordinates);
-        LatLng closestSnappedDropoffCoordinate = findClosestCoordinate(
-            userDropoffLocation, matchedDropoffCoordinates);
-
-
-        debugPrint("User Pickup Location $userPickupLocation");
-
-
-        debugPrint('Closest snapped pickup coordinate: $closestSnappedPickupCoordinate');
-        debugPrint('Closest snapped dropoff coordinate: $closestSnappedDropoffCoordinate');
-
-        if (await isHighway(closestSnappedPickupCoordinate) || await isHighway(closestSnappedDropoffCoordinate)) {
-          debugPrint("==============================================");
-          debugPrint("-------falllssss on highwaaaayyyyy-------");
-          debugPrint("==============================================");
-
-          continue; // Skip this ride if either snapped pickup or drop-off is on a highway/expressway
-        }
-
-
-        double minPickupDistance = 0.0;
-        double minDropoffDistance = 0.0;
-
-        Future<void> calculateDistances() async {
-          try {
-            minPickupDistance = await calculateRouteDistance(
-              userPickupLocation,
-              closestSnappedPickupCoordinate,
-            );
-            minDropoffDistance = await calculateRouteDistance(
-              userDropoffLocation,
-              closestSnappedDropoffCoordinate,
-            );
-
-
-            debugPrint("Minimum Pickup Distance: $minPickupDistance meters");
-            debugPrint("Minimum Dropoff Distance: $minDropoffDistance meters");
-
-          } catch (e) {
-            debugPrint("Failed to calculate distances: $e");
-          }
-        }
-
-        await calculateDistances();
-
-
-        String pickupDistanceText = '${(minPickupDistance / 1000).toStringAsFixed(2)} km';
-        String dropoffDistanceText = '${(minDropoffDistance / 1000).toStringAsFixed(2)} km';
-        debugPrint("PICKUP DIST TEXT: $pickupDistanceText");
-
-        debugPrint('Min pickup distance: $minPickupDistance, Min dropoff distance: $minDropoffDistance');
-        debugPrint('DISTANCE THERESHOLD: $distanceThreshold');
-
-        debugPrint('Min pickup distance: $minPickupDistance meters, Threshold: $distanceThreshold meters');
-        debugPrint('Min dropoff distance: $minDropoffDistance meters, Threshold: $distanceThreshold meters');
-
-        // if (minPickupDistance <= distanceThreshold && minDropoffDistance <= distanceThreshold) {
-        //   debugPrint('Both pickup and dropoff within walking distance.');
-        // } else {
-        //   debugPrint('One or both distances exceed the threshold.');
-        // }
-
-        if (minPickupDistance <= distanceThreshold && minDropoffDistance <= distanceThreshold) {
-          print('Both pickup and dropoff within walking distance.');
-
-          ridesWithDistances.add({
-            'ride': ride,
-            'pickupDistance': minPickupDistance,
-            'dropoffDistance': minDropoffDistance,
-            'pickupDistanceText': pickupDistanceText,
-            'dropoffDistanceText': dropoffDistanceText,
-            'closestSnappedPickupCoordinate': closestSnappedPickupCoordinate,
-            'closestSnappedDropoffCoordinate': closestSnappedDropoffCoordinate,
           });
+
+          dropoffGeohashes.forEach((gh) {
+            // debugPrint('Checking dropoff geohash: $gh');
+            if (polylineGeohashes.containsKey(gh)) {
+              var coords = polylineGeohashes[gh];
+              // debugPrint('Found matching geohash for dropoff: $gh, coordinates: $coords');
+              if (coords != null) {
+                matchedDropoffCoordinates.addAll(coords.map<LatLng>(
+                    (coord) => LatLng(coord['latitude'], coord['longitude'])));
+              }
+            }
+          });
+
+          // Find the closest coordinates for pickup and dropoff
+          LatLng closestSnappedPickupCoordinate = findClosestCoordinate(
+              userPickupLocation, matchedPickupCoordinates);
+          LatLng closestSnappedDropoffCoordinate = findClosestCoordinate(
+              userDropoffLocation, matchedDropoffCoordinates);
+
+          debugPrint("User Pickup Location $userPickupLocation");
+
+          debugPrint(
+              'Closest snapped pickup coordinate: $closestSnappedPickupCoordinate');
+          debugPrint(
+              'Closest snapped dropoff coordinate: $closestSnappedDropoffCoordinate');
+
+          if (await isHighway(closestSnappedPickupCoordinate) ||
+              await isHighway(closestSnappedDropoffCoordinate)) {
+            debugPrint("==============================================");
+            debugPrint("-------falllssss on highwaaaayyyyy-------");
+            debugPrint("==============================================");
+
+            continue; // Skip this ride if either snapped pickup or drop-off is on a highway/expressway
+          }
+
+          double minPickupDistance = 0.0;
+          double minDropoffDistance = 0.0;
+
+          Future<void> calculateDistances() async {
+            try {
+              minPickupDistance = await calculateRouteDistance(
+                userPickupLocation,
+                closestSnappedPickupCoordinate,
+              );
+              minDropoffDistance = await calculateRouteDistance(
+                userDropoffLocation,
+                closestSnappedDropoffCoordinate,
+              );
+
+              debugPrint("Minimum Pickup Distance: $minPickupDistance meters");
+              debugPrint(
+                  "Minimum Dropoff Distance: $minDropoffDistance meters");
+            } catch (e) {
+              debugPrint("Failed to calculate distances: $e");
+            }
+          }
+
+          await calculateDistances();
+
+          String pickupDistanceText =
+              '${(minPickupDistance / 1000).toStringAsFixed(2)} km';
+          String dropoffDistanceText =
+              '${(minDropoffDistance / 1000).toStringAsFixed(2)} km';
+          debugPrint("PICKUP DIST TEXT: $pickupDistanceText");
+
+          debugPrint(
+              'Min pickup distance: $minPickupDistance, Min dropoff distance: $minDropoffDistance');
+          debugPrint('DISTANCE THERESHOLD: $distanceThreshold');
+
+          debugPrint(
+              'Min pickup distance: $minPickupDistance meters, Threshold: $distanceThreshold meters');
+          debugPrint(
+              'Min dropoff distance: $minDropoffDistance meters, Threshold: $distanceThreshold meters');
+
+          // if (minPickupDistance <= distanceThreshold && minDropoffDistance <= distanceThreshold) {
+          //   debugPrint('Both pickup and dropoff within walking distance.');
+          // } else {
+          //   debugPrint('One or both distances exceed the threshold.');
+          // }
+
+          if (minPickupDistance <= distanceThreshold &&
+              minDropoffDistance <= distanceThreshold) {
+            print('Both pickup and dropoff within walking distance.');
+
+            ridesWithDistances.add({
+              'ride': ride,
+              'pickupDistance': minPickupDistance,
+              'dropoffDistance': minDropoffDistance,
+              'pickupDistanceText': pickupDistanceText,
+              'dropoffDistanceText': dropoffDistanceText,
+              'closestSnappedPickupCoordinate': closestSnappedPickupCoordinate,
+              'closestSnappedDropoffCoordinate':
+                  closestSnappedDropoffCoordinate,
+            });
+          }
         }
       }
 
@@ -369,10 +384,10 @@ class RideMatching {
     return distance; // returns the distance in meter
   }
 
-
   Future<List<LatLng>> callNearbySearchAPI(LatLng coordinate) async {
     final apiKey = _getApiKey();
-    const String baseUrl = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json';
+    const String baseUrl =
+        'https://maps.googleapis.com/maps/api/place/nearbysearch/json';
 
     // Construct the URL for the Nearby Search API request
     final String url =
@@ -473,4 +488,3 @@ class RideMatching {
     return degrees * (math.pi / 180);
   }
 }
-
