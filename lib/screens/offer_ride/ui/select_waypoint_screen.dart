@@ -233,9 +233,9 @@ class _SelectWaypointsScreenState extends State<SelectWaypointsScreen> {
                     foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
                     backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
                   ),
-                  child: Text(
+                  child: const Text(
                       "Confirm Waypoint Location",
-                      style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold)
+                      // style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold)
                   ),
                 ),
 

@@ -31,45 +31,6 @@ class _FindRideScreenState extends State<FindRideScreen> {
   final TextEditingController _dropoffLocationController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _timeController = TextEditingController();
-  // double? pickupLat;
-  // double? pickupLng;
-  // double? dropoffLat;
-  // double? dropoffLng;
-  // DateTime? _selectedDate;
-  // TimeOfDay? _selectedTime;
-  // String? selectedVehicle;
-  // String? selectedSeats;
-
-  // Future<void> _selectDate(BuildContext context) async {
-  //   final DateTime? pickedDate = await showDatePicker(
-  //     context: context,
-  //     initialDate: _selectedDate ?? DateTime.now(),
-  //     firstDate: DateTime.now(),
-  //     lastDate: DateTime(2101),
-  //   );
-  //   if (pickedDate != null && pickedDate != _selectedDate) {
-  //     setState(() {
-  //       _selectedDate = pickedDate;
-  //       // Update the date in the Ride class
-  //       ride.setDate(_selectedDate!);
-  //     });
-  //   }
-  // }
-  //
-  // Future<void> _selectTime(BuildContext context) async {
-  //   final TimeOfDay? pickedTime = await showTimePicker(
-  //     context: context,
-  //     initialTime: _selectedTime ?? TimeOfDay.now(),
-  //   );
-  //   if (pickedTime != null && pickedTime != _selectedTime) {
-  //     setState(() {
-  //       _selectedTime = pickedTime;
-  //       // Update the time in the Ride class
-  //       ride.setTime(_selectedTime!);
-  //     });
-  //   }
-  // }
-
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +47,7 @@ class _FindRideScreenState extends State<FindRideScreen> {
           if (result != null) {
             // context.read<OfferRideBloc>().add(LocationResultEvent(result));
             findRideBloc.add(FindRidePickupLocationResultEvent(locationResult: result));
-            print("this is the resultsssss: $result");
+            debugPrint("this is the resultsssss: $result");
           }
         } else if (state is FindRideNavToDropoffMapPageActionState) { // get user drop-off location
           final result = await Navigator.push(
@@ -96,13 +57,13 @@ class _FindRideScreenState extends State<FindRideScreen> {
           if (result != null) {
             findRideBloc.add(
                 FindRideDropoffLocationResultEvent(locationResult: result));
-            print("this is the DROPPPPPP resultsssss: $result");
+            debugPrint("this is the DROPPPPPP resultsssss: $result");
           }
         } else if (state is FindRideNavToAvailableRidesPageActionState) {
           if (ride.pickupLocation != null && ride.dropoffLocation != null ) {
             LatLng pickupLatLng = ride.pickupLocation!;
             LatLng dropoffLatLng = ride.dropoffLocation!;
-            print("RIDDDDDEEEEEEEEEEEEEEEEEEEEE DATEEEEEEEEEEEEEEEEEEEEEE IN STATE ACTION ${ride.date}");
+            debugPrint("RIDDDDDEEEEEEEEEEEEEEEEEEEEE DATEEEEEEEEEEEEEEEEEEEEEE IN STATE ACTION ${ride.date}");
 
             GeoPoint pickupGeoPoint = GeoPoint(pickupLatLng.latitude, pickupLatLng.longitude);
             GeoPoint dropoffGeoPoint = GeoPoint(dropoffLatLng.latitude, dropoffLatLng.longitude);
@@ -110,7 +71,7 @@ class _FindRideScreenState extends State<FindRideScreen> {
                 context, MaterialPageRoute(
                 builder: (context) => RideMatchingScreen(userPickupLocation: pickupGeoPoint, userDropoffLocation: dropoffGeoPoint, userPickedDate: ride.date,)));
           } else {
-            print("THIS IS THE STATEEEEEEE: $state");
+            debugPrint("THIS IS THE STATEEEEEEE: $state");
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Please select pickupppp and dropoff locations.'),
@@ -186,23 +147,23 @@ class _FindRideScreenState extends State<FindRideScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => findRideBloc.add(FindRideSelectTimeEvent(context)),
-                      child: AbsorbPointer(
-                        child: TextFormField(
-                          readOnly: true,
-                          decoration: const InputDecoration(
-                            labelText: 'Selected Time',
-                            border: OutlineInputBorder(),
-                            suffixIcon: Icon(Icons.access_time),
-                          ),
-                          controller: _timeController,
-                        ),
-                      ),
-                    ),
-                  ),
+                  // const SizedBox(width: 10),
+                  // Expanded(
+                  //   child: GestureDetector(
+                  //     onTap: () => findRideBloc.add(FindRideSelectTimeEvent(context)),
+                  //     child: AbsorbPointer(
+                  //       child: TextFormField(
+                  //         readOnly: true,
+                  //         decoration: const InputDecoration(
+                  //           labelText: 'Selected Time',
+                  //           border: OutlineInputBorder(),
+                  //           suffixIcon: Icon(Icons.access_time),
+                  //         ),
+                  //         controller: _timeController,
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
               const SizedBox(height: 20),
@@ -227,14 +188,13 @@ class _FindRideScreenState extends State<FindRideScreen> {
                     // Check if the text fields for pickup location, dropoff location, date, and time are not empty
                     if (_pickupLocationController.text.isNotEmpty &&
                         _dropoffLocationController.text.isNotEmpty &&
-                        _dateController.text.isNotEmpty &&
-                        _timeController.text.isNotEmpty) {
+                        _dateController.text.isNotEmpty) {
                       // All fields are filled, proceed with navigation
                       findRideBloc.add(FindRideBtnNavigateEvent());
                     } else {
                       // One or more fields are empty, show an error message
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
+                        const SnackBar(
                           content: Text('Please fill in all fields before proceeding.'),
                           backgroundColor: Colors.red,
                         ),
@@ -243,8 +203,7 @@ class _FindRideScreenState extends State<FindRideScreen> {
                   },
                   child: const Text(
                     'Proceed',
-                    style:
-                    TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold),
+                    // style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),

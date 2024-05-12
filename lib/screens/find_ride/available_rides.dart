@@ -6,7 +6,7 @@ import 'package:google_maps_flutter_platform_interface/src/types/location.dart';
 import 'package:intl/intl.dart';
 import 'package:lyft_mate/screens/find_ride/ride_details.dart';
 import 'package:lyft_mate/screens/find_ride/ride_route.dart';
-import '../../services/ride_matching_service.dart';
+import '../../services/ride_matching/ride_matching_service.dart';
 import '../../widgets/icon_preference.dart';
 import 'carpool_ride_card_widget.dart';
 import 'confirm_booking.dart';
@@ -251,10 +251,10 @@ class _RideMatchingScreenState extends State<RideMatchingScreen> {
                         _buildToggleButton('After 6:00 p.m', 3, setState),
                       ],
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
                     // Departure Date Section
-                    Text('Select Departure Date', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Text('Select Departure Date', style: TextStyle(fontWeight: FontWeight.bold)),
                     Row(
                       children: [
                         if (selectedDate != null)
@@ -266,7 +266,7 @@ class _RideMatchingScreenState extends State<RideMatchingScreen> {
                             ),
                             child: Text(
                               'Selected Date: ${DateFormat('EEE, MMM d, yyyy').format(selectedDate!)}',
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.black,
@@ -274,7 +274,7 @@ class _RideMatchingScreenState extends State<RideMatchingScreen> {
                             ),
                           ),
                         IconButton(
-                          icon: Icon(Icons.calendar_today, color: Colors.blue),
+                          icon: const Icon(Icons.calendar_today, color: Colors.blue),
                           onPressed: () async {
                             final DateTime? pickedDate = await showDatePicker(
                               context: context,
@@ -292,17 +292,17 @@ class _RideMatchingScreenState extends State<RideMatchingScreen> {
                         ),
                       ],
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
 
                     // Ride Preferences Section
-                    Divider(),
-                    Text('Ride Preferences', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Divider(),
+                    const Text('Ride Preferences', style: TextStyle(fontWeight: FontWeight.bold)),
                     Column(
                       children: availablePreferences.map((preference) {
                         bool isSelected = selectedPreferences.contains(preference);
                         return SwitchListTile(
-                          title: Text(preference, style: TextStyle(fontSize: 14.0),),
+                          title: Text(preference, style: const TextStyle(fontSize: 14.0),),
                           value: isSelected,
                           onChanged: (bool value) {
                             setState(() {
@@ -322,10 +322,10 @@ class _RideMatchingScreenState extends State<RideMatchingScreen> {
                     ),
 
                     // Maximum Walking Distance Slider
-                    Divider(),
+                    const Divider(),
                     Text(
                       'Maximum Walking Distance: ${maxWalkingDistance.toStringAsFixed(1)} km',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     Slider(
                       value: maxWalkingDistance,
@@ -349,6 +349,11 @@ class _RideMatchingScreenState extends State<RideMatchingScreen> {
                         // Call _loadRidesAndDrivers with the selected filters
                         _loadRidesAndDrivers(maxWalkingDistance: maxWalkingDistance);
                       },
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.green,
+                        // side: const BorderSide(color: kSecondaryColor),
+                      ),
                       child: Text('Apply Filters'),
                     ),
                   ],

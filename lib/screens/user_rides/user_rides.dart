@@ -1,21 +1,20 @@
 import 'dart:math';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:location/location.dart';
 import 'package:lyft_mate/screens/user_rides/published_rides_details.dart';
-import 'package:url_launcher/url_launcher.dart';
+
 
 import 'package:mailer/mailer.dart' as mailer;
 import 'package:mailer/smtp_server.dart';
 
+import '../../services/sms/sms_service.dart';
 import '../ride_tracking/driver_ride_tracking_screen.dart';
 import '../ride_tracking/ride_tracking_screen.dart';
 
@@ -583,21 +582,21 @@ class _UserRidesState extends State<UserRides>
       bool confirmCancel = await showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text(
+          title: const Text(
             'Confirm Ride Cancellation',
             style: TextStyle(fontSize: 18.0),
           ),
-          content: Text('Are you sure you want to cancel the ride?'),
+          content: const Text('Are you sure you want to cancel the ride?'),
           actions: <Widget>[
             TextButton(
               onPressed: () =>
                   Navigator.of(context).pop(false), // No, do not cancel
-              child: Text('No'),
+              child: const Text('No'),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
               // Yes, cancel
-              child: Text('Yes'),
+              child: const Text('Yes'),
             ),
           ],
         ),
@@ -609,6 +608,8 @@ class _UserRidesState extends State<UserRides>
             dotenv.env['ADMIN_EMAIL']; // Replace with the correct admin email
         await sendMultipleRefundRequestEmails(adminEmail!, rideId, passengers);
 
+        await SmsService.notifyPaidPassengersOfRefund(passengers, rideId);
+
         // Update ride status to 'Cancelled' in Firestore
         await FirebaseFirestore.instance
             .collection('rides')
@@ -616,7 +617,6 @@ class _UserRidesState extends State<UserRides>
             .update({
           'rideStatus': 'Cancelled',
         });
-        // Update UI if necessary
         setState(() {
           // rideStatus = 'Cancelled';
           // canceledRideIds.add(rideId);
@@ -641,9 +641,9 @@ class _UserRidesState extends State<UserRides>
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
         elevation: 4.0,
-        margin: EdgeInsets.all(10.0),
+        margin: const EdgeInsets.all(10.0),
         child: Padding(
-          padding: EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -654,7 +654,7 @@ class _UserRidesState extends State<UserRides>
                   Text(
                     "Ride No. #$rideId",
                     style:
-                        TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold),
+                        const TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold),
                   ),
                   Flexible(
                     child: Chip(
@@ -797,8 +797,6 @@ class _UserRidesState extends State<UserRides>
                     // visible: rideStatus == "pending" || rideStatus == "In Progress",
                     child: TextButton(
                       onPressed: () {
-                        // Leave ride logic
-                        // _leaveRide();
                         cancelRide();
                       },
                       child: Text('Cancel Ride'),
@@ -869,7 +867,7 @@ class _UserRidesState extends State<UserRides>
     );
   }
 
-  /// workingggggggggggggggggggg
+
   Widget _buildBookedRideCard(Map<String, dynamic> rideData, String rideId) {
     Duration parseDuration(String durationStr) {
       List<String> parts = durationStr.split(' ');
@@ -1006,8 +1004,19 @@ LyftMate App Team
 
       if (paymentId != null && paidStatus) {
         // Send a refund request email
-        await sendRefundRequestEmail(
-            adminEmail, user?.email ?? '', paymentId, rideId, amount);
+        await sendRefundRequestEmail(adminEmail, user?.email ?? '', paymentId, rideId, amount);
+
+        DocumentSnapshot<Map<String, dynamic>> userDoc = await FirebaseFirestore.instance.collection('users').doc(user?.uid).get();
+        if (userDoc.exists) {
+          Map<String, dynamic>? userData = userDoc.data();
+          String? firstName = userData?['firstName'];
+          String? phoneNumber = userData?['phoneNumber'];
+
+          // Check if firstName and phoneNumber are not null
+          if (firstName != null && phoneNumber != null) {
+            await SmsService.sendRefundNotification(phoneNumber, firstName, amount);
+          }
+        }
       }
 
       // Update the local passengers list

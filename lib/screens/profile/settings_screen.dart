@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:lyft_mate/models/user_profile.dart';
 import 'package:lyft_mate/screens/vehicles/vehicle_screen.dart';
 
-import '../../editprofile_screen.dart';
-import '../../services/authentication_service.dart';
+import 'editprofile_screen.dart';
+import '../../services/authentication/authentication_service.dart';
 
 class UserProfileSettingsScreen extends StatefulWidget {
   final UserProfile userProfile;
@@ -19,9 +19,6 @@ class _UserProfileSettingsScreenState extends State<UserProfileSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-
-
-    debugPrint("HELLOOOOOO ${widget.userProfile.firstName}");
 
     return Scaffold(
       appBar: AppBar(

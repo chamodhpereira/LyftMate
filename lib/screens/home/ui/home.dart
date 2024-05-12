@@ -100,12 +100,12 @@ class _HomePageState extends State<HomePage> {
                     backgroundColor: selectedOption == 0
                         ? Colors.green
                         : Colors.grey, // Change color based on selected option
-                    padding: EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  child: Text(
+                  child: const Text(
                     'Find Ride',
                     style: TextStyle(color: Colors.white),
                   ),
@@ -121,12 +121,12 @@ class _HomePageState extends State<HomePage> {
                     backgroundColor: selectedOption == 1
                         ? Colors.green
                         : Colors.grey, // Change color based on selected option
-                    padding: EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  child: Text(
+                  child: const Text(
                     'Offer Ride',
                     style: TextStyle(color: Colors.white),
                   ),
@@ -147,9 +147,9 @@ class _HomePageState extends State<HomePage> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => NotificationsPage()));
+                          builder: (context) => const NotificationsPage()));
                 } else if (state is HomeNavToFindRidePageActionState) {
-                  print("navigating to find ride screeen");
+                  debugPrint("navigating to find ride screeen");
                 }
                 // else if (state is HomeNavToWishlistPageActionState) {
                 //   Navigator.push(
@@ -171,7 +171,7 @@ class _HomePageState extends State<HomePage> {
                     homeBloc: homeBloc,
                   ); //not the right way - change this after testing
                 } else {
-                  return SizedBox();
+                  return const SizedBox();
                 }
               },
             ),

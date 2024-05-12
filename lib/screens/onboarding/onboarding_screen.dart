@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lyft_mate/screens/welcome/welcome_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 class OnBoardingScreen extends StatefulWidget {
@@ -27,6 +28,16 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
     super.dispose();
   }
 
+  void _completeOnboarding() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('seenOnboarding', true);
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const WelcomeScreen()),
+    );
+    debugPrint('Skipping to WelcomeScreen');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,14 +50,7 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                   children: [
                     const Spacer(),
                     TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const WelcomeScreen()),
-                          );
-                          debugPrint('Skipping to WelcomeScreen');
-                        },
+                        onPressed: _completeOnboarding,
                         child: const Text(
                           "SKIP",
                           style: TextStyle(
@@ -98,11 +102,7 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                               curve: Curves.ease,
                             );
                           } else {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const WelcomeScreen()),
-                            );
+                            _completeOnboarding();
                             debugPrint('Navigating to WelcomeScreen as last page reached');
                           }
                         },

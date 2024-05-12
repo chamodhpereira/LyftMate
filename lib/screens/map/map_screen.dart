@@ -184,7 +184,7 @@ class _MapScreenState extends State<MapScreen> {
                     ),
                     child: Text(
                         widget.locType == 'dropoff' ? "Confirm Dropoff Location" : "Confirm Pickup Location",
-                        style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold)
+                        // style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold)
                     ),
                   ),
 

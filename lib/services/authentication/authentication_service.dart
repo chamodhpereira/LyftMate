@@ -7,8 +7,8 @@ import 'package:provider/provider.dart';
 
 import 'package:lyft_mate/models/user.dart';
 
-import '../models/signup_user.dart';
-import '../providers/user_provider.dart';
+import '../../models/signup_user.dart';
+import '../../providers/user_provider.dart';
 
 
 class AuthException implements Exception {

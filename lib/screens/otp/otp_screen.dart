@@ -13,9 +13,6 @@ class OTPScreen extends StatefulWidget {
   final String phonenumber;
   // final String fromScreen;
 
-
-
-
   const OTPScreen({super.key, required this.phonenumber,});
 
   @override
@@ -66,9 +63,9 @@ class _OTPScreenState extends State<OTPScreen> {
         ),
         title: const Text(
           "Verify your number",
-          style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+          // style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
         ),
-        centerTitle: true,
+        // centerTitle: true,
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
         elevation: 0.5,
@@ -196,7 +193,11 @@ class _OTPScreenState extends State<OTPScreen> {
                           }
                         }
                       },
-                      child: Text(isLoading? 'Verifying...' : 'Submit'),
+                      // child: Text(isLoading? 'Verifying...' : 'Submit'),
+                      child: Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: Text(isLoading? 'Verifying...' : 'Submit'),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 30),

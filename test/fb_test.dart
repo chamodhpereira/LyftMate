@@ -29,7 +29,7 @@
 //       final result = await authService.signUpUser('test@example.com', 'password');
 //
 //       expect(result, isA<UserModel>());
-//       expect(result?.email, equals('fake@example.com'));  // Additional checks for completeness
+//       expect(result?.email, equals('fake@example.com'));
 //     });
 //
 //     test('signUpUser returns null if signup fails', () async {

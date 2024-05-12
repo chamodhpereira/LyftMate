@@ -38,8 +38,8 @@ class _SignupScreenState extends State<SignupScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: const Text('Signup', style: TextStyle(letterSpacing: 0.9, fontWeight: FontWeight.bold, fontSize: 18.0),),
-        centerTitle: true,
+        title: const Text('Signup', style: TextStyle(letterSpacing: 0.9,),),
+        // centerTitle: true,
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -61,7 +61,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 Hero(
                   tag: "logo",
                   child: Image.asset(
-                    "assets/images/signup-image.avif",
+                    "assets/images/carpool-sign-up.jpg",
                     height: 250.0,
                   ),
                 ),
@@ -91,17 +91,17 @@ class _SignupScreenState extends State<SignupScreen> {
                 SizedBox(
                   height: 50,
                   width: double.infinity,
-                  child: OutlinedButton(
+                  child: ElevatedButton(
                     onPressed: () async {
                       String userphoneNumber = countryCode + phoneController.text.replaceAll(' ', '');
                       debugPrint('Attempting to send OTP to $userphoneNumber');
-                      if (phoneController.text.length <= countryCode.length) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Please enter a valid phone number'),
-                          ),
-                        );
-                      }
+                      // if (phoneController.text.length <= countryCode.length) {
+                      //   ScaffoldMessenger.of(context).showSnackBar(
+                      //     const SnackBar(
+                      //       content: Text('Please enter a valid phone number'),
+                      //     ),
+                      //   );
+                      // }
                       if (userphoneNumber == "+94123456789" ) {
                         SignupUserData().updatePhoneNumber(userphoneNumber);
                         Navigator.push(
@@ -125,6 +125,7 @@ class _SignupScreenState extends State<SignupScreen> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Please enter a valid phone number'),
+                                backgroundColor: Colors.red,
                               ),
                             );
                           }
@@ -137,9 +138,17 @@ class _SignupScreenState extends State<SignupScreen> {
                       foregroundColor: Colors.white,
                       backgroundColor: Colors.green,
                     ),
+                    // style: ElevatedButton.styleFrom(
+                    //   minimumSize: const Size(double.infinity, 50),
+                    //   backgroundColor: Colors.green,
+                    //   foregroundColor: Colors.white,
+                    //   shape: RoundedRectangleBorder(
+                    //     borderRadius: BorderRadius.circular(12),
+                    //   ),
+                    // ),
                     child: const Padding(
                       padding: EdgeInsets.all(12.0),
-                      child: Text("Proceed", style: TextStyle(letterSpacing: 0.9, fontSize: 14.0, fontWeight: FontWeight.bold),),
+                      child: Text("Proceed",),
                     ),
                   ),
                 ),
