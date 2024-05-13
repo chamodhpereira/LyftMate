@@ -1,7 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:lyft_mate/screens/reviews/reviews_screen.dart';
+import 'package:lyft_mate/screens/welcome/welcome_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -52,9 +54,8 @@ class LyftMate extends StatelessWidget {
       ],
       child: MaterialApp(
         theme: LyftMateAppTheme.lightTheme,
-        // darkTheme: LyftMateAppTheme.darkTheme,
         themeMode: ThemeMode.system,
-        home:const OnBoardingScreen(),
+        home: hasSeenOnboarding ? const WelcomeScreen() : const OnBoardingScreen(),
         routes: {
           '/navigationScreen': (context) => const NavigationScreen(),
           '/loginScreen': (context) => LoginScreen(),
@@ -64,3 +65,5 @@ class LyftMate extends StatelessWidget {
     );
   }
 }
+
+
