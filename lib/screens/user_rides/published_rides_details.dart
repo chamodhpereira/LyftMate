@@ -185,65 +185,125 @@ class _MyPublishedRideDetailsPageState extends State<MyPublishedRideDetailsPage>
     );
   }
 
+  // Widget _buildPassengerCard(Map<String, dynamic> passenger) {
+  //   return FutureBuilder<DocumentSnapshot>(
+  //     future: firestore.collection('users').doc(passenger['userId']).get(),
+  //     builder: (context, snapshot) {
+  //       if (snapshot.connectionState == ConnectionState.waiting) {
+  //         return const ListTile(
+  //           leading: CircularProgressIndicator(),
+  //           title: Text('Loading passenger details...'),
+  //         );
+  //       } else if (snapshot.hasError) {
+  //         return const ListTile(
+  //           title: Text('Error loading data'),
+  //         );
+  //       } else {
+  //         var userData = snapshot.data!.data() as Map<String, dynamic>;
+  //         String? profileImageUrl = userData['profileImageUrl'];
+  //         return GestureDetector(
+  //             onTap: () {
+  //           Navigator.push(
+  //             context,
+  //             MaterialPageRoute(
+  //               builder: (context) => OtherUserProfileScreen(userId: passenger['userId']),
+  //             ),
+  //           );
+  //         },
+  //       child: Card(
+  //           margin: const EdgeInsets.symmetric(vertical: 8.0),
+  //           elevation: 2,
+  //           shape: RoundedRectangleBorder(
+  //             borderRadius: BorderRadius.circular(8.0),
+  //           ),
+  //           child: ListTile(
+  //             leading: profileImageUrl != null && profileImageUrl.isNotEmpty
+  //                 ? CircleAvatar(
+  //               radius: 25,
+  //               backgroundImage: NetworkImage(profileImageUrl),
+  //             )
+  //                 : const CircleAvatar(
+  //               radius: 25,
+  //               child: Icon(Icons.person, color: Colors.blue),
+  //             ),
+  //             title: Text('${userData['firstName']} ${userData['lastName']}'),
+  //             subtitle: Text('Rating: ${userData['ratings'] ?? "N/A"}'),
+  //             trailing: IconButton(
+  //               icon: const Icon(Icons.message, color: Colors.deepPurple),
+  //               onPressed: () {
+  //                 Navigator.push(
+  //                   context,
+  //                   MaterialPageRoute(
+  //                     builder: (context) => DashChatPage(
+  //                       receiverUserEmail: userData['email'] ?? "",
+  //                       receiverUserID: passenger['userId'],
+  //                     ),
+  //                   ),
+  //                 );
+  //               },
+  //             ),
+  //           ),
+  //         ),
+  //         );
+  //       }
+  //     },
+  //   );
+  // }
+
   Widget _buildPassengerCard(Map<String, dynamic> passenger) {
     return FutureBuilder<DocumentSnapshot>(
-      future: firestore.collection('users').doc(passenger['userId']).get(),
+      future: FirebaseFirestore.instance.collection('users').doc(passenger['userId']).get(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const ListTile(
+          return ListTile(
             leading: CircularProgressIndicator(),
             title: Text('Loading passenger details...'),
           );
         } else if (snapshot.hasError) {
-          return const ListTile(
+          return ListTile(
             title: Text('Error loading data'),
           );
-        } else {
+        } else if (snapshot.hasData && snapshot.data!.data() != null) {
           var userData = snapshot.data!.data() as Map<String, dynamic>;
           String? profileImageUrl = userData['profileImageUrl'];
-          return GestureDetector(
-              onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => OtherUserProfileScreen(userId: passenger['userId']),
-              ),
-            );
-          },
-        child: Card(
-            margin: const EdgeInsets.symmetric(vertical: 8.0),
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8.0),
+          return ListTile(
+            leading: profileImageUrl != null && profileImageUrl.isNotEmpty
+                ? CircleAvatar(
+              radius: 25,
+              backgroundImage: NetworkImage(profileImageUrl),
+            )
+                : const CircleAvatar(
+              radius: 25,
+              child: Icon(Icons.person, color: Colors.blue),
             ),
-            child: ListTile(
-              leading: profileImageUrl != null && profileImageUrl.isNotEmpty
-                  ? CircleAvatar(
-                radius: 25,
-                backgroundImage: NetworkImage(profileImageUrl),
-              )
-                  : const CircleAvatar(
-                radius: 25,
-                child: Icon(Icons.person, color: Colors.blue),
-              ),
-              title: Text('${userData['firstName']} ${userData['lastName']}'),
-              subtitle: Text('Rating: ${userData['ratings'] ?? "N/A"}'),
-              trailing: IconButton(
-                icon: const Icon(Icons.message, color: Colors.deepPurple),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => DashChatPage(
-                        receiverUserEmail: userData['email'] ?? "",
-                        receiverUserID: passenger['userId'],
-                      ),
+            title: Text('${userData['firstName']} ${userData['lastName']}'),
+            subtitle: Text('Rating: ${userData['ratings'] ?? "N/A"}'),
+            trailing: IconButton(
+              icon: const Icon(Icons.message, color: Colors.deepPurple),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DashChatPage(
+                      receiverUserEmail: userData['email'] ?? "",
+                      receiverUserID: passenger['userId'],
                     ),
-                  );
-                },
-              ),
+                  ),
+                );
+              },
             ),
-          ),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => OtherUserProfileScreen(userId: passenger['userId']),
+                ),
+              );
+            },
+          );
+        } else {
+          return ListTile(
+            title: Text('No data available'),
           );
         }
       },
@@ -252,22 +312,46 @@ class _MyPublishedRideDetailsPageState extends State<MyPublishedRideDetailsPage>
 
   Widget _buildRequestCard(BuildContext context, Map<String, dynamic> request) {
     return FutureBuilder<DocumentSnapshot>(
-      future: firestore.collection('users').doc(request['passengerId']).get(),
+      future: FirebaseFirestore.instance.collection('users').doc(request['passengerId']).get(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const ListTile(
+          return ListTile(
             leading: CircularProgressIndicator(),
             title: Text('Loading request details...'),
           );
         } else if (snapshot.hasError) {
-          return const ListTile(
+          return ListTile(
             title: Text('Error loading data'),
           );
         } else if (snapshot.hasData && snapshot.data!.data() != null) {
           var userData = snapshot.data!.data() as Map<String, dynamic>;
           String? profileImageUrl = userData['profileImageUrl'];
           double rating = userData['rating'] ?? 0.0; // Assuming the rating field exists and is a double
-          return GestureDetector(
+          return ListTile(
+            leading: profileImageUrl != null && profileImageUrl.isNotEmpty
+                ? CircleAvatar(
+              radius: 25,
+              backgroundImage: NetworkImage(profileImageUrl),
+            )
+                : const CircleAvatar(
+              radius: 25,
+              child: Icon(Icons.person, color: Colors.blue),
+            ),
+            title: Text('${userData['firstName']} ${userData['lastName']}'),
+            subtitle: Text('Rating: ${rating.toStringAsFixed(1)}★'),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.check, color: Colors.green),
+                  onPressed: () => _acceptRequest(request),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close, color: Colors.red),
+                  onPressed: () => _declineRequest(request),
+                ),
+              ],
+            ),
             onTap: () {
               Navigator.push(
                 context,
@@ -276,54 +360,91 @@ class _MyPublishedRideDetailsPageState extends State<MyPublishedRideDetailsPage>
                 ),
               );
             },
-            child: Card(
-              margin: const EdgeInsets.symmetric(vertical: 8.0),
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-              child: ListTile(
-                leading: profileImageUrl != null && profileImageUrl.isNotEmpty
-                    ? CircleAvatar(
-                  radius: 25,
-                  backgroundImage: NetworkImage(profileImageUrl),
-                )
-                    : const CircleAvatar(
-                  radius: 25,
-                  child: Icon(Icons.person, color: Colors.blue),
-                ),
-                title: Text(
-                  '${userData['firstName']} ${userData['lastName']}',
-                  style: const TextStyle(fontSize: 16), // Name styling
-                ),
-                subtitle: Text(
-                  'Rating: ${rating.toStringAsFixed(1)}★',
-                  style: TextStyle(fontSize: 12, color: Colors.grey), // Smaller, greyed-out rating
-                ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.check, color: Colors.green),
-                      onPressed: () => _acceptRequest(request),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.red),
-                      onPressed: () => _declineRequest(request),
-                    ),
-                  ],
-                ),
-              ),
-            ),
           );
         } else {
-          return const ListTile(
+          return ListTile(
             title: Text('No data available'),
           );
         }
       },
     );
   }
+
+
+  // Widget _buildRequestCard(BuildContext context, Map<String, dynamic> request) {
+  //   return FutureBuilder<DocumentSnapshot>(
+  //     future: firestore.collection('users').doc(request['passengerId']).get(),
+  //     builder: (context, snapshot) {
+  //       if (snapshot.connectionState == ConnectionState.waiting) {
+  //         return const ListTile(
+  //           leading: CircularProgressIndicator(),
+  //           title: Text('Loading request details...'),
+  //         );
+  //       } else if (snapshot.hasError) {
+  //         return const ListTile(
+  //           title: Text('Error loading data'),
+  //         );
+  //       } else if (snapshot.hasData && snapshot.data!.data() != null) {
+  //         var userData = snapshot.data!.data() as Map<String, dynamic>;
+  //         String? profileImageUrl = userData['profileImageUrl'];
+  //         double rating = userData['rating'] ?? 0.0; // Assuming the rating field exists and is a double
+  //         return GestureDetector(
+  //           onTap: () {
+  //             Navigator.push(
+  //               context,
+  //               MaterialPageRoute(
+  //                 builder: (context) => OtherUserProfileScreen(userId: request['passengerId']),
+  //               ),
+  //             );
+  //           },
+  //           child: Card(
+  //             margin: const EdgeInsets.symmetric(vertical: 8.0),
+  //             elevation: 2,
+  //             shape: RoundedRectangleBorder(
+  //               borderRadius: BorderRadius.circular(8.0),
+  //             ),
+  //             child: ListTile(
+  //               leading: profileImageUrl != null && profileImageUrl.isNotEmpty
+  //                   ? CircleAvatar(
+  //                 radius: 25,
+  //                 backgroundImage: NetworkImage(profileImageUrl),
+  //               )
+  //                   : const CircleAvatar(
+  //                 radius: 25,
+  //                 child: Icon(Icons.person, color: Colors.blue),
+  //               ),
+  //               title: Text(
+  //                 '${userData['firstName']} ${userData['lastName']}',
+  //                 style: const TextStyle(fontSize: 16), // Name styling
+  //               ),
+  //               subtitle: Text(
+  //                 'Rating: ${rating.toStringAsFixed(1)}★',
+  //                 style: TextStyle(fontSize: 12, color: Colors.grey), // Smaller, greyed-out rating
+  //               ),
+  //               trailing: Row(
+  //                 mainAxisSize: MainAxisSize.min,
+  //                 children: [
+  //                   IconButton(
+  //                     icon: const Icon(Icons.check, color: Colors.green),
+  //                     onPressed: () => _acceptRequest(request),
+  //                   ),
+  //                   IconButton(
+  //                     icon: const Icon(Icons.close, color: Colors.red),
+  //                     onPressed: () => _declineRequest(request),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //           ),
+  //         );
+  //       } else {
+  //         return const ListTile(
+  //           title: Text('No data available'),
+  //         );
+  //       }
+  //     },
+  //   );
+  // }
 
 
 

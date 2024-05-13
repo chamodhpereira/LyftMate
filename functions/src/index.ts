@@ -67,58 +67,58 @@ exports.notifyPassengersOnRideStarted = v1.firestore
     return null;
   });
 
-exports.notifyPassengersOnRideCancelled = v1.firestore
-  .document("rides/{rideId}")
-  .onUpdate(async (change, context) => {
-    // Retrieve new and previous values of the ride document
-    const newValue = change.after.data() as FirebaseFirestore.DocumentData;
-    const previousValue =
-      change.before.data() as FirebaseFirestore.DocumentData;
+// exports.notifyPassengersOnRideCancelled = v1.firestore
+//   .document("rides/{rideId}")
+//   .onUpdate(async (change, context) => {
+//     // Retrieve new and previous values of the ride document
+//     const newValue = change.after.data() as FirebaseFirestore.DocumentData;
+//     const previousValue =
+//       change.before.data() as FirebaseFirestore.DocumentData;
 
-    // Check if ride status has changed to "Cancelled"
-    if (
-      newValue.rideStatus === "Cancelled" &&
-      previousValue.rideStatus !== "Cancelled"
-    ) {
-      const passengers: string[] = newValue.passengers;
+//     // Check if ride status has changed to "Cancelled"
+//     if (
+//       newValue.rideStatus === "Cancelled" &&
+//       previousValue.rideStatus !== "Cancelled"
+//     ) {
+//       const passengers: string[] = newValue.passengers;
 
-      // Iterate through each passenger and send a notification
-      passengers.forEach(async (passengerId: string) => {
-        try {
-          // Retrieve passenger's data
-          const doc = await admin.firestore().doc(`users/${passengerId}`).get();
-          if (doc.exists) {
-            const passengerData = doc.data() as {
-              firstName: string;
-              notificationToken: string;
-            };
-            const passengerName = passengerData.firstName;
-            const passengerNotificationToken = passengerData.notificationToken;
+//       // Iterate through each passenger and send a notification
+//       passengers.forEach(async (passengerId: string) => {
+//         try {
+//           // Retrieve passenger's data
+//           const doc = await admin.firestore().doc(`users/${passengerId}`).get();
+//           if (doc.exists) {
+//             const passengerData = doc.data() as {
+//               firstName: string;
+//               notificationToken: string;
+//             };
+//             const passengerName = passengerData.firstName;
+//             const passengerNotificationToken = passengerData.notificationToken;
 
-            // Prepare and send the notification to the passenger
-            const payload: admin.messaging.MessagingPayload = {
-              notification: {
-                title: "Ride Status: Your Ride Has Been Cancelled",
-                body: `${passengerName}, your ride has been cancelled. Please make alternative arrangements.`,
-              },
-            };
+//             // Prepare and send the notification to the passenger
+//             const payload: admin.messaging.MessagingPayload = {
+//               notification: {
+//                 title: "Ride Status: Your Ride Has Been Cancelled",
+//                 body: `${passengerName}, your ride has been cancelled. Please make alternative arrangements.`,
+//               },
+//             };
 
-            const response = await admin.messaging().send({
-              token: passengerNotificationToken,
-              notification: payload.notification,
-            });
-            console.log("Notification sent successfully:", response);
-          } else {
-            console.error(`Passenger with ID ${passengerId} not found.`);
-          }
-        } catch (error) {
-          console.error("Error retrieving passenger data:", error);
-        }
-      });
-    }
+//             const response = await admin.messaging().send({
+//               token: passengerNotificationToken,
+//               notification: payload.notification,
+//             });
+//             console.log("Notification sent successfully:", response);
+//           } else {
+//             console.error(`Passenger with ID ${passengerId} not found.`);
+//           }
+//         } catch (error) {
+//           console.error("Error retrieving passenger data:", error);
+//         }
+//       });
+//     }
 
-    return null;
-  });
+//     return null;
+//   });
 
 export const notifyDriverOnRideRequest = v1.firestore
   .document("rides/{rideId}")
@@ -188,59 +188,59 @@ export const notifyDriverOnRideRequest = v1.firestore
     return null;
   });
 
-export const notifyPassengerOnRequestAccepted = v1.firestore
-  .document("rides/{rideId}")
-  .onUpdate(async (change, context) => {
-    // Retrieve old and new document data
-    const before = change.before.data() as FirebaseFirestore.DocumentData;
-    const after = change.after.data() as FirebaseFirestore.DocumentData;
+// export const notifyPassengerOnRequestAccepted = v1.firestore
+//   .document("rides/{rideId}")
+//   .onUpdate(async (change, context) => {
+//     // Retrieve old and new document data
+//     const before = change.before.data() as FirebaseFirestore.DocumentData;
+//     const after = change.after.data() as FirebaseFirestore.DocumentData;
 
-    // Extract passengers before and after the update
-    const oldPassengers: { userId: string }[] = before.passengers || [];
-    const newPassengers: { userId: string }[] = after.passengers || [];
+//     // Extract passengers before and after the update
+//     const oldPassengers: { userId: string }[] = before.passengers || [];
+//     const newPassengers: { userId: string }[] = after.passengers || [];
 
-    // Find which passengers have been newly added
-    const newPassengerIds = newPassengers
-      .map((p) => p.userId)
-      .filter((id) => !oldPassengers.some((op) => op.userId === id));
+//     // Find which passengers have been newly added
+//     const newPassengerIds = newPassengers
+//       .map((p) => p.userId)
+//       .filter((id) => !oldPassengers.some((op) => op.userId === id));
 
-    // Notify newly added passengers
-    for (const passengerId of newPassengerIds) {
-      try {
-        // Retrieve passenger data
-        const passengerDoc = await admin
-          .firestore()
-          .doc(`users/${passengerId}`)
-          .get();
-        if (passengerDoc.exists) {
-          const passengerData = passengerDoc.data() as {
-            firstName: string;
-            notificationToken: string;
-          };
-          const { firstName, notificationToken } = passengerData;
+//     // Notify newly added passengers
+//     for (const passengerId of newPassengerIds) {
+//       try {
+//         // Retrieve passenger data
+//         const passengerDoc = await admin
+//           .firestore()
+//           .doc(`users/${passengerId}`)
+//           .get();
+//         if (passengerDoc.exists) {
+//           const passengerData = passengerDoc.data() as {
+//             firstName: string;
+//             notificationToken: string;
+//           };
+//           const { firstName, notificationToken } = passengerData;
 
-          // Construct and send the notification
-          const message: admin.messaging.Message = {
-            notification: {
-              title: "Ride Approved: Your Seat Is Reserved!",
-              body: `${firstName}, your ride request has been accepted by the driver. Enjoy your journey!`,
-            },
-            token: notificationToken,
-          };
+//           // Construct and send the notification
+//           const message: admin.messaging.Message = {
+//             notification: {
+//               title: "Ride Approved: Your Seat Is Reserved!",
+//               body: `${firstName}, your ride request has been accepted by the driver. Enjoy your journey!`,
+//             },
+//             token: notificationToken,
+//           };
 
-          await admin.messaging().send(message);
-          console.log("Notification sent to passenger:", passengerId);
-        } else {
-          console.error("Passenger not found:", passengerId);
-        }
-      } catch (error) {
-        console.error("Error sending notification to passenger:", error);
-      }
-    }
+//           await admin.messaging().send(message);
+//           console.log("Notification sent to passenger:", passengerId);
+//         } else {
+//           console.error("Passenger not found:", passengerId);
+//         }
+//       } catch (error) {
+//         console.error("Error sending notification to passenger:", error);
+//       }
+//     }
 
-    // Return a null response to finish the Cloud Function execution
-    return null;
-  });
+//     // Return a null response to finish the Cloud Function execution
+//     return null;
+//   });
 
 export const triggerRideNearbyNotification = v2.https.onRequest(
   async (req, res) => {
@@ -304,3 +304,114 @@ export const triggerRideNearbyNotification = v2.https.onRequest(
     }
   }
 );
+
+exports.notifyPassengersOnRideCancelled = v1.firestore
+  .document("rides/{rideId}")
+  .onUpdate(async (change, context) => {
+    const newValue = change.after.data() as FirebaseFirestore.DocumentData;
+    const previousValue =
+      change.before.data() as FirebaseFirestore.DocumentData;
+
+    if (
+      newValue.rideStatus === "Cancelled" &&
+      previousValue.rideStatus !== "Cancelled"
+    ) {
+      // Correctly extract the userId from each passenger object
+      const passengers: { userId: string }[] = newValue.passengers || [];
+
+      // Iterate through each passenger and send a notification
+      passengers.forEach(async (passenger) => {
+        const passengerId = passenger.userId; // Correctly accessing the userId property
+        try {
+          const doc = await admin.firestore().doc(`users/${passengerId}`).get();
+          if (doc.exists) {
+            const passengerData = doc.data() as {
+              firstName: string;
+              notificationToken: string;
+            };
+            const passengerName = passengerData.firstName;
+            const passengerNotificationToken = passengerData.notificationToken;
+
+            const payload: admin.messaging.MessagingPayload = {
+              notification: {
+                title: "Ride Status: Your Ride Has Been Cancelled",
+                body: `${passengerName}, your ride has been cancelled. Please make alternative arrangements.`,
+              },
+            };
+
+            const response = await admin.messaging().send({
+              token: passengerNotificationToken,
+              notification: payload.notification,
+            });
+            console.log("Notification sent successfully:", response);
+          } else {
+            console.error(`Passenger with ID ${passengerId} not found.`);
+          }
+        } catch (error) {
+          console.error("Error retrieving passenger data:", error);
+        }
+      });
+    }
+
+    return null;
+  });
+
+export const notifyPassengerOnRequestAccepted = v1.firestore
+  .document("rides/{rideId}")
+  .onUpdate(async (change, context) => {
+    const before = change.before.data() as FirebaseFirestore.DocumentData;
+    const after = change.after.data() as FirebaseFirestore.DocumentData;
+
+    // Extract rideRequests before and after the update
+    const beforeRideRequests: { passengerId: string }[] =
+      before.rideRequests || [];
+    const afterRideRequests: { passengerId: string }[] =
+      after.rideRequests || [];
+
+    // Find which rideRequests have been removed (approved)
+    const approvedRequestIds = beforeRideRequests
+      .filter(
+        (br) =>
+          !afterRideRequests.some((ar) => ar.passengerId === br.passengerId)
+      )
+      .map((req) => req.passengerId);
+
+    // Extract passengers after the update
+    const newPassengers: { userId: string }[] = after.passengers || [];
+
+    // Notify only those whose requests were approved and added to passengers
+    for (const passengerId of approvedRequestIds) {
+      if (newPassengers.some((np) => np.userId === passengerId)) {
+        try {
+          const passengerDoc = await admin
+            .firestore()
+            .doc(`users/${passengerId}`)
+            .get();
+          if (passengerDoc.exists) {
+            const passengerData = passengerDoc.data() as {
+              firstName: string;
+              notificationToken: string;
+            };
+            const { firstName, notificationToken } = passengerData;
+
+            const message: admin.messaging.Message = {
+              notification: {
+                title: "Ride Approved: Your Seat Is Reserved!",
+                body: `${firstName}, your ride request has been accepted by the driver. Enjoy your journey!`,
+              },
+              token: notificationToken,
+            };
+
+            await admin.messaging().send(message);
+            console.log("Notification sent to passenger:", passengerId);
+          } else {
+            console.error("Passenger not found:", passengerId);
+          }
+        } catch (error) {
+          console.error("Error sending notification to passenger:", error);
+        }
+      }
+    }
+
+    return null;
+  });

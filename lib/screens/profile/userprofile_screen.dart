@@ -29,10 +29,24 @@ class UserProfileScreenState extends State<UserProfileScreen> {
     super.initState();
     _currentUser = FirebaseAuth.instance.currentUser!;
     _userProfileStream = FirebaseFirestore.instance.collection('users').doc(_currentUser.uid).snapshots();
+    refreshUser();
+  }
+
+  void refreshUser() async {
+    await _currentUser.reload();
+    _currentUser = FirebaseAuth.instance.currentUser!;
+
+    setState(() {});
+
+    debugPrint("Current user email verified after refresh: ${_currentUser.emailVerified}");
   }
 
   @override
   Widget build(BuildContext context) {
+
+    debugPrint("Current user email erified: ${_currentUser.emailVerified}");
+
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),

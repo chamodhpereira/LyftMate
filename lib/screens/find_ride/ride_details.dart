@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:lyft_mate/screens/find_ride/ride_request_sent_screen.dart';
 import 'package:lyft_mate/screens/find_ride/ride_route.dart';
@@ -211,34 +213,36 @@ class RideDetailsScreen extends StatelessWidget {
                             ],
                           ),
                           SizedBox(width: 8.0),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(ride['pickupCityName']),
-                              Text(
-                                "${rideData?["pickupLocationName"]}",
-                                style: TextStyle(fontSize: 12.0),
-                              ),
-                              // Text(
-                              //   '11.30 AM',
-                              //   style: TextStyle(fontSize: 12.0),
-                              // ),
-                              Text('${formatTime(rideStartTime)}', style: TextStyle(fontSize: 12.0)),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Icon(
-                                    Icons.directions_walk,
-                                    color: Colors.green,
-                                    size: 18.0,
-                                  ), // Human walking icon
-                                  Text(
-                                    '- $pickupDistance from your pickup location',
-                                    style: TextStyle(fontSize: 12.0),
-                                  ), // Distance
-                                ],
-                              )
-                            ],
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(ride['pickupCityName']),
+                                Text(
+                                  "${rideData?["pickupLocationName"]}",
+                                  style: TextStyle(fontSize: 12.0),
+                                ),
+                                // Text(
+                                //   '11.30 AM',
+                                //   style: TextStyle(fontSize: 12.0),
+                                // ),
+                                Text('${formatTime(rideStartTime)}', style: TextStyle(fontSize: 12.0)),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Icon(
+                                      Icons.directions_walk,
+                                      color: Colors.green,
+                                      size: 18.0,
+                                    ), // Human walking icon
+                                    Text(
+                                      '- $pickupDistance from your pickup location',
+                                      style: TextStyle(fontSize: 12.0),
+                                    ), // Distance
+                                  ],
+                                )
+                              ],
+                            ),
                           )
                         ],
                       ),
@@ -259,34 +263,36 @@ class RideDetailsScreen extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(width: 8.0),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(ride['dropoffCityName']),
-                              Text(
-                                "${rideData?['dropoffLocationName']}",
-                                style: TextStyle(fontSize: 12.0),
-                              ),
-                              // Text(
-                              //   '02.15 PM',
-                              //   style: TextStyle(fontSize: 12.0),
-                              // ),
-                              Text('${formatTime(rideEndTime)}', style: TextStyle(fontSize: 12.0)),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Icon(
-                                    Icons.directions_walk,
-                                    color: Colors.red,
-                                    size: 18.0,
-                                  ), // Human walking icon
-                                  Text(
-                                    '- $dropoffDistance from your dropoff location',
-                                    style: TextStyle(fontSize: 12.0),
-                                  ), // Distance
-                                ],
-                              )
-                            ],
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(ride['dropoffCityName']),
+                                Text(
+                                  "${rideData?['dropoffLocationName']}",
+                                  style: TextStyle(fontSize: 12.0),
+                                ),
+                                // Text(
+                                //   '02.15 PM',
+                                //   style: TextStyle(fontSize: 12.0),
+                                // ),
+                                Text('${formatTime(rideEndTime)}', style: TextStyle(fontSize: 12.0)),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Icon(
+                                      Icons.directions_walk,
+                                      color: Colors.red,
+                                      size: 18.0,
+                                    ), // Human walking icon
+                                    Text(
+                                      '- $dropoffDistance from your dropoff location',
+                                      style: TextStyle(fontSize: 12.0),
+                                    ), // Distance
+                                  ],
+                                )
+                              ],
+                            ),
                           )
                         ],
                       ),
