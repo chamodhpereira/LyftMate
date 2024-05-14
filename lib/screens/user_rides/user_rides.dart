@@ -8,12 +8,14 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:location/location.dart';
+import 'package:lyft_mate/screens/user_rides/booked_rides_details.dart';
 import 'package:lyft_mate/screens/user_rides/published_rides_details.dart';
 
 
 import 'package:mailer/mailer.dart' as mailer;
 import 'package:mailer/smtp_server.dart';
 
+import '../../services/authentication/authentication_service.dart';
 import '../../services/sms/sms_service.dart';
 import '../ride_tracking/driver_ride_tracking_screen.dart';
 import '../ride_tracking/ride_tracking_screen.dart';
@@ -32,14 +34,16 @@ class UserRides extends StatefulWidget {
 
 class _UserRidesState extends State<UserRides>
     with SingleTickerProviderStateMixin {
+
+  final AuthenticationService authService = AuthenticationService();
+
   late TabController _tabController;
   late RideStatus _selectedStatus = RideStatus.Pending; // Default filter
 
   Location location = Location();
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   late CollectionReference ridesCollection;
-  late User _user = FirebaseAuth
-      .instance.currentUser!; // Add a User object to store the current user
+  late User? _user;
 
   List<String> canceledRideIds = [];
 
@@ -48,11 +52,24 @@ class _UserRidesState extends State<UserRides>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     ridesCollection = firestore.collection('rides');
+    initializeUser();
     // _getUser(); // Call _getUser method to get the current user
   }
 
+
   Future<void> _getUser() async {
     _user = FirebaseAuth.instance.currentUser!;
+  }
+
+  void initializeUser() async{
+    _user = FirebaseAuth.instance.currentUser;
+    // await _user?.reload();
+    if (_user == null) {
+      debugPrint("No user is logged in.");
+    } else {
+      // Continue with any operations that require the user to be logged in
+      print("User is logged in: ${_user!.uid}");
+    }
   }
 
   @override
@@ -142,7 +159,7 @@ class _UserRidesState extends State<UserRides>
                 StreamBuilder(
                   stream: FirebaseFirestore.instance
                       .collection('users')
-                      .doc(_user.uid)
+                      .doc(_user?.uid)
                       .snapshots(),
                   builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
@@ -226,7 +243,7 @@ class _UserRidesState extends State<UserRides>
                 StreamBuilder(
                   stream: FirebaseFirestore.instance
                       .collection('users')
-                      .doc(_user.uid)
+                      .doc(_user?.uid)
                       .snapshots(),
                   builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
@@ -728,8 +745,8 @@ class _UserRidesState extends State<UserRides>
                   Expanded(
                     child: Row(
                       children: [
-                        Icon(Icons.location_on, color: Colors.red),
-                        SizedBox(width: 8),
+                        const Icon(Icons.location_on, color: Colors.red),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -793,7 +810,7 @@ class _UserRidesState extends State<UserRides>
                   // Leave Ride Button
                   Visibility(
                     visible:
-                        rideStatus != "cancelled" && rideStatus != "Completed",
+                        rideStatus != "Cancelled" && rideStatus != "Completed",
                     // visible: rideStatus == "pending" || rideStatus == "In Progress",
                     child: TextButton(
                       onPressed: () {
@@ -806,7 +823,7 @@ class _UserRidesState extends State<UserRides>
                   // Track Ride Button
                   Visibility(
                     visible:
-                        rideStatus != "cancelled" && rideStatus != "Completed",
+                        rideStatus != "Cancelled" && rideStatus != "Completed",
                     // visible: rideStatus == "pending" || rideStatus == "In Progress",
 
                     child: ElevatedButton(
@@ -971,10 +988,9 @@ We have received a request to refund the following payment for a passenger who h
 
 Please review and process this refund request at your earliest convenience.
 
-Thank you for your prompt attention to this matter.
 
 Best Regards,
-LyftMate App Team
+LyftMate Team
 ''';
 
       try {
@@ -996,6 +1012,36 @@ LyftMate App Team
       // Extract the number of seats they had booked
       int seatsToReturn = passengers[passengerIndex]['seats'] as int;
       var passenger = passengers[passengerIndex];
+
+      // Show confirmation dialog
+      bool? confirmLeave = await showDialog<bool>(
+        context: context,
+        builder: (BuildContext dialogContext) {
+          return AlertDialog(
+            title: Text('Confirm Leave'),
+            content: Text('Are you sure you want to leave this ride?'),
+            actions: <Widget>[
+              TextButton(
+                child: Text('Cancel'),
+                onPressed: () {
+                  Navigator.of(dialogContext).pop(false); // Dismiss the dialog and return false
+                },
+              ),
+              TextButton(
+                child: Text('Confirm'),
+                onPressed: () {
+                  Navigator.of(dialogContext).pop(true); // Dismiss the dialog and return true
+                },
+              ),
+            ],
+          );
+        },
+      );
+
+      // If user does not confirm, stop further execution
+      if (confirmLeave != true) return;
+
+
 
       // Check if a refund is needed
       String? paymentId = passenger['paymentId'];
@@ -1068,7 +1114,19 @@ LyftMate App Team
       backgroundColor = Colors.grey; // Or any other color you prefer
     }
 
-    return Card(
+    return GestureDetector(
+        onTap: rideData['rideStatus'].toUpperCase() == "COMPLETED"
+        ? null
+        : () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              MyBookedRidesDetailsPage(rideId: rideId),
+        ),
+      );
+    },
+    child: Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
       elevation: 4.0,
       margin: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
@@ -1238,6 +1296,7 @@ LyftMate App Team
             ),
           ],
         ),
+      ),
       ),
     );
 

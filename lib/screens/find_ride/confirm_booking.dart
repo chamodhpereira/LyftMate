@@ -101,10 +101,20 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Timestamp rideDate = widget.ride['date'];
+    // DateTime dateTime = rideDate.toDate();
+    // String formattedDate = DateFormat('EEEE, dd MMMM yyyy').format(dateTime);
+    // String formattedTime = DateFormat('HH:mm a').format(dateTime);
+
+    // Getting date from 'date' field
     Timestamp rideDate = widget.ride['date'];
     DateTime dateTime = rideDate.toDate();
     String formattedDate = DateFormat('EEEE, dd MMMM yyyy').format(dateTime);
-    String formattedTime = DateFormat('HH:mm a').format(dateTime);
+
+    // Getting time from 'time' field
+    Timestamp rideTime = widget.ride['time'];
+    DateTime timeOnly = rideTime.toDate();
+    String formattedTime = DateFormat('HH:mm a').format(timeOnly);
 
     return Scaffold(
       appBar: AppBar(
@@ -351,18 +361,64 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
   }
 
 
+  // Future<bool> _bookRide({String? paymentId}) async {
+  //   try {
+  //     int selectedSeats = widget.selectedSeats;
+  //     double amountToBePaid = widget.ride['pricePerSeat'] * selectedSeats;
+  //
+  //     // Get current user ID
+  //     String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
+  //     print('Current User ID: $currentUserId');
+  //
+  //     // Create a passenger object
+  //     Map<String, dynamic> passenger = {
+  //       'userId': currentUserId, // Use current user ID
+  //       'seats': selectedSeats,
+  //       'pickupCoordinate': widget.userPickupCoordinate,
+  //       'dropoffCoordinate': widget.userDropoffCoordinate,
+  //       'amount': amountToBePaid, // Store the amount
+  //       'paidStatus': _paymentMethod == 'cash' ? false : true, // Set paid status based on payment method
+  //     };
+  //
+  //     // Add the payment ID if it exists (when payment method is card)
+  //     if (paymentId != null) {
+  //       passenger['paymentId'] = paymentId;
+  //     }
+  //
+  //     // Update ride document with new passenger, reduced available seats, amount, and paid status
+  //     await FirebaseFirestore.instance.collection('rides').doc(widget.ride.id).update({
+  //       'passengers': FieldValue.arrayUnion([passenger]),
+  //       'seats': FieldValue.increment(-selectedSeats), // Reduce available seats
+  //     });
+  //
+  //     // Add booked ride to the user's ridesBooked array
+  //     await FirebaseFirestore.instance.collection('users').doc(currentUserId).update({
+  //       'ridesBooked': FieldValue.arrayUnion([widget.ride.id]),
+  //     });
+  //
+  //     print('Booking successful');
+  //     return true; // Booking successful
+  //   } catch (e) {
+  //     print('Error booking ride: $e');
+  //     return false; // Booking failed
+  //   }
+  // }
   Future<bool> _bookRide({String? paymentId}) async {
     try {
       int selectedSeats = widget.selectedSeats;
       double amountToBePaid = widget.ride['pricePerSeat'] * selectedSeats;
 
-      // Get current user ID
-      String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
+      // Get current user ID and email
+      var currentUser = FirebaseAuth.instance.currentUser;
+      String? currentUserId = currentUser?.uid;
+      String? currentUserEmail = currentUser?.email;  // Retrieve current user's email
       print('Current User ID: $currentUserId');
+      print('Current User Email: $currentUserEmail');
 
-      // Create a passenger object
+      // Create a passenger object including the user's email
       Map<String, dynamic> passenger = {
         'userId': currentUserId, // Use current user ID
+        'email': currentUserEmail, // Store the user's email
         'seats': selectedSeats,
         'pickupCoordinate': widget.userPickupCoordinate,
         'dropoffCoordinate': widget.userDropoffCoordinate,
@@ -395,44 +451,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
   }
 
 
-// Future<bool> _bookRide() async {
-  //   try {
-  //     int selectedSeats = widget.selectedSeats;
-  //     double amountToBePaid = widget.ride['pricePerSeat'] * selectedSeats;
-  //
-  //     // Get current user ID
-  //     String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
-  //     print('Current User ID: $currentUserId');
-  //
-  //     // Update ride document with new passenger, reduced available seats, amount, and paid status
-  //     await FirebaseFirestore.instance.collection('rides').doc(widget.ride.id).update({
-  //       'passengers': FieldValue.arrayUnion([
-  //         {
-  //           // TODO: Store the paymenet id here, if payment type is card
-  //           'userId': currentUserId, // Use current user ID
-  //           'seats': selectedSeats,
-  //           'pickupCoordinate': widget.userPickupCoordinate,
-  //           'dropoffCoordinate': widget.userDropoffCoordinate,
-  //           'amount': amountToBePaid, // Store the amount
-  //           'paidStatus': _paymentMethod == 'cash' ? false : true, // Set paid status based on payment method
-  //         }
-  //       ]),
-  //       'seats': FieldValue.increment(-selectedSeats), // Reduce available seats
-  //
-  //     });
-  //
-  //     // Add booked ride to the user's ridesBooked array
-  //     await FirebaseFirestore.instance.collection('users').doc(currentUserId).update({
-  //       'ridesBooked': FieldValue.arrayUnion([widget.ride.id]),
-  //     });
-  //
-  //     print('Booking successful');
-  //     return true; // Booking successful
-  //   } catch (e) {
-  //     print('Error booking ride: $e');
-  //     return false; // Booking failed
-  //   }
-  // }
+
 }
 
 

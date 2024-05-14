@@ -52,7 +52,7 @@ class _RideMapScreenState extends State<RideMapScreen> {
           widget.ride['pickupLocation']['geopoint'].latitude,
           widget.ride['pickupLocation']['geopoint'].longitude,
         ),
-        infoWindow: InfoWindow(title: 'Pickup Location'),
+        infoWindow: const InfoWindow(title: 'Ride Starting Location'),
       ),
       Marker(
         markerId: MarkerId('dropoff'),
@@ -60,12 +60,12 @@ class _RideMapScreenState extends State<RideMapScreen> {
           widget.ride['dropoffLocation']['geopoint'].latitude,
           widget.ride['dropoffLocation']['geopoint'].longitude,
         ),
-        infoWindow: InfoWindow(title: 'Drop-off Location'),
+        infoWindow: const InfoWindow(title: 'Ride Ending Location'),
       ),
       Marker(
         markerId: MarkerId('closestToPickup'),
         position: closestToPickupPosition, // Use updated position
-        infoWindow: InfoWindow(title: '$closestToPickupPosition'),
+        infoWindow: InfoWindow(title: 'Closest to your pickup location'),
       ),
       Marker(
         markerId: MarkerId('ToPickup'),
@@ -73,7 +73,7 @@ class _RideMapScreenState extends State<RideMapScreen> {
           widget.userPickupLocation.latitude,
           widget.userPickupLocation.longitude,
         ),
-        infoWindow: InfoWindow(title: 'your location'),
+        infoWindow: InfoWindow(title: 'Your picked pickup location'),
       ),
       Marker(
         markerId: MarkerId('ToDropoff'),
@@ -81,7 +81,7 @@ class _RideMapScreenState extends State<RideMapScreen> {
           closestToDropPosition.latitude,
           closestToDropPosition.longitude,
         ),
-        infoWindow: InfoWindow(title: 'closest to your drop location'),
+        infoWindow: InfoWindow(title: 'Closest to your drop location'),
       ),
       Marker(
         markerId: MarkerId('UserDropoff'),
@@ -89,7 +89,7 @@ class _RideMapScreenState extends State<RideMapScreen> {
           userDropoffPosition.latitude,
           userDropoffPosition.longitude,
         ),
-        infoWindow: InfoWindow(title: 'your picked drop location'),
+        infoWindow: InfoWindow(title: 'Your picked drop location'),
       ),
     ]);
 

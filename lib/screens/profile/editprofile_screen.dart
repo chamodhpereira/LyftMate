@@ -218,6 +218,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   void _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
 
+    // Updating profile information first
     try {
       User? user = FirebaseAuth.instance.currentUser;
       String? downloadUrl;
@@ -250,50 +251,18 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
       // Check if the new email is different from the current one
       if (_emailController.text != user.email) {
-        // Prompt user for their current password
-        String? currentPassword = await _promptForPassword();
-        if (currentPassword == null) return; // User canceled the dialog
-
-        // Re-authenticate with the current password
-        AuthCredential credential = EmailAuthProvider.credential(
-          email: user.email!,
-          password: currentPassword, // Use the password from the dialog
-        );
-
-        try {
-          await user.reauthenticateWithCredential(credential);
-
-          // Send a verification email to the new email address before updating it
-          await user.verifyBeforeUpdateEmail(_emailController.text);
-
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'A verification email has been sent to your new email address.',
-                ),
-              ),
-            );
-          }
-        } catch (e) {
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Email update error: $e')),
-            );
-          }
-          debugPrint("$e");
+        _promptEmailChange(); // Call the prompt before proceeding with email update
+      } else {
+        // Update the password if the new password field is not empty
+        if (_passwordController.text.isNotEmpty) {
+          await user.updatePassword(_passwordController.text);
         }
-      }
 
-      // Update the password if the new password field is not empty
-      if (_passwordController.text.isNotEmpty) {
-        await user.updatePassword(_passwordController.text);
-      }
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated successfully')),
-        );
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Profile updated successfully')),
+          );
+        }
       }
     } catch (e) {
       if (context.mounted) {
@@ -304,6 +273,194 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       debugPrint("$e");
     }
   }
+
+
+
+
+  // void _submitForm() async {
+  //   if (!_formKey.currentState!.validate()) return;
+  //
+  //   try {
+  //     User? user = FirebaseAuth.instance.currentUser;
+  //     String? downloadUrl;
+  //
+  //     // Upload a new profile image if selected
+  //     if (_imageFile != null) {
+  //       String imagePath = 'users/${user!.uid}/profile_image.jpg';
+  //       TaskSnapshot snapshot = await FirebaseStorage.instance
+  //           .ref()
+  //           .child(imagePath)
+  //           .putFile(_imageFile!);
+  //       downloadUrl = await snapshot.ref.getDownloadURL();
+  //     }
+  //
+  //     // Update other profile fields
+  //     Map<String, dynamic> updateData = {
+  //       'firstName': _firstNameController.text,
+  //       'lastName': _lastNameController.text,
+  //       'bio': _bioController.text,
+  //     };
+  //
+  //     if (downloadUrl != null) {
+  //       updateData['profileImageUrl'] = downloadUrl;
+  //     }
+  //
+  //     FirebaseFirestore.instance
+  //         .collection('users')
+  //         .doc(user!.uid)
+  //         .update(updateData);
+  //
+  //     // Check if the new email is different from the current one
+  //     if (_emailController.text != user.email) {
+  //       // Prompt user for their current password
+  //       String? currentPassword = await _promptForPassword();
+  //       if (currentPassword == null) return; // User canceled the dialog
+  //
+  //       // Re-authenticate with the current password
+  //       AuthCredential credential = EmailAuthProvider.credential(
+  //         email: user.email!,
+  //         password: currentPassword, // Use the password from the dialog
+  //       );
+  //
+  //       try {
+  //         await user.reauthenticateWithCredential(credential);
+  //
+  //         // Send a verification email to the new email address before updating it
+  //         await user.verifyBeforeUpdateEmail(_emailController.text);
+  //
+  //         if (context.mounted) {
+  //           ScaffoldMessenger.of(context).showSnackBar(
+  //             const SnackBar(
+  //               content: Text(
+  //                 'A verification email has been sent to your new email address.',
+  //               ),
+  //             ),
+  //           );
+  //         }
+  //       } catch (e) {
+  //         if (context.mounted) {
+  //           ScaffoldMessenger.of(context).showSnackBar(
+  //             SnackBar(content: Text('Email update error: $e')),
+  //           );
+  //         }
+  //         debugPrint("$e");
+  //       }
+  //     }
+  //
+  //     // Update the password if the new password field is not empty
+  //     if (_passwordController.text.isNotEmpty) {
+  //       await user.updatePassword(_passwordController.text);
+  //     }
+  //
+  //     if (context.mounted) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(content: Text('Profile updated successfully')),
+  //       );
+  //     }
+  //   } catch (e) {
+  //     if (context.mounted) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(content: Text('Failed to update profile: $e')),
+  //       );
+  //     }
+  //     debugPrint("$e");
+  //   }
+  // }
+
+  void _promptEmailChange() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Confirm Email Change"),
+        content: Text("Changing your email will require verification. You might need to sign in again."),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _updateEmail();  // This method will handle the email update
+            },
+            child: Text("Proceed"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _updateEmail() async {
+    String newEmail = _emailController.text.trim();
+    if (newEmail.isEmpty || newEmail == FirebaseAuth.instance.currentUser?.email) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Please enter a new email different from the current one.")));
+      return;
+    }
+
+    String? currentPassword = await _promptForPassword();
+    if (currentPassword == null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Password verification cancelled.")));
+      return;
+    }
+
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No user logged in.")));
+      return;
+    }
+
+    try {
+      AuthCredential credential = EmailAuthProvider.credential(email: user.email!, password: currentPassword);
+      await user.reauthenticateWithCredential(credential);
+      await user.verifyBeforeUpdateEmail(newEmail);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('A verification email has been sent to your new email address. Please verify to continue using your account.')));
+
+      // ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      //   content: Text('A verification email has been sent to your new email address. Please verify to continue using your account.'),
+      //   duration: Duration(seconds: 3),  // Adjust duration appropriately
+      // ));
+      //
+      //
+      // await Future.delayed(const Duration(seconds: 3));
+
+
+      // Sign out after email update to ensure data consistency
+      await FirebaseAuth.instance.signOut();
+      Navigator.of(context).pushNamedAndRemoveUntil('/loginScreen', (route) => false);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to update email: $e")));
+      debugPrint("Email update error: $e");
+    }
+  }
+
+
+
+  // void _updateEmail() async {
+  //   String newEmail = _emailController.text;
+  //   if (newEmail.isEmpty || newEmail == FirebaseAuth.instance.currentUser?.email) return;
+  //
+  //   String? currentPassword = await _promptForPassword();
+  //   if (currentPassword == null) return;
+  //
+  //   User? user = FirebaseAuth.instance.currentUser;
+  //   if (user == null) {
+  //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No user logged in.")));
+  //     return;
+  //   }
+  //
+  //   // Reauthenticate user
+  //   try {
+  //     AuthCredential credential = EmailAuthProvider.credential(email: user.email!, password: currentPassword);
+  //     await user.reauthenticateWithCredential(credential);
+  //     await user.verifyBeforeUpdateEmail(newEmail);
+  //     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('A verification email has been sent to your new email address.')));
+  //   } catch (e) {
+  //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to update email, please try again later.")));
+  //     debugPrint("$e");
+  //     return;
+  //   }
+  // }
+
 
   Future<String?> _promptForPassword() async {
     String? password;

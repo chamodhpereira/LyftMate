@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lyft_mate/models/user_profile.dart';
 import 'package:lyft_mate/screens/vehicles/vehicle_screen.dart';
@@ -19,6 +20,8 @@ class _UserProfileSettingsScreenState extends State<UserProfileSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+
+    String currentUserEmail = FirebaseAuth.instance.currentUser?.email ?? widget.userProfile.email;
 
     return Scaffold(
       appBar: AppBar(
@@ -58,7 +61,7 @@ class _UserProfileSettingsScreenState extends State<UserProfileSettingsScreen> {
                             style: const TextStyle(fontSize: 20.0),
                           ),
                           Text(
-                            widget.userProfile.email,
+                              currentUserEmail,
                             style: const TextStyle(fontSize: 15.0),
                           ),
                           TextButton(

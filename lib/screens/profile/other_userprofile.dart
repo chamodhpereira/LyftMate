@@ -2,22 +2,51 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-class OtherUserProfileScreen extends StatelessWidget {
+class OtherUserProfileScreen extends StatefulWidget {
   final String userId;
 
   const OtherUserProfileScreen({super.key, required this.userId});
+
+  @override
+  State<OtherUserProfileScreen> createState() => _OtherUserProfileScreenState();
+}
+
+class _OtherUserProfileScreenState extends State<OtherUserProfileScreen> {
+
+  String appBarTitle = 'Profile'; // Initial title
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserProfile();
+  }
+
+  Future<void> _fetchUserProfile() async {
+    try {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(widget.userId).get();
+      if (userDoc.exists) {
+        Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+        setState(() {
+          appBarTitle = "${userData['firstName']} ${userData['lastName']}"; // Update the AppBar title
+        });
+      }
+    } catch (e) {
+      print('Failed to fetch user data: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
+        // title: Text(appBarTitle),
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
         elevation: 0.5,
       ),
       body: FutureBuilder<DocumentSnapshot>(
-        future: FirebaseFirestore.instance.collection('users').doc(userId).get(),
+        future: FirebaseFirestore.instance.collection('users').doc(widget.userId).get(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

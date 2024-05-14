@@ -53,7 +53,7 @@ class RideMatching {
     }
   }
 
-  // Generate a list of geohashes that cover the area around the provided geopoint
+  // Generate a list of geohashes that cover the area around user's pickup and dropoff location
   List<String> generateNearbyGeohashes(double latitude, double longitude) {
     String centralGeohash = geoHasher.encode(longitude, latitude, precision: 5);
 
@@ -182,7 +182,6 @@ class RideMatching {
         Map<String, dynamic> rideData = ride.data() as Map<String, dynamic>;
         debugPrint('Ride data: $rideData');
 
-        debugPrint('----------------------------------------------------------------------------');
         debugPrint('Ride data seats: ${rideData['seats']}');
 
         Map<dynamic, dynamic> polylineGeohashes =
@@ -277,11 +276,6 @@ class RideMatching {
           debugPrint(
               'Min dropoff distance: $minDropoffDistance meters, Threshold: $distanceThreshold meters');
 
-          // if (minPickupDistance <= distanceThreshold && minDropoffDistance <= distanceThreshold) {
-          //   debugPrint('Both pickup and dropoff within walking distance.');
-          // } else {
-          //   debugPrint('One or both distances exceed the threshold.');
-          // }
 
           if (minPickupDistance <= distanceThreshold &&
               minDropoffDistance <= distanceThreshold) {
@@ -323,11 +317,11 @@ class RideMatching {
       if (data['routes'].isNotEmpty) {
         var route = data['routes'][0];
         var leg = route['legs'][0];
-        // double distance = leg['distance']['value'];  // Distance in meters\
+        // double distance = leg['distance']['value'];  // Distance in meters
         int distanceValue =
             leg['distance']['value']; // The API returns an integer
         double distance = distanceValue.toDouble();
-        debugPrint("==================Distanceee============");
+        debugPrint("Distanceee");
         debugPrint("$distance");
         return distance;
       }
@@ -356,7 +350,7 @@ class RideMatching {
     LatLng closestCoordinate =
         LatLng(0, 0); // Default to an unlikely coordinate
 
-    debugPrint("COOOOOOOOOOOOOOOORDINATESSSSSSSSSSSSS_ $coordinates");
+    debugPrint("Coordinates: $coordinates");
 
     for (LatLng coord in coordinates) {
       double distance = calculateUpdatedDistance(baseLocation, coord);
@@ -432,37 +426,37 @@ class RideMatching {
     return routeCoordinates;
   }
 
-  Future<List<LatLng>> snapToRoads(LatLng coordinate) async {
-    final apiKey = _getApiKey();
-    final String baseUrl = 'https://roads.googleapis.com/v1/snapToRoads';
-
-    final String url =
-        '$baseUrl?path=${coordinate.latitude},${coordinate.longitude}&key=$apiKey';
-
-    final response = await client.get(Uri.parse(url));
-
-    if (response.statusCode == 200) {
-      final Map<String, dynamic> data = json.decode(response.body);
-      final List<dynamic> snappedPoints = data['snappedPoints'];
-
-      // Check if there are snapped points returned
-      if (snappedPoints.isNotEmpty) {
-        // Extract latitude and longitude of each snapped point and create LatLng objects
-        List<LatLng> snappedCoordinates = snappedPoints.map((point) {
-          double latitude = point['location']['latitude'];
-          double longitude = point['location']['longitude'];
-          print(
-              'Snapped PPPPPPPoint: Latitude: $latitude, Longitude: $longitude');
-          return LatLng(latitude, longitude);
-        }).toList();
-
-        return snappedCoordinates;
-      }
-    }
-
-    // Return an empty list if snapping fails or no snapped points are returned
-    return [];
-  }
+  // Future<List<LatLng>> snapToRoads(LatLng coordinate) async {
+  //   final apiKey = _getApiKey();
+  //   final String baseUrl = 'https://roads.googleapis.com/v1/snapToRoads';
+  //
+  //   final String url =
+  //       '$baseUrl?path=${coordinate.latitude},${coordinate.longitude}&key=$apiKey';
+  //
+  //   final response = await client.get(Uri.parse(url));
+  //
+  //   if (response.statusCode == 200) {
+  //     final Map<String, dynamic> data = json.decode(response.body);
+  //     final List<dynamic> snappedPoints = data['snappedPoints'];
+  //
+  //     // Check if there are snapped points returned
+  //     if (snappedPoints.isNotEmpty) {
+  //       // Extract latitude and longitude of each snapped point and create LatLng objects
+  //       List<LatLng> snappedCoordinates = snappedPoints.map((point) {
+  //         double latitude = point['location']['latitude'];
+  //         double longitude = point['location']['longitude'];
+  //         print(
+  //             'Snapped PPPPPPPoint: Latitude: $latitude, Longitude: $longitude');
+  //         return LatLng(latitude, longitude);
+  //       }).toList();
+  //
+  //       return snappedCoordinates;
+  //     }
+  //   }
+  //
+  //   // Return an empty list if snapping fails or no snapped points are returned
+  //   return [];
+  // }
 
   double calculateDistance(double startLatitude, double startLongitude,
       double endLatitude, double endLongitude) {
