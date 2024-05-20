@@ -30,7 +30,7 @@ Follow these steps to install the app:
 1. Clone the repository:
 
 ```
-   git clone https://github.com/yourusername/lyftmate.git
+   git clone https://github.com/chamodhpereira/lyftmate.git
    cd lyftmate
 ```
 
